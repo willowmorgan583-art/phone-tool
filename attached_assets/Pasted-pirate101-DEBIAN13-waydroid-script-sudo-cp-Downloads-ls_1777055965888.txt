@@ -1,0 +1,83 @@
+pirate101@DEBIAN13:~/waydroid_script$ sudo cp ~/Downloads/lsposed-zygisk.zip /home/pirate101/.local/share/waydroid/data/local/tmp/lsposed.zip
+sudo chmod 644 /home/pirate101/.local/share/waydroid/data/local/tmp/lsposed.zip
+
+sudo waydroid shell -- sh -c '
+ls -la /data/local/tmp/lsposed.zip
+echo "---"
+magisk --install-module /data/local/tmp/lsposed.zip
+echo "---"
+echo "Modules now installed:"
+ls /data/adb/modules/
+'
+-rw-r--r-- 1 root root 2462055 2026-04-24 18:37 /data/local/tmp/lsposed.zip
+---
+***********************
+ Zygisk - LSPosed 
+ by LSPosed Developers 
+***********************
+*******************
+ Powered by Magisk 
+*******************
+- LSPosed version v1.9.2 (7024)
+- Extracting verify.sh
+- Verified META-INF/com/google/android/update-binary
+- Verified customize.sh
+- Verified verify.sh
+- Verified util_functions.sh
+- Android SDK version: 33
+- Magisk version: 26301
+- Installing from Magisk app
+- Device platform: x64
+- Extracting module files
+- Verified module.prop
+- Verified post-fs-data.sh
+- Verified service.sh
+- Verified uninstall.sh
+- Verified sepolicy.rule
+- Verified framework/lspd.dex
+- Verified daemon.apk
+- Verified daemon
+- Verified manager.apk
+- Verified lib/x86/liblspd.so
+- Verified lib/x86_64/liblspd.so
+- Extracting dex2oat binaries
+- Verified bin/x86/dex2oat
+- Verified bin/x86_64/dex2oat
+- Patching binaries
+- Welcome to LSPosed!
+- Installing custom sepolicy rules, early-mount files
+- Unable to find preinit dir
+- Done
+---
+Modules now installed:
+fake_proc  playintegrityfix  zygisk_lsposed
+pirate101@DEBIAN13:~/waydroid_script$ sudo waydroid shell -- sh -c '
+echo "=== Zygisk enabled? ==="
+magisk --sqlite "SELECT * FROM settings WHERE key=\"zygisk\""
+echo "=== Zygisk processes ==="
+ps -A | grep -i zygisk
+echo "=== Modules ==="
+ls /data/adb/modules/
+echo "=== LSPosed daemon ==="
+ps -A | grep -i lspd
+'
+[21:38:32] WayDroid container is STOPPED
+pirate101@DEBIAN13:~/waydroid_script$ sudo waydroid shell -- sh -c '
+echo "=== Zygisk enabled? ==="
+magisk --sqlite "SELECT * FROM settings WHERE key=\"zygisk\""
+echo "=== Zygisk processes ==="
+ps -A | grep -i zygisk
+echo "=== Modules ==="
+ls /data/adb/modules/
+echo "=== LSPosed daemon ==="
+ps -A | grep -i lspd
+'
+=== Zygisk enabled? ===
+key=zygisk|value=1
+=== Zygisk processes ===
+root             424       1 10786484  3516 do_sys_poll         0 S zygiskd64
+=== Modules ===
+fake_proc  playintegrityfix  zygisk_lsposed
+=== LSPosed daemon ===
+system            97       1 13241752 130048 do_epoll_wait      0 S lspd
+pirate101@DEBIAN13:~/waydroid_script$ 
