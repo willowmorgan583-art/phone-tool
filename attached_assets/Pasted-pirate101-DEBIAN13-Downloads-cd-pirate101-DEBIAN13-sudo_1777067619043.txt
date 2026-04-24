@@ -1,0 +1,203 @@
+pirate101@DEBIAN13:~/Downloads$ cd ..
+pirate101@DEBIAN13:~$ sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/
+sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/service.d/
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/fake_proc.sh 2>&1
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/service.d/start_lsposed.sh 2>&1
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh 2>&1
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/service.d/99_zygisk_injector.sh 2>&1
+[sudo] password for pirate101: 
+total 20
+drwxr-xr-x 2 pirate101 pirate101 4096 Apr 24 17:59 .
+drwx------ 7 root      root      4096 Apr 25 00:42 ..
+-rwxr-xr-x 1 root      root       221 Apr 24 18:09 00_zygisk_enforce.sh
+-rwxr-xr-x 1 root      root       264 Apr 24 17:59 00_zygisk_lsposed.sh
+-rwxr-xr-x 1 root      root       222 Apr 23 14:58 fake_proc.sh
+total 20
+drwxr-xr-x 2 pirate101 pirate101 4096 Apr 24 18:56 .
+drwx------ 7 root      root      4096 Apr 25 00:42 ..
+-rwxr-xr-x 1 root      root       792 Apr 24 18:09 99_zygisk_injector.sh
+-rwxr-xr-x 1 root      root      3542 Apr 24 18:56 samsung_mask.sh
+-rwxr-xr-x 1 root      root       166 Apr 24 17:52 start_lsposed.sh
+#!/system/bin/sh
+# Wait until /proc is fully available
+while [ ! -f /proc/version ]; do
+    sleep 1
+done
+# Bind-mount the fake version over the real one
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version
+#!/system/bin/sh
+# If the LSPosed daemon hasn't started, launch it manually
+sleep 10
+if ! ps -A | grep -q lspd; then
+    /data/adb/modules/zygisk_lsposed/daemon &
+fi
+#!/system/bin/sh
+
+# Complete S24 Ultra mask & Waydroid/Lineage eraser
+
+# Bind-mount kernel lie
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version
+
+# Hardware spoof
+resetprop ro.hardware.egl angle
+resetprop ro.hardware.gralloc adreno
+resetprop ro.hardware.vulkan adreno
+resetprop ro.hardware.camera samsung_isocell
+resetprop ro.hardware qcom
+resetprop ro.board.platform pineapple
+resetprop gralloc.gbm.device ""
+
+# Build identity
+resetprop ro.product.model SM-S928B
+resetprop ro.product.brand samsung
+resetprop ro.product.manufacturer Samsung
+resetprop ro.product.device e3q
+resetprop ro.product.name e3qxxx
+resetprop ro.build.fingerprint "samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys"
+resetprop ro.build.description "e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys"
+resetprop ro.build.characteristics phone
+resetprop ro.build.tags release-keys
+resetprop ro.build.type user
+resetprop ro.build.user nobody
+resetprop ro.build.host android-build
+
+# Override sub-partition fingerprints
+for part in system vendor odm product system_ext vendor_dlkm; do
+    resetprop ro.${part}.build.fingerprint "samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys"
+    resetprop ro.${part}.build.tags release-keys
+    resetprop ro.${part}.build.type user
+done
+
+# Obliterate all waydroid/lineage partition brand props
+props_to_override="
+ro.board.platform=pineapple
+ro.build.description=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+ro.build.display.id=S928BXXU1AXBA
+ro.build.flavor=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+ro.build.product=e3q
+ro.lineage.device=e3q
+ro.lineage.display.version=20-20260403-VANILLA-e3q
+ro.lineage.version=20.0-20260403-VANILLA-e3q
+ro.modversion=20.0-20260403-VANILLA-e3q
+ro.odm.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.product.odm.brand=samsung
+ro.product.odm.device=e3q
+ro.product.odm.manufacturer=Samsung
+ro.product.odm.model=SM-S928B
+ro.product.odm.name=e3qxxx
+ro.product.system.brand=samsung
+ro.product.system.device=e3q
+ro.product.system.manufacturer=Samsung
+ro.product.system.model=SM-S928B
+ro.product.system.name=e3qxxx
+ro.product.system_ext.brand=samsung
+ro.product.system_ext.device=e3q
+ro.product.system_ext.manufacturer=Samsung
+ro.product.system_ext.model=SM-S928B
+ro.product.system_ext.name=e3qxxx
+ro.product.vendor.brand=samsung
+ro.product.vendor.device=e3q
+ro.product.vendor.manufacturer=Samsung
+ro.product.vendor.model=SM-S928B
+ro.product.vendor.name=e3qxxx
+ro.product.vendor_dlkm.brand=samsung
+ro.product.vendor_dlkm.device=e3q
+ro.product.vendor_dlkm.manufacturer=Samsung
+ro.product.vendor_dlkm.model=SM-S928B
+ro.product.vendor_dlkm.name=e3qxxx
+ro.system.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.system_ext.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.vendor.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.vendor_dlkm.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+"
+for line in $props_to_override; do
+    key=$(echo $line | cut -d= -f1)
+    value=$(echo $line | cut -d= -f2-)
+    resetprop $key "$value"
+done
+
+# Blank every waydroid.* runtime property
+for prop in $(getprop | grep -iE "^\s*\[waydroid\." | cut -d"[" -f2 | cut -d"]" -f1); do
+    resetprop $prop ""
+done
+
+# Display
+wm size 1440x3120 2>/dev/null || true
+wm density 560 2>/dev/null || true
+resetprop ro.sf.lcd_density 560
+#!/system/bin/sh
+# Wait for the system to fully settle
+sleep 15
+
+# Ensure the Zygisk property is set
+resetprop persist.sys.zygisk.enable true
+
+# Kill any existing Magisk daemon and restart it with Zygisk forced
+killall -15 magiskd 2>/dev/null
+sleep 2
+/data/adb/magisk/magiskd --zygisk &
+
+# Wait for the new daemon to be ready
+sleep 5
+
+# If Magiskd didn't start, try again
+if ! ps -A | grep -q magiskd; then
+    /data/adb/magisk/magiskd --zygisk &
+    sleep 5
+fi
+
+# Now instruct Magisk to enable Zygisk (this will restart Zygote)
+magisk --zygisk enable
+
+# After Zygisk restart, wait a moment
+sleep 5
+
+# Start LSPosed daemon if Zygisk is alive and it's not running
+if ps -A | grep -q magiskd; then
+    if ! ps -A | grep -q lspd; then
+        /data/adb/modules/zygisk_lsposed/daemon &
+    fi
+fi
+pirate101@DEBIAN13:~$ sudo cp /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak
+pirate101@DEBIAN13:~$ sudo sed -i '/^ro\.hardware/d; /^ro\.board\.platform/d; /^ro\.boot\.hardware/d' /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop
+pirate101@DEBIAN13:~$ sudo grep -E "ro\.hardware|ro\.board\.platform|ro\.boot\.hardware" /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/service.d/start_lsposed.sh
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/service.d/99_zygisk_injector.sh
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+pirate101@DEBIAN13:~$ sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- cat /cache/magisk.log | tail -20
+sudo waydroid shell -- logcat -d -b crash 2>&1 | tail -10
+sudo waydroid shell -- sh -c 'echo "MODEL: $(getprop ro.product.model) | FP: $(getprop ro.build.fingerprint) | EGL: $(getprop ro.hardware.egl) | HW: $(getprop ro.hardware) | IMEI: $(getprop ro.ril.imei)"'
+No daemon is currently running!
+04-24 17:52:48.006  1008  1008 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:52:48.006  1008  1008 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:52:48.790    71    73 I : ** zygote restarted
+04-24 17:52:53.062  1031  1031 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:52:53.062  1031  1031 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:52:53.062  1031  1031 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:52:53.958    71    73 I : ** zygote restarted
+04-24 17:52:58.017  1054  1054 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:52:58.017  1054  1054 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:52:58.017  1054  1054 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:52:58.801    71    73 I : ** zygote restarted
+04-24 17:53:03.014  1077  1077 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:53:03.015  1077  1077 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:53:03.015  1077  1077 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:53:03.840    71    73 I : ** zygote restarted
+04-24 17:53:08.019  1100  1100 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:53:08.023  1100  1100 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:53:08.023  1100  1100 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:53:08.830    71    73 I : ** zygote restarted
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #01 pc 00000000000069aa  /system/lib64/liblog.so (__android_log_default_aborter+10) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #02 pc 0000000000007562  /system/lib64/liblog.so (__android_log_assert+370) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #03 pc 000000000065c660  /system/bin/surfaceflinger (android::renderengine::skia::SkiaGLRenderEngine::chooseEglConfig(void*, int, bool)+544) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #04 pc 000000000065bc02  /system/bin/surfaceflinger (android::renderengine::skia::SkiaGLRenderEngine::create(android::renderengine::RenderEngineCreationArgs const&)+162) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #05 pc 0000000000642dac  /system/bin/surfaceflinger (std::__1::__function::__func<android::renderengine::RenderEngine::create(android::renderengine::RenderEngineCreationArgs const&)::$_1, std::__1::allocator<android::renderengine::RenderEngine::create(android::renderengine::RenderEngineCreationArgs const&)::$_1>, std::__1::unique_ptr<android::renderengine::RenderEngine, std::__1::default_delete<android::renderengine::RenderEngine> > ()>::operator()() (.f853b653ec5f0649c15b11b979e782e0)+12) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #06 pc 00000000006579b1  /system/bin/surfaceflinger (android::renderengine::threaded::RenderEngineThreaded::threadMain(std::__1::function<std::__1::unique_ptr<android::renderengine::RenderEngine, std::__1::default_delete<android::renderengine::RenderEngine> > ()>)+353) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #07 pc 000000000065a231  /system/bin/surfaceflinger (void* std::__1::__thread_proxy<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct> >, void (android::renderengine::threaded::RenderEngineThreaded::*)(std::__1::function<std::__1::unique_ptr<android::renderengine::RenderEngine, std::__1::default_delete<android::renderengine::RenderEngine> > ()>), android::renderengine::threaded::RenderEngineThreaded*, std::__1::function<std::__1::unique_ptr<android::renderengine::RenderEngine, std::__1::default_delete<android::renderengine::RenderEngine> > ()> > >(void*)+145) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #08 pc 00000000000ccd3a  /apex/com.android.runtime/lib64/bionic/libc.so (__pthread_start(void*)+58) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:53:12.950  1126  1129 F DEBUG   :       #09 pc 0000000000060cc7  /apex/com.android.runtime/lib64/bionic/libc.so (__start_thread+55) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+MODEL: SM-S928B | FP: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys | EGL: angle | HW: qcom | IMEI: 357499130124581
+pirate101@DEBIAN13:~$ 
