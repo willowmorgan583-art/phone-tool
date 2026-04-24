@@ -1,0 +1,48 @@
+[4/4] DONE. Now run the next two commands manually as YOUR USER (no sudo):
+    waydroid session start &
+    sleep 15 && sudo waydroid shell getprop ro.product.model
+pirate101@DEBIAN13:~/waydroid_script$ sudo waydroid shell getprop ro.product.model
+SM-S928B
+pirate101@DEBIAN13:~/waydroid_script$ cd ..
+pirate101@DEBIAN13:~$ sudo waydroid shell getprop ro.product.model
+sudo waydroid shell getprop ro.build.fingerprint
+sudo waydroid shell getprop ro.bootloader
+sudo waydroid shell getprop ro.boot.verifiedbootstate
+sudo waydroid shell uname -r
+sudo waydroid shell cat /proc/version
+SM-S928B
+samsung/e3qxxx/e3q:13/TQ3A.230901.001/eng.aleast.20260403.132616:userdebug/test-keys
+unknown
+
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: -r
+Linux version 6.12.74+deb13+1-amd64 (debian-kernel@lists.debian.org) (x86_64-linux-gnu-gcc-14 (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 SMP PREEMPT_DYNAMIC Debian 6.12.74-2 (2026-03-08)
+pirate101@DEBIAN13:~$ pip install --user inquirerpy requests tqdm
+cd ~/waydroid_script
+sudo python3 main.py
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+    
+    If you wish to install a non-Debian-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have python3-full installed.
+    
+    If you wish to install a non-Debian packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+    
+    See /usr/share/doc/python3.13/README.venv for more information.
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+Traceback (most recent call last):
+  File "/home/pirate101/waydroid_script/main.py", line 2, in <module>
+    from InquirerPy import inquirer
+ModuleNotFoundError: No module named 'InquirerPy'
+pirate101@DEBIAN13:~/waydroid_script$ 
