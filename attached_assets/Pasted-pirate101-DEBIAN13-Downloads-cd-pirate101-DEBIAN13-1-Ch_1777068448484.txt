@@ -1,0 +1,53 @@
+pirate101@DEBIAN13:~/Downloads$ cd ..
+pirate101@DEBIAN13:~$ # 1. Check the zygisk_enforce script (might be re-applying props)
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/00_zygisk_enforce.sh
+[sudo] password for pirate101: 
+#!/system/bin/sh
+resetprop persist.sys.zygisk.enable true
+# If the magiskd daemon is not running, start it explicitly (unlikely at this stage)
+if ! ps -A | grep -q magiskd; then
+    /data/adb/magisk/magiskd --zygisk &
+fi
+pirate101@DEBIAN13:~$ # 2. Search the ENTIRE Waydroid data tree for any file containing the bad lines
+sudo grep -rEn "ro\.hardware\.egl|ro\.hardware=qcom|ro\.board\.platform|ro\.hardware\.gralloc|ro\.hardware\.vulkan" /home/pirate101/.local/share/waydroid/ 2>/dev/null
+/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak:23:ro.hardware=qcom
+/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak:24:ro.hardware.egl=angle
+/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak:25:ro.hardware.gralloc=adreno
+/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak:26:ro.hardware.vulkan=adreno
+/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak:28:ro.board.platform=pineapple
+/home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh.bak:9:resetprop ro.hardware.egl angle
+/home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh.bak:10:resetprop ro.hardware.gralloc adreno
+/home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh.bak:11:resetprop ro.hardware.vulkan adreno
+/home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh.bak:14:resetprop ro.board.platform pineapple
+/home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh.bak:40:ro.board.platform=pineapple
+/home/pirate101/.local/share/waydroid/data/adb/lspd/log/props.txt:160:[ro.board.platform]: [waydroid]
+/home/pirate101/.local/share/waydroid/data/adb/lspd/log/props.txt:234:[ro.hardware.egl]: [mesa]
+/home/pirate101/.local/share/waydroid/data/adb/lspd/log/props.txt:235:[ro.hardware.gralloc]: [minigbm_gbm_mesa]
+/home/pirate101/.local/share/waydroid/data/adb/lspd/log/props.txt:236:[ro.hardware.vulkan]: [intel_hasvk]
+/home/pirate101/.local/share/waydroid/data/adb/lspd/log.old/props.txt:160:[ro.board.platform]: [waydroid]
+/home/pirate101/.local/share/waydroid/data/adb/lspd/log.old/props.txt:234:[ro.hardware.egl]: [mesa]
+/home/pirate101/.local/share/waydroid/data/adb/lspd/log.old/props.txt:235:[ro.hardware.gralloc]: [minigbm_gbm_mesa]
+/home/pirate101/.local/share/waydroid/data/adb/lspd/log.old/props.txt:236:[ro.hardware.vulkan]: [intel_hasvk]
+/home/pirate101/.local/share/waydroid/data/media/0/Download/service.sh:8:resetprop ro.hardware.egl angle
+/home/pirate101/.local/share/waydroid/data/media/0/Download/service.sh:9:resetprop ro.hardware.gralloc adreno
+/home/pirate101/.local/share/waydroid/data/media/0/Download/service.sh:10:resetprop ro.hardware.vulkan adreno
+/home/pirate101/.local/share/waydroid/data/media/0/Download/service.sh:13:resetprop ro.board.platform pineapple
+pirate101@DEBIAN13:~$ # 3. Check Waydroid's host-side config (waydroid_base.prop is bound into /vendor)
+sudo grep -rEn "ro\.hardware\.egl|ro\.hardware=qcom|ro\.board\.platform" /var/lib/waydroid/ 2>/dev/null
+/var/lib/waydroid/waydroid_base.prop:7:ro.hardware.egl=mesa
+/var/lib/waydroid/rootfs/system/etc/selinux/plat_property_contexts:1055:ro.board.platform u:object_r:exported_default_prop:s0 exact string
+/var/lib/waydroid/rootfs/system/etc/selinux/plat_property_contexts:1092:ro.hardware.egl                  u:object_r:exported_default_prop:s0 exact string
+/var/lib/waydroid/rootfs/vendor/waydroid.prop:7:ro.hardware.egl=mesa
+/var/lib/waydroid/rootfs/vendor/build.prop:42:ro.board.platform=waydroid
+/var/lib/waydroid/waydroid.prop:7:ro.hardware.egl=mesa
+pirate101@DEBIAN13:~$ # 4. Check persistent property storage and any other modules locations
+sudo ls -la /home/pirate101/.local/share/waydroid/data/property/ 2>&1 | head -40
+sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/ | grep -iE "module|service|post-fs"
+total 12
+drwx------  2 root      root      4096 Apr 25 00:59 .
+drwxrwx--x 54 pirate101 autologin 4096 Apr 25 00:43 ..
+-rw-------  1 root      root       955 Apr 25 00:59 persistent_properties
+drwxr-xr-x  4 pirate101 pirate101  4096 Apr 25 00:22 modules
+drwxr-xr-x  2 pirate101 pirate101  4096 Apr 25 00:58 post-fs-data.d
+drwxr-xr-x  2 pirate101 pirate101  4096 Apr 25 00:57 service.d
+pirate101@DEBIAN13:~$ 
