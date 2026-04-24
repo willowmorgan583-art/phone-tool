@@ -1,0 +1,38 @@
+pirate101@DEBIAN13:~$ mkdir -p ~/Downloads
+cd ~/Downloads
+wget -O lsposed-zygisk.zip "https://github.com/LSPosed/LSPosed/releases/download/v1.9.2/LSPosed-v1.9.2-7024-zygisk-release.zip"
+ls -lh lsposed-zygisk.zip
+--2026-04-24 21:33:56--  https://github.com/LSPosed/LSPosed/releases/download/v1.9.2/LSPosed-v1.9.2-7024-zygisk-release.zip
+Resolving github.com (github.com)... 20.87.245.0
+Connecting to github.com (github.com)|20.87.245.0|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/320785435/5e6c2e4f-fe62-41cb-a865-21a65fe64745?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-24T19%3A30%3A51Z&rscd=attachment%3B+filename%3DLSPosed-v1.9.2-7024-zygisk-release.zip&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-24T18%3A30%3A00Z&ske=2026-04-24T19%3A30%3A51Z&sks=b&skv=2018-11-09&sig=NDZZfNYQW166%2FoLslNQuECdSLfg74RW7D%2BswhiVCTbU%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NzA1NTkzOSwibmJmIjoxNzc3MDU1NjM5LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.6g6AcgUuogVzVHSm87sV-uDygeAzrtjq6C5ues_6iv8&response-content-disposition=attachment%3B%20filename%3DLSPosed-v1.9.2-7024-zygisk-release.zip&response-content-type=application%2Foctet-stream [following]
+--2026-04-24 21:33:58--  https://release-assets.githubusercontent.com/github-production-release-asset/320785435/5e6c2e4f-fe62-41cb-a865-21a65fe64745?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-24T19%3A30%3A51Z&rscd=attachment%3B+filename%3DLSPosed-v1.9.2-7024-zygisk-release.zip&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-24T18%3A30%3A00Z&ske=2026-04-24T19%3A30%3A51Z&sks=b&skv=2018-11-09&sig=NDZZfNYQW166%2FoLslNQuECdSLfg74RW7D%2BswhiVCTbU%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NzA1NTkzOSwibmJmIjoxNzc3MDU1NjM5LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.6g6AcgUuogVzVHSm87sV-uDygeAzrtjq6C5ues_6iv8&response-content-disposition=attachment%3B%20filename%3DLSPosed-v1.9.2-7024-zygisk-release.zip&response-content-type=application%2Foctet-stream
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.110.133, 185.199.108.133, 185.199.109.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.110.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 2462055 (2.3M) [application/octet-stream]
+Saving to: ‘lsposed-zygisk.zip’
+
+lsposed-zygisk.zip   100%[===================>]   2.35M   373KB/s    in 10s     
+
+2026-04-24 21:34:09 (238 KB/s) - ‘lsposed-zygisk.zip’ saved [2462055/2462055]
+
+-rw-rw-r-- 1 pirate101 pirate101 2.4M Oct 11  2023 lsposed-zygisk.zip
+pirate101@DEBIAN13:~/Downloads$ # Copy zip into the Waydroid container's shared storage
+sudo cp ~/Downloads/lsposed-zygisk.zip /home/pirate101/.local/share/waydroid/data/media/0/Download/lsposed.zip
+sudo chown 1023:1023 /home/pirate101/.local/share/waydroid/data/media/0/Download/lsposed.zip
+
+# Install module via Magisk CLI
+sudo waydroid shell -- sh -c '
+magisk --install-module /sdcard/Download/lsposed.zip
+echo "---"
+echo "Modules now installed:"
+ls /data/adb/modules/
+'
+'/sdcard/Download/lsposed.zip' does not exist
+
+---
+Modules now installed:
+fake_proc  playintegrityfix
+pirate101@DEBIAN13:~/Downloads$ 
