@@ -1,0 +1,75 @@
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --denylist enforce true
+sudo waydroid shell -- magisk --denylist add com.google.android.gms
+sudo waydroid shell -- magisk --denylist add com.google.android.gsf
+sudo waydroid shell -- magisk --denylist add com.android.vending
+sudo waydroid shell -- magisk --denylist ls
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --sqlite "INSERT OR IGNORE INTO denylist (package_name, process) VALUES ('com.google.android.gms','com.google.android.gms');"
+sudo waydroid shell -- magisk --sqlite "INSERT OR IGNORE INTO denylist (package_name, process) VALUES ('com.android.vending','com.android.vending');"
+sudo waydroid shell -- magisk --denylist ls
+pirate101@DEBIAN13:~$ sudo grep -i imei /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop
+ro.ril.imei=357499130124581
+ro.ril.imei1=357499130124581
+ro.ril.imei2=357499130124599
+persist.radio.imei=357499130124581
+persist.radio.imei1=357499130124581
+persist.radio.imei2=357499130124599
+ro.ril.imei=357499130124581
+ro.ril.imei1=357499130124581
+ro.ril.imei2=357499130124599
+persist.radio.imei=357499130124581
+persist.radio.imei1=357499130124581
+persist.radio.imei2=357499130124599
+pirate101@DEBIAN13:~$ sudo waydroid shell -- resetprop -n ro.ril.imei 357499130124581
+sudo waydroid shell -- resetprop -n ro.ril.imei1 357499130124581
+sudo waydroid shell -- resetprop -n ro.ril.imei2 357499130124599
+sudo waydroid shell -- resetprop -n persist.radio.imei 357499130124581
+sudo waydroid shell -- getprop ro.ril.imei
+357499130124581
+pirate101@DEBIAN13:~$ sudo tee -a /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop > /dev/null <<'EOF'
+ro.ril.imei=357499130124581
+ro.ril.imei1=357499130124581
+ro.ril.imei2=357499130124599
+persist.radio.imei=357499130124581
+persist.radio.imei1=357499130124581
+persist.radio.imei2=357499130124599
+EOF
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+echo "=== SPOOF ==="
+echo "MODEL:    $(getprop ro.product.model)"
+echo "FINGERPR: $(getprop ro.build.fingerprint)"
+echo "IMEI:     $(getprop ro.ril.imei)"
+echo "IMEI1:    $(getprop ro.ril.imei1)"
+echo ""
+echo "=== HIDING ==="
+echo "Zygisk:   $(magisk --sqlite "SELECT value FROM settings WHERE key=\"zygisk\"")"
+echo "Enforce:  $(magisk --sqlite "SELECT value FROM settings WHERE key=\"denylist\"")"
+echo "DenyList apps:"
+magisk --denylist ls
+echo ""
+echo "=== MODULES ==="
+for m in /data/adb/modules/*/; do
+  n=$(basename "$m")
+  [ -f "$m/disable" ] && echo "  $n [DISABLED]" || echo "  $n [enabled]"
+done
+'
+=== SPOOF ===
+MODEL:    WayDroid x86_64 Device
+FINGERPR: waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/eng.aleast.20260403.132616:userdebug/test-keys
+IMEI:     
+IMEI1:    
+
+=== HIDING ===
+sh: magisk: inaccessible or not found
+Zygisk:   
+sh: magisk: inaccessible or not found
+Enforce:  
+DenyList apps:
+sh: magisk: inaccessible or not found
+
+=== MODULES ===
+  fake_proc [enabled]
+  playintegrityfix [enabled]
+  zygisk_lsposed [DISABLED]
+pirate101@DEBIAN13:~$ 
