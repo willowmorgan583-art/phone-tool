@@ -1,0 +1,184 @@
+pirate101@DEBIAN13:~$ sudo bash << 'FINAL'
+echo "=== [1/6] Verifying HMA installed ==="
+sudo waydroid shell -- pm list packages | grep -iE "hidemyapplist|hma|androidfaker|faker"
+
+echo ""
+echo "=== [2/6] Locking LSPosed disabled state (won't re-enable on boot) ==="
+touch /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed/disable
+sudo waydroid shell -- magisk --sqlite "REPLACE INTO settings (key,value) VALUES('zygisk',0)"
+
+echo ""
+echo "=== [3/6] Cleaning up host download cache ==="
+rm -f /home/pirate101/Downloads/lsposed-zygisk.zip
+rm -f /home/pirate101/Downloads/lsposed-manager.apk
+rm -f /home/pirate101/Downloads/device-faker.apk
+rm -f /home/pirate101/Downloads/hma-manager.apk
+rm -rf /tmp/lsposed-extract
+rm -rf ~/.cache/waydroid-script/downloads/*.partial 2>/dev/null
+ls -lh /home/pirate101/Downloads/ 2>/dev/null
+
+echo ""
+echo "=== [4/6] Cleaning up container temp files ==="
+sudo waydroid shell -- rm -f /data/local/tmp/lsposed.zip
+sudo waydroid shell -- rm -rf /data/local/tmp/*.tmp 2>/dev/null
+sudo waydroid shell -- pm trim-caches 999999999
+
+echo ""
+echo "=== [5/6] Final spoof verification ==="
+sudo waydroid shell -- sh -c '
+echo "MODEL:        $(getprop ro.product.model)"
+echo "BRAND:        $(getprop ro.product.brand)"
+FINAL"    waydroid show-full-ui &"" mask is locked in.""--"lse echo "  $name [ena
+=== [1/6] Verifying HMA installed ===
+package:com.android1500.androidfaker
+
+=== [2/6] Locking LSPosed disabled state (won't re-enable on boot) ===
+lxc-attach: waydroid: ../src/lxc/attach.c: lxc_attach_run_command: 1841 No such file or directory - Failed to exec "magisk"
+
+=== [3/6] Cleaning up host download cache ===
+total 301M
+-rw-rw-r--  1 pirate101 pirate101  57M Apr 20 22:48 '🔥🔥2026🔥ULTIMATE🔥JOSE🔥CHAMELEON🔥🔥EXPLOSION🔥NON-STOP🔥UGANDAN🔥TOP🔥HITS🔥VALU VALU🔥TUBONGE🔥DJ CARTOON🔥🔥🔥 - MC CARTOON (youtube).mp3'
+-rw-rw-r--  1 pirate101 pirate101  35M Apr 24 16:52  AF-v2.0.0-beta-9-5.apk
+drwxrwxr-x 11 pirate101 pirate101 4.0K Apr 20 00:27  Fashion-Forward-UI
+-rw-rw-r--  1 pirate101 pirate101 3.5M Oct 18  2025  hma.apk
+-rw-rw-r--  1 pirate101 pirate101  39M Apr 23 02:12 'MASH UP WEDNESDAYS-world music-DANCEHALL & RAGGA HITS-EP 92[SIAKA SIAKA] [afz7pNU6wGU].mp3'
+-rw-rw-r--  1 pirate101 pirate101  36M Apr 23 11:03 'MUGITHI VIBES BY DJ RANJOZ VOL.2 #trending #salim #johndemathew #josegatutura #mugithi #kikuyu [b6tJwS8yShE].mp3'
+drwxrwxr-x  2 pirate101 pirate101 4.0K Apr 21 04:39  __pycache__
+-rw-rw-r--  1 pirate101 pirate101 130K Apr 21 03:04  task26-recovery.tar.gz
+drwxrwxr-x  2 pirate101 pirate101  68K Apr 23 01:49 'Telegram Desktop'
+-rw-rw-r--  1 pirate101 pirate101  70M Apr 22 03:05 'THE BAG KAMPALA I EDITION 13 I Featuring DJ SPINNY x JOSHUA BARAKA - Black Alpha Productions (youtube).mp3'
+-rw-rw-r--  1 pirate101 pirate101  19K Apr 21 04:39  trendsi_swimwear_shoes_men_extractor.py
+-rw-rw-r--  1 pirate101 pirate101  33K Apr 21 00:36  trendsi_women_catalog_extractor.py
+-rw-rw-r--  1 pirate101 pirate101 348K Apr 23 13:56 'UCU 110 PROJECT GUIDELINES COPY.pdf'
+-rw-rw-r--  1 pirate101 pirate101  62M Apr 20 19:06  v2.zip
+
+=== [4/6] Cleaning up container temp files ===
+
+=== [5/6] Final spoof verification ===
+MODEL:        WayDroid x86_64 Device
+BRAND:        waydroid
+FINGERPRINT:  waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/eng.aleast.20260403.132616:userdebug/test-keys
+BOOTLOADER:   unknown
+VERIFIEDBOOT: 
+FLASH LOCKED: 
+SERIAL:       
+IMEI:         
+CARRIER:       ()
+WIFI MAC:     
+LOCALE:       
+TIMEZONE:     GMT
+EGL:          mesa
+PLATFORM:     waydroid
+ANDROID ID:   e8772170f1054865
+MOCK GPS:     1
+
+--- Active Magisk modules ---
+  fake_proc [DISABLED]
+  playintegrityfix [DISABLED]
+  zygisk_lsposed [DISABLED]
+
+--- Kernel ---
+Linux version 6.12.74+deb13+1-amd64 (debian-kernel@lists.debian.org) (x86_64-linux-gnu-gcc-14 (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 SMP PREEMPT_DYNAMIC Debian 6.12.74-2 (2026-03-08)
+
+--- Lineage/Waydroid leaks (should all be empty) ---
+[ro.build.description]: [lineage_waydroid_x86_64-userdebug 13 TQ3A.230901.001 eng.aleast.20260403.132616 test-keys]
+[ro.build.display.id]: [lineage_waydroid_x86_64-userdebug 13 TQ3A.230901.001 eng.aleast.20260403.132616 test-keys]
+[ro.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/eng.aleast.20260403.132616:userdebug/test-keys]
+[ro.build.flavor]: [lineage_waydroid_x86_64-userdebug]
+[ro.lineage.build.version]: [20.0]
+[ro.lineage.build.version.plat.rev]: [0]
+[ro.lineage.build.version.plat.sdk]: [9]
+[ro.lineage.device]: [waydroid_x86_64]
+[ro.lineage.display.version]: [20-20260403-VANILLA-waydroid_x86_64]
+[ro.lineage.releasetype]: [VANILLA]
+[ro.lineage.version]: [20.0-20260403-VANILLA-waydroid_x86_64]
+[ro.lineagelegal.url]: [https://lineageos.org/legal]
+[ro.odm.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031453:userdebug/test-keys]
+[ro.product.name]: [lineage_waydroid_x86_64]
+[ro.product.odm.name]: [lineage_waydroid_x86_64]
+[ro.product.system.name]: [lineage_waydroid_x86_64]
+[ro.product.system_ext.name]: [lineage_waydroid_x86_64]
+[ro.product.vendor.name]: [lineage_waydroid_x86_64]
+[ro.product.vendor_dlkm.name]: [lineage_waydroid_x86_64]
+[ro.system.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031324:userdebug/test-keys]
+[ro.system_ext.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031324:userdebug/test-keys]
+[ro.vendor.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031453:userdebug/test-keys]
+[ro.vendor_dlkm.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031453:userdebug/test-keys]
+[waydroid.background_start]: [true]
+[waydroid.blacklist_apps]: [com.android.launcher3]
+[waydroid.display_height]: [666]
+[waydroid.display_scale]: [1.000000]
+[waydroid.display_width]: [1366]
+[waydroid.host.gid]: [1001]
+[waydroid.host.uid]: [1000]
+[waydroid.host.user]: [pirate101]
+[waydroid.host_data_path]: [/home/pirate101/.local/share/waydroid/data]
+[waydroid.keyboard_layout]: [english]
+[waydroid.modifiers.20203852.0]: [0]
+[waydroid.modifiers.20203852.1]: [100000000000001]
+[waydroid.modifiers.20203852.2]: [100000000000002]
+[waydroid.modifiers.20363152.0]: [0]
+[waydroid.modifiers.20363152.1]: [100000000000001]
+[waydroid.modifiers.20363152.2]: [100000000000002]
+[waydroid.modifiers.30334241.0]: [0]
+[waydroid.modifiers.30334241.1]: [100000000000001]
+[waydroid.modifiers.30334241.2]: [100000000000002]
+[waydroid.modifiers.30335241.0]: [0]
+[waydroid.modifiers.30335241.1]: [100000000000001]
+[waydroid.modifiers.30335241.2]: [100000000000002]
+[waydroid.modifiers.30335258.0]: [0]
+[waydroid.modifiers.30335258.1]: [100000000000001]
+[waydroid.modifiers.30335258.2]: [100000000000002]
+[waydroid.modifiers.32315241.0]: [0]
+[waydroid.modifiers.32315241.1]: [100000000000001]
+[waydroid.modifiers.32315241.2]: [100000000000002]
+[waydroid.modifiers.3231564e.0]: [0]
+[waydroid.modifiers.3231564e.1]: [100000000000001]
+[waydroid.modifiers.3231564e.2]: [100000000000002]
+[waydroid.modifiers.32335247.0]: [0]
+[waydroid.modifiers.32335247.1]: [100000000000001]
+[waydroid.modifiers.32335247.2]: [100000000000002]
+[waydroid.modifiers.34324241.0]: [0]
+[waydroid.modifiers.34324241.1]: [100000000000001]
+[waydroid.modifiers.34324241.2]: [100000000000002]
+[waydroid.modifiers.34324258.0]: [0]
+[waydroid.modifiers.34324258.1]: [100000000000001]
+[waydroid.modifiers.34324258.2]: [100000000000002]
+[waydroid.modifiers.34325241.0]: [0]
+[waydroid.modifiers.34325241.1]: [100000000000001]
+[waydroid.modifiers.34325241.2]: [100000000000002]
+[waydroid.modifiers.34325258.0]: [0]
+[waydroid.modifiers.34325258.1]: [100000000000001]
+[waydroid.modifiers.34325258.2]: [100000000000002]
+[waydroid.modifiers.35315241.0]: [0]
+[waydroid.modifiers.35315241.1]: [100000000000001]
+[waydroid.modifiers.35315241.2]: [100000000000002]
+[waydroid.modifiers.36314752.0]: [0]
+[waydroid.modifiers.36314752.1]: [100000000000001]
+[waydroid.modifiers.36314752.2]: [100000000000002]
+[waydroid.modifiers.38344241.0]: [0]
+[waydroid.modifiers.38344241.1]: [100000000000001]
+[waydroid.modifiers.38344241.2]: [100000000000002]
+[waydroid.modifiers.38344258.0]: [0]
+[waydroid.modifiers.38344258.1]: [100000000000001]
+[waydroid.modifiers.38344258.2]: [100000000000002]
+[waydroid.modifiers.38385247.0]: [0]
+[waydroid.modifiers.38385247.1]: [100000000000001]
+[waydroid.modifiers.38385247.2]: [100000000000002]
+[waydroid.modifiers.48344241.0]: [0]
+[waydroid.modifiers.48344241.1]: [100000000000001]
+[waydroid.modifiers.48344241.2]: [100000000000002]
+[waydroid.modifiers.48344258.0]: [0]
+[waydroid.modifiers.48344258.1]: [100000000000001]
+[waydroid.modifiers.48344258.2]: [100000000000002]
+[waydroid.open_windows]: [0]
+[waydroid.pulse_runtime_path]: [/run/xdg/pulse]
+[waydroid.stub_sensors_hal]: [1]
+[waydroid.system_ota]: [https://ota.waydro.id/system/lineage/waydroid_x86_64/VANILLA.json]
+[waydroid.tools_version]: [1.6.2]
+[waydroid.vendor_ota]: [https://ota.waydro.id/vendor/waydroid_x86_64/MAINLINE.json]
+[waydroid.wayland_display]: [wayland-0]
+[waydroid.xdg_runtime_dir]: [/run/xdg]
+
+=== [6/6] DONE ===
+Your Samsung Galaxy S24 Ultra mask is locked in.
