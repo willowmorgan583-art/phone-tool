@@ -1,0 +1,32 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- cat /cache/magisk.log | tail -25
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -iE "surfaceflinger|gatekeeper" | tail -10
+sudo waydroid shell -- sh -c 'echo "MODEL: $(getprop ro.product.model) | FP: $(getprop ro.build.fingerprint) | EGL: $(getprop ro.hardware.egl) | HW: $(getprop ro.hardware) | BOARD: $(getprop ro.board.platform) | IMEI: $(getprop ro.ril.imei)"'
+No daemon is currently running!
+04-24 18:12:33.873  1347  1347 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:12:33.873  1347  1347 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:12:33.873  1347  1347 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:12:34.780    72    74 I : ** zygote restarted
+04-24 18:12:38.801  1366  1366 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:12:38.801  1366  1366 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:12:38.801  1366  1366 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:12:39.313    72    74 I : ** zygote restarted
+04-24 18:12:43.835  1385  1385 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:12:43.835  1385  1385 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:12:43.842  1385  1385 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:12:44.571    72    74 I : ** zygote restarted
+04-24 18:12:48.831  1404  1404 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:12:48.831  1404  1404 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:12:48.831  1404  1404 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:12:49.562    72    74 I : ** zygote restarted
+04-24 18:12:53.815  1421  1421 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:12:53.815  1421  1421 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:12:53.815  1421  1421 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:12:54.306    72    74 I : ** zygote restarted
+04-24 18:12:58.887  1440  1440 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:12:58.887  1440  1440 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:12:58.887  1440  1440 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:12:59.754    72    74 I : ** zygote restarted
+MODEL: SM-S928B | FP: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys | EGL: angle | HW: qcom | BOARD: pineapple | IMEI: 357499130124581
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/media/0/Download/service.sh
+pirate101@DEBIAN13:~$ 
