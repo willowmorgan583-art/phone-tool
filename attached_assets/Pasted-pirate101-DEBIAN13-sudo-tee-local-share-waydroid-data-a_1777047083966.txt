@@ -1,0 +1,168 @@
+pirate101@DEBIAN13:~$ sudo tee ~/.local/share/waydroid/data/adb/modules/fake_proc/service.sh << 'EOF'
+#!/system/bin/sh
+
+# Bind-mount kernel spoof
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version
+
+# Hardware spoof
+resetprop ro.hardware.egl angle
+resetprop ro.hardware.gralloc adreno
+resetprop ro.hardware.vulkan adreno
+resetprop ro.hardware.camera samsung_isocell
+resetprop ro.hardware qcom
+resetprop ro.board.platform pineapple
+resetprop gralloc.gbm.device ""
+
+# Build identity
+resetprop ro.product.model SM-S928B
+resetprop ro.product.brand samsung
+resetprop ro.product.manufacturer Samsung
+resetprop ro.product.device e3q
+resetprop ro.product.name e3qxxx
+resetprop ro.build.fingerprint "samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys"
+resetprop ro.build.description "e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys"
+resetprop ro.build.characteristics phone
+resetprop ro.build.tags release-keys
+resetprop ro.build.type user
+resetprop ro.build.user nobody
+resetprop ro.build.host android-build
+resetprop ro.build.display.id "e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys"
+EOFetprop ro.sf.lcd_density 560rueruewaydroid\.' | cut -d'[' -f2 | cut -d']' -f1)
+#!/system/bin/sh
+
+# Bind-mount kernel spoof
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version
+
+# Hardware spoof
+resetprop ro.hardware.egl angle
+resetprop ro.hardware.gralloc adreno
+resetprop ro.hardware.vulkan adreno
+resetprop ro.hardware.camera samsung_isocell
+resetprop ro.hardware qcom
+resetprop ro.board.platform pineapple
+resetprop gralloc.gbm.device ""
+
+# Build identity
+resetprop ro.product.model SM-S928B
+resetprop ro.product.brand samsung
+resetprop ro.product.manufacturer Samsung
+resetprop ro.product.device e3q
+resetprop ro.product.name e3qxxx
+resetprop ro.build.fingerprint "samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys"
+resetprop ro.build.description "e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys"
+resetprop ro.build.characteristics phone
+resetprop ro.build.tags release-keys
+resetprop ro.build.type user
+resetprop ro.build.user nobody
+resetprop ro.build.host android-build
+resetprop ro.build.display.id "e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys"
+resetprop ro.build.flavor "user"
+resetprop ro.build.product "e3q"
+
+# Sub-partition brand/device/model overrides (the ones still leaking)
+for part in system vendor odm product system_ext vendor_dlkm; do
+    resetprop -n ro.product.${part}.brand samsung
+    resetprop -n ro.product.${part}.device e3q
+    resetprop -n ro.product.${part}.manufacturer Samsung
+    resetprop -n ro.product.${part}.model SM-S928B
+    resetprop -n ro.product.${part}.name e3qxxx
+    resetprop -n ro.${part}.build.fingerprint "samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys"
+    resetprop -n ro.${part}.build.tags release-keys
+    resetprop -n ro.${part}.build.type user
+done
+
+# Erase LineageOS-specific props
+resetprop -n ro.lineage.device ""
+resetprop -n ro.lineage.version ""
+resetprop -n ro.lineage.display.version ""
+resetprop -n ro.modversion ""
+resetprop -n ro.lineage.releasetype ""
+resetprop -n ro.lineage.build.version ""
+resetprop -n ro.lineage.build.version.plat.rev ""
+resetprop -n ro.lineage.build.version.plat.sdk ""
+resetprop -n ro.lineagelegal.url ""
+
+# Blank waydroid runtime props
+for prop in $(getprop | grep -iE '^\[waydroid\.' | cut -d'[' -f2 | cut -d']' -f1); do
+    resetprop "$prop" ""
+done
+
+# Display
+wm size 1440x3120 2>/dev/null || true
+wm density 560 2>/dev/null || true
+resetprop ro.sf.lcd_density 560
+pirate101@DEBIAN13:~$ sudo chmod 755 ~/.local/share/waydroid/data/adb/modules/fake_proc/service.sh
+pirate101@DEBIAN13:~$ sudo systemctl restart waydroid-container
+sleep 15
+sudo waydroid shell -- sh -c 'getprop | grep -iE "waydroid|lineage|odm|system\.brand"'
+[19:06:39] WayDroid container is STOPPED
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'getprop | grep -iE "waydroid|lineage|odm|system\.brand"'
+[ro.board.platform]: [waydroid]
+[ro.build.description]: [lineage_waydroid_x86_64-userdebug 13 TQ3A.230901.001 eng.aleast.20260403.132616 test-keys]
+[ro.build.display.id]: [lineage_waydroid_x86_64-userdebug 13 TQ3A.230901.001 eng.aleast.20260403.132616 test-keys]
+[ro.build.flavor]: [lineage_waydroid_x86_64-userdebug]
+[ro.build.product]: [waydroid_x86_64]
+[ro.lineage.build.version]: [20.0]
+[ro.lineage.build.version.plat.rev]: [0]
+[ro.lineage.build.version.plat.sdk]: [9]
+[ro.lineage.device]: [waydroid_x86_64]
+[ro.lineage.display.version]: [20-20260403-VANILLA-waydroid_x86_64]
+[ro.lineage.releasetype]: [VANILLA]
+[ro.lineage.version]: [20.0-20260403-VANILLA-waydroid_x86_64]
+[ro.lineagelegal.url]: [https://lineageos.org/legal]
+[ro.modversion]: [20.0-20260403-VANILLA-waydroid_x86_64]
+[ro.odm.build.date]: [Fri Apr  3 14:53:27 CEST 2026]
+[ro.odm.build.date.utc]: [1775220807]
+[ro.odm.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031453:userdebug/test-keys]
+[ro.odm.build.id]: [TQ3A.230901.001]
+[ro.odm.build.tags]: [test-keys]
+[ro.odm.build.type]: [userdebug]
+[ro.odm.build.version.incremental]: [eng.aleast.20260403.145451]
+[ro.odm.build.version.release]: [13]
+[ro.odm.build.version.release_or_codename]: [13]
+[ro.odm.build.version.sdk]: [33]
+[ro.odm.product.cpu.abilist]: [x86_64,x86]
+[ro.odm.product.cpu.abilist32]: [x86]
+[ro.odm.product.cpu.abilist64]: [x86_64]
+[ro.product.odm.brand]: [waydroid]
+[ro.product.odm.device]: [waydroid_x86_64]
+[ro.product.odm.manufacturer]: [Waydroid]
+[ro.product.odm.model]: [WayDroid x86_64 Device]
+[ro.product.odm.name]: [lineage_waydroid_x86_64]
+[ro.product.system.brand]: [waydroid]
+[ro.product.system.device]: [waydroid_x86_64]
+[ro.product.system.manufacturer]: [Waydroid]
+[ro.product.system.model]: [WayDroid x86_64 Device]
+[ro.product.system.name]: [lineage_waydroid_x86_64]
+[ro.product.system_ext.brand]: [waydroid]
+[ro.product.system_ext.device]: [waydroid_x86_64]
+[ro.product.system_ext.manufacturer]: [Waydroid]
+[ro.product.system_ext.model]: [WayDroid x86_64 Device]
+[ro.product.system_ext.name]: [lineage_waydroid_x86_64]
+[ro.product.vendor.brand]: [waydroid]
+[ro.product.vendor.device]: [waydroid_x86_64]
+[ro.product.vendor.manufacturer]: [Waydroid]
+[ro.product.vendor.model]: [WayDroid x86_64 Device]
+[ro.product.vendor.name]: [lineage_waydroid_x86_64]
+[ro.product.vendor_dlkm.brand]: [waydroid]
+[ro.product.vendor_dlkm.device]: [waydroid_x86_64]
+[ro.product.vendor_dlkm.manufacturer]: [Waydroid]
+[ro.product.vendor_dlkm.model]: [WayDroid x86_64 Device]
+[ro.product.vendor_dlkm.name]: [lineage_waydroid_x86_64]
+[ro.system.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031324:userdebug/test-keys]
+[ro.system_ext.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031324:userdebug/test-keys]
+[ro.vendor.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031453:userdebug/test-keys]
+[ro.vendor_dlkm.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/aleasto04031453:userdebug/test-keys]
+[waydroid.background_start]: [true]
+[waydroid.host.gid]: [1001]
+[waydroid.host.uid]: [1000]
+[waydroid.host.user]: [pirate101]
+[waydroid.host_data_path]: [/home/pirate101/.local/share/waydroid/data]
+[waydroid.pulse_runtime_path]: [/run/xdg/pulse]
+[waydroid.stub_sensors_hal]: [1]
+[waydroid.system_ota]: [https://ota.waydro.id/system/lineage/waydroid_x86_64/VANILLA.json]
+[waydroid.tools_version]: [1.6.2]
+[waydroid.vendor_ota]: [https://ota.waydro.id/vendor/waydroid_x86_64/MAINLINE.json]
+[waydroid.wayland_display]: [wayland-0]
+[waydroid.xdg_runtime_dir]: [/run/xdg]
+pirate101@DEBIAN13:~$ 
