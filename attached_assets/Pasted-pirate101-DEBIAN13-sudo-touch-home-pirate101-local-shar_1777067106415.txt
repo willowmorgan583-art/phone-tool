@@ -1,0 +1,205 @@
+pirate101@DEBIAN13:~$ sudo touch /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable
+sudo touch /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db "UPDATE settings SET value=0 WHERE key='anti_bootloop';"
+pirate101@DEBIAN13:~$ sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- cat /cache/magisk.log | tail -15
+sudo waydroid shell -- logcat -d -b crash 2>&1 | tail -10
+No daemon is currently running!
+04-24 21:42:37.967    76    76 I : post-fs-data.d: exec [fake_proc.sh]
+04-24 21:42:37.978    71    73 I : * Running module post-fs-data scripts
+04-24 21:42:37.978    71    73 I : * Loading modules
+04-24 21:42:40.400    71    73 I : ** late_start service mode running
+04-24 21:42:40.400    71    73 I : * Running service.d scripts
+04-24 21:42:40.401    71    73 I : service.d: exec [start_lsposed.sh]
+04-24 21:42:40.436    71    73 I : service.d: exec [99_zygisk_injector.sh]
+04-24 21:42:40.439    71    73 I : service.d: exec [samsung_mask.sh]
+04-24 21:42:40.474    71    73 I : * Running module service scripts
+04-24 21:42:40.965    98    98 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 21:42:40.965    98    98 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 21:42:40.965    98    98 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 21:42:43.994    71    73 I : hidelist: initializing internal data structures
+04-24 21:43:19.545    71    73 I : ** boot-complete triggered
+04-24 21:43:21.354  4346  4346 E AndroidRuntime:        at dagger.android.AndroidInjection.inject(AndroidInjection.java:10)
+04-24 21:43:21.354  4346  4346 E AndroidRuntime:        at com.google.android.syncadapters.calendar.CalendarSyncAdapterService.onCreate(CalendarSyncAdapterService.java:1)
+04-24 21:43:21.354  4346  4346 E AndroidRuntime:        at android.app.ActivityThread.handleCreateService(ActivityThread.java:4486)
+04-24 21:43:21.354  4346  4346 E AndroidRuntime:        ... 9 more
+04-24 21:43:21.354  4346  4346 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
+04-24 21:43:21.354  4346  4346 E AndroidRuntime:        at com.android.server.content.ContentService.registerContentObserver(ContentService.java:376)
+04-24 21:43:21.354  4346  4346 E AndroidRuntime:        at android.content.IContentService$Stub.onTransact(IContentService.java:486)
+04-24 21:43:21.354  4346  4346 E AndroidRuntime:        at android.os.Binder.execTransactInternal(Binder.java:1280)
+04-24 21:43:21.354  4346  4346 E AndroidRuntime:        at android.os.Binder.execTransact(Binder.java:1244)
+04-24 21:43:21.354  4346  4346 E AndroidRuntime: 
+pirate101@DEBIAN13:~$ sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop
+ro.product.model=SM-S928B
+ro.product.brand=samsung
+ro.product.manufacturer=Samsung
+ro.product.device=e3q
+ro.product.name=e3qxxx
+ro.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.build.description=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+ro.build.display.id=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+ro.build.flavor=user
+ro.build.product=e3q
+ro.build.tags=release-keys
+ro.build.type=user
+ro.build.user=nobody
+ro.build.host=android-build
+ro.build.characteristics=phone
+ro.build.id=UP1A.231005.007
+ro.build.version.release=14
+ro.build.version.release_or_codename=14
+ro.build.version.sdk=34
+ro.build.version.security_patch=2024-02-01
+ro.build.version.incremental=S928BXXU1AXBA
+ro.bootimage.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.hardware=qcom
+ro.hardware.egl=angle
+ro.hardware.gralloc=adreno
+ro.hardware.vulkan=adreno
+ro.hardware.camera=samsung_isocell
+ro.board.platform=pineapple
+ro.boot.hardware=qcom
+ro.boot.hardware.platform=pineapple
+ro.bootloader=S928BXXU1AXBA
+ro.boot.bootloader=S928BXXU1AXBA
+ro.bootmode=unknown
+ro.boot.verifiedbootstate=green
+ro.boot.veritymode=enforcing
+ro.boot.flash.locked=1
+ro.warranty_bit=0
+ro.kernel.qemu=0
+ro.boot.qemu=0
+ro.serialno=R3CW80XXXXX
+ro.boot.serialno=R3CW80XXXXX
+ro.product.system.brand=samsung
+ro.product.system.device=e3q
+ro.product.system.manufacturer=Samsung
+ro.product.system.model=SM-S928B
+ro.product.system.name=e3qxxx
+ro.product.vendor.brand=samsung
+ro.product.vendor.device=e3q
+ro.product.vendor.manufacturer=Samsung
+ro.product.vendor.model=SM-S928B
+ro.product.vendor.name=e3qxxx
+ro.product.odm.brand=samsung
+ro.product.odm.device=e3q
+ro.product.odm.manufacturer=Samsung
+ro.product.odm.model=SM-S928B
+ro.product.odm.name=e3qxxx
+ro.product.product.brand=samsung
+ro.product.product.device=e3q
+ro.product.product.manufacturer=Samsung
+ro.product.product.model=SM-S928B
+ro.product.product.name=e3qxxx
+ro.product.system_ext.brand=samsung
+ro.product.system_ext.device=e3q
+ro.product.system_ext.manufacturer=Samsung
+ro.product.system_ext.model=SM-S928B
+ro.product.system_ext.name=e3qxxx
+ro.product.vendor_dlkm.brand=samsung
+ro.product.vendor_dlkm.device=e3q
+ro.product.vendor_dlkm.manufacturer=Samsung
+ro.product.vendor_dlkm.model=SM-S928B
+ro.product.vendor_dlkm.name=e3qxxx
+ro.system.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.vendor.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.odm.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.product.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.system_ext.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.vendor_dlkm.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.odm.build.tags=release-keys
+ro.system.build.tags=release-keys
+ro.vendor.build.tags=release-keys
+ro.odm.build.type=user
+ro.system.build.type=user
+ro.vendor.build.type=user
+ro.sf.lcd_density=560
+ro.product.locale=en-US
+persist.sys.locale=en-US
+persist.sys.country=US
+persist.sys.timezone=America/New_York
+ro.csc.country_code=USA
+ro.csc.countryiso_code=US
+ro.csc.sales_code=XAA
+gsm.sim.operator.alpha=Verizon
+gsm.sim.operator.numeric=311480
+gsm.sim.operator.iso-country=us
+gsm.operator.alpha=Verizon
+gsm.operator.numeric=311480
+gsm.operator.iso-country=us
+gsm.sim.state=READY
+gsm.network.type=LTE
+gsm.current.phone-type=1
+ro.telephony.default_network=9
+ro.ril.imei=357499130124581
+ro.ril.imei1=357499130124581
+ro.ril.imei2=357499130124599
+persist.radio.imei=357499130124581
+persist.radio.imei1=357499130124581
+persist.radio.imei2=357499130124599
+ro.serialno=R3CW80E4XAB
+ro.boot.serialno=R3CW80E4XAB
+persist.sys.wifi.macaddr=8C:1A:BF:7D:42:91
+persist.sys.bluetooth.btsnoopenable=true
+ro.boot.btmacaddr=8C:1A:BF:7D:42:92
+ro.boot.wifimacaddr=8C:1A:BF:7D:42:91
+ro.product.locale=en-US
+persist.sys.locale=en-US
+persist.sys.country=US
+persist.sys.timezone=America/New_York
+ro.csc.country_code=USA
+ro.csc.countryiso_code=US
+ro.csc.sales_code=XAA
+gsm.sim.operator.alpha=Verizon
+gsm.sim.operator.numeric=311480
+gsm.sim.operator.iso-country=us
+gsm.operator.alpha=Verizon
+gsm.operator.numeric=311480
+gsm.operator.iso-country=us
+gsm.sim.state=READY
+gsm.network.type=LTE
+gsm.current.phone-type=1
+ro.telephony.default_network=9
+ro.ril.imei=357499130124581
+ro.ril.imei1=357499130124581
+ro.ril.imei2=357499130124599
+persist.radio.imei=357499130124581
+persist.radio.imei1=357499130124581
+persist.radio.imei2=357499130124599
+persist.sys.wifi.macaddr=8C:1A:BF:7D:42:91
+ro.boot.btmacaddr=8C:1A:BF:7D:42:92
+ro.boot.wifimacaddr=8C:1A:BF:7D:42:91
+ro.ril.imei=357499130124581
+ro.ril.imei1=357499130124581
+ro.ril.imei2=357499130124599
+persist.radio.imei=357499130124581
+persist.radio.imei1=357499130124581
+persist.radio.imei2=357499130124599
+pirate101@DEBIAN13:~$ sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh
+#!/system/bin/sh
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+resetprop -n ro.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.verifiedbootstate green
+resetprop -n ro.boot.veritymode enforcing
+resetprop -n ro.boot.flash.locked 1
+resetprop -n ro.boot.warranty_bit 0
+resetprop -n ro.warranty_bit 0
+resetprop -n ro.bootmode unknown
+resetprop -n ro.serialno R3CW80XXXXX
+resetprop -n ro.boot.serialno R3CW80XXXXX
+for p in ro.lineage.device ro.lineage.version ro.lineage.display.version ro.modversion ro.lineage.releasetype ro.lineage.build.version ro.lineage.build.version.plat.rev ro.lineage.build.version.plat.sdk ro.lineagelegal.url; do
+    resetprop --delete "$p" 2>/dev/null
+    resetprop -n "$p" "" 2>/dev/null
+done
+for p in $(getprop | grep -iE "^\[waydroid\." | cut -d"[" -f2 | cut -d"]" -f1); do
+    resetprop "$p" ""
+done
+wm size 1440x3120 2>/dev/null
+wm density 560 2>/dev/null
+pirate101@DEBIAN13:~$ sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/post-fs-data.sh
+#!/system/bin/sh
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+resetprop -n ro.kernel.qemu 0
+resetprop -n ro.boot.qemu 0
+pirate101@DEBIAN13:~$ 
