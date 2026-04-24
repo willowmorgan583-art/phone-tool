@@ -1,0 +1,104 @@
+pirate101@DEBIAN13:~$ sudo cat /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/fake_proc.sh
+echo "---SERVICE.SH---"
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh
+echo "---POST-FS-DATA.SH---"
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/post-fs-data.sh
+echo "---ASSETMANAGER ERRORS---"
+sudo waydroid shell -- logcat -d 2>&1 | grep -aE "AssetManager|FATAL|cannot.*resource|cannot.*asset" | tail -15
+#!/system/bin/sh
+# Wait until /proc is fully available
+while [ ! -f /proc/version ]; do
+    sleep 1
+done
+# Bind-mount the fake version over the real one
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version
+---SERVICE.SH---
+#!/system/bin/sh
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+resetprop -n ro.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.verifiedbootstate green
+resetprop -n ro.boot.veritymode enforcing
+resetprop -n ro.boot.flash.locked 1
+resetprop -n ro.boot.warranty_bit 0
+resetprop -n ro.warranty_bit 0
+resetprop -n ro.bootmode unknown
+resetprop -n ro.serialno R3CW80XXXXX
+resetprop -n ro.boot.serialno R3CW80XXXXX
+for p in ro.lineage.device ro.lineage.version ro.lineage.display.version ro.modversion ro.lineage.releasetype ro.lineage.build.version ro.lineage.build.version.plat.rev ro.lineage.build.version.plat.sdk ro.lineagelegal.url; do
+    resetprop --delete "$p" 2>/dev/null
+    resetprop -n "$p" "" 2>/dev/null
+done
+for p in $(getprop | grep -iE "^\[waydroid\." | cut -d"[" -f2 | cut -d"]" -f1); do
+    resetprop "$p" ""
+done
+wm size 1440x3120 2>/dev/null
+wm density 560 2>/dev/null
+---POST-FS-DATA.SH---
+#!/system/bin/sh
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+resetprop -n ro.kernel.qemu 0
+resetprop -n ro.boot.qemu 0
+---ASSETMANAGER ERRORS---
+04-24 23:31:09.395  1492  1492 E Zygote  :      at android.content.res.AssetManager.getSystem(AssetManager.java:278)
+04-24 23:31:09.395  1492  1492 E Zygote  :      at android.content.res.AssetManager.createSystemAssetsInZygoteLocked(AssetManager.java:257)
+04-24 23:31:14.497  1509  1509 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 23:31:14.497  1509  1509 W zygote64:   at void android.content.res.AssetManager.createSystemAssetsInZygoteLocked(boolean, java.lang.String) (AssetManager.java:266)
+04-24 23:31:14.497  1509  1509 W zygote64:   at android.content.res.AssetManager android.content.res.AssetManager.getSystem() (AssetManager.java:278)
+04-24 23:31:14.497  1509  1509 W zygote64:   at void android.content.res.AssetManager.createSystemAssetsInZygoteLocked(boolean, java.lang.String) (AssetManager.java:257)
+04-24 23:31:14.497  1509  1509 W zygote64:   at android.content.res.AssetManager android.content.res.AssetManager.getSystem() (AssetManager.java:278)
+04-24 23:31:14.497  1509  1509 E Zygote  : Caused by: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 23:31:14.497  1509  1509 E Zygote  :      at android.content.res.AssetManager.createSystemAssetsInZygoteLocked(AssetManager.java:266)
+04-24 23:31:14.497  1509  1509 E Zygote  :      at android.content.res.AssetManager.getSystem(AssetManager.java:278)
+04-24 23:31:14.497  1509  1509 E Zygote  :      at android.content.res.AssetManager.createSystemAssetsInZygoteLocked(AssetManager.java:257)
+04-24 23:31:14.497  1509  1509 E Zygote  : Caused by: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 23:31:14.497  1509  1509 E Zygote  :      at android.content.res.AssetManager.createSystemAssetsInZygoteLocked(AssetManager.java:266)
+04-24 23:31:14.497  1509  1509 E Zygote  :      at android.content.res.AssetManager.getSystem(AssetManager.java:278)
+04-24 23:31:14.497  1509  1509 E Zygote  :      at android.content.res.AssetManager.createSystemAssetsInZygoteLocked(AssetManager.java:257)
+pirate101@DEBIAN13:~$ sudo mv /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/fake_proc.sh /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/fake_proc.sh.OFF2
+sudo chmod -x /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/fake_proc.sh.OFF2
+
+sudo mv /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/post-fs-data.sh /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/post-fs-data.sh.OFF
+sudo chmod -x /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/post-fs-data.sh.OFF
+
+sudo mv /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh.OFF
+sudo chmod -x /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh.OFF
+pirate101@DEBIAN13:~$ sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/
+sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/
+total 52
+drwxr-xr-x 6 root      root      4096 Apr 25 02:31 .
+drwxr-xr-x 4 pirate101 pirate101 4096 Apr 25 00:22 ..
+drwxr-xr-x 2 root      root      4096 Apr 24 14:26 empty
+-rw-rw-rw- 1 root      root         0 Apr 24 13:49 empty_init.rc
+-rw-r--r-- 1 root      root         0 Apr 24 13:49 empty_waydroid.prop
+-rw-r--r-- 1 root      root      3157 Apr 24 19:54 fake_cpuinfo
+-rw-r--r-- 1 root      root       298 Apr 24 02:50 .fake_version
+-rw-r--r-- 1 root      root       299 Apr 24 19:54 fake_version
+-rw-r--r-- 1 root      root       173 Apr 24 02:50 module.prop
+drwxr-xr-x 6 root      root      4096 Apr 24 14:18 overlay
+-rw-r--r-- 1 root      root       156 Apr 24 19:57 post-fs-data.sh.OFF
+-rw-r--r-- 1 root      root       963 Apr 24 20:16 service.sh.OFF
+drwxr-xr-x 6 root      root      4096 Apr 24 15:43 system
+-rw-r--r-- 1 root      root      1872 Apr 25 02:24 system.prop
+drwxr-xr-x 4 root      root      4096 Apr 24 15:43 vendor
+total 16
+drwxr-xr-x 2 pirate101 pirate101 4096 Apr 25 02:31 .
+drwx------ 7 root      root      4096 Apr 25 02:25 ..
+-rwxr-xr-x 1 root      root       221 Apr 24 18:09 00_zygisk_enforce.sh
+-rw-r--r-- 1 root      root       222 Apr 23 14:58 fake_proc.sh.OFF2
+pirate101@DEBIAN13:~$ waydroid session stop 2>&1
+sudo systemctl stop waydroid-container
+sleep 5
+sudo systemctl start waydroid-container
+sleep 30
+waydroid session start &
+sleep 90
+[1]+  Done                    waydroid session start
+[1] 2490001
+[02:33:13] Skipping notification manager service because we could not connect to the notifications server: org.freedesktop.systemd1.UnitMasked: Unit swaync.service is masked.
+[gbinder] Service manager /dev/anbox-binder has appeared
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "boot_completed: $(getprop sys.boot_completed) | system_server: $(getprop init.svc.system_server) | model: $(getprop ro.product.model) | fp: $(getprop ro.build.fingerprint) | imei: $(getprop ro.ril.imei)"'
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+boot_completed:  | system_server:  | model: SM-S928B | fp: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys | imei: 357499130124581
+No daemon is currently running!
+pirate101@DEBIAN13:~$ 
