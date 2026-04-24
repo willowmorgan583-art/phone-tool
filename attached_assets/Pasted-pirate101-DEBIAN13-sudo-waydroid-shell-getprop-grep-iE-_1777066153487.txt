@@ -1,0 +1,146 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- getprop | grep -iE "safe|persist.sys"
+[persist.sys.boot.reason]: []
+[persist.sys.boot.reason.history]: [reboot,1777064055
+[persist.sys.dalvik.vm.lib.2]: [libart.so]
+[persist.sys.device_provisioned]: [1]
+[persist.sys.disable_rescue]: [true]
+[persist.sys.displayinset.top]: [0]
+[persist.sys.dns1]: [1.1.1.1]
+[persist.sys.dns2]: [8.8.8.8]
+[persist.sys.fuse]: [true]
+[persist.sys.lmk.reportkills]: [true]
+[persist.sys.location.providers]: [gps,network]
+[persist.sys.strictmode.disable]: [true]
+[persist.sys.theme]: [2]
+[persist.sys.timezone]: [GMT]
+[persist.sys.usb.config]: [adb]
+[persist.sys.zygisk.enable]: [true]
+pirate101@DEBIAN13:~$ sudo waydroid shell -- ls -la /data/property/ 2>&1 | grep -iE "safe"
+pirate101@DEBIAN13:~$ sudo ls -la /home/pirate101/.local/share/waydroid/data/property/ 2>&1 | grep -iE "safe"
+pirate101@DEBIAN13:~$ sudo ls -la /home/pirate101/.local/share/waydroid/data/property/ 2>&1 | grep -iE "safe"
+pirate101@DEBIAN13:~$ sudo waydroid shell -- cat /data/property/persist.sys.safemode 2>&1
+cat: /data/property/persist.sys.safemode: No such file or directory
+pirate101@DEBIAN13:~$ sudo waydroid shell -- resetprop --delete persist.sys.safemode 2>&1
+pirate101@DEBIAN13:~$ sudo apt install -y sqlite3 2>/dev/null
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db "SELECT * FROM settings;" 2>&1
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db "SELECT * FROM strings;" 2>&1
+sqlite3 is already the newest version (3.46.1-7+deb13u1).
+Summary:
+  Upgrading: 0, Installing: 0, Removing: 0, Not Upgrading: 0
+anti_bootloop|1
+zygisk|1
+denylist|0
+hide|0
+keystore|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
+requester|jey.wzcnmuf
+pirate101@DEBIAN13:~$ sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db "UPDATE settings SET value=0 WHERE key='safe_mode';"
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db "DELETE FROM settings WHERE key LIKE '%boot%';"
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db "UPDATE settings SET value=1 WHERE key='zygisk';"
+pirate101@DEBIAN13:~$ sudo rm -rf /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed
+sudo rm -rf /home/pirate101/.local/share/waydroid/data/adb/modules_update/zygisk_lsposed
+sudo rm -rf /home/pirate101/.local/share/waydroid/data/adb/lsposed
+sudo ls /home/pirate101/.local/share/waydroid/data/adb/modules/
+fake_proc  playintegrityfix
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/remove 
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/remove
+pirate101@DEBIAN13:~$ sudo waydroid shell -- cat /cache/magisk.log | tail -40
+04-24 17:25:15.990   887   887 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:15.990   887   887 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:16.889    71    73 I : ** zygote restarted
+04-24 17:25:20.886   927   927 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:25:20.886   927   927 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:20.886   927   927 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:21.822    71    73 I : ** zygote restarted
+04-24 17:25:26.038   965   965 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:25:26.038   965   965 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:26.042   965   965 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:27.074    71    73 I : ** zygote restarted
+04-24 17:25:30.983  1003  1003 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:25:30.983  1003  1003 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:30.983  1003  1003 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:31.823    71    73 I : ** zygote restarted
+04-24 17:25:35.950  1037  1037 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:25:35.950  1037  1037 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:35.950  1037  1037 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:36.793    71    73 I : ** zygote restarted
+04-24 17:25:40.841  1071  1071 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:25:40.841  1071  1071 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:40.841  1071  1071 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:41.679    71    73 I : ** zygote restarted
+04-24 17:25:46.045  1105  1105 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:25:46.046  1105  1105 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:46.046  1105  1105 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:46.977    71    73 I : ** zygote restarted
+04-24 17:25:50.888  1139  1139 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:25:50.888  1139  1139 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:50.888  1139  1139 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:51.577    71    73 I : ** zygote restarted
+04-24 17:25:55.961  1173  1173 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:25:55.961  1173  1173 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:25:55.961  1173  1173 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:25:56.867    71    73 I : ** zygote restarted
+04-24 17:26:00.920  1207  1207 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:26:00.921  1207  1207 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:26:00.921  1207  1207 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:26:01.649    71    73 I : ** zygote restarted
+pirate101@DEBIAN13:~$ sudo waydroid shell -- find /data /system /vendor -name "*safe*" 2>/dev/null
+sudo waydroid shell -- getprop ro.boot.flash.locked
+sudo waydroid shell -- getprop ro.build.type
+/data/misc/profiles/ref/com.android.safetycenter.resources
+/data/misc/profiles/ref/com.google.android.safetycore
+/data/misc/profiles/cur/0/com.android.safetycenter.resources
+/data/misc/profiles/cur/0/com.google.android.safetycore
+/data/data/com.android.chrome/app_chrome/SafetyTips/3091/safety_tips.pb
+/data/data/com.google.android.gms/files/phenotype/shared/com.google.android.gms.personalsafety.pb
+/data/data/com.google.android.gms/files/phenotype/shared/com.google.android.gms.security.safebrowsing#com.google.android.gms.pb
+/data/data/com.google.android.gms/files/personalsafety
+/data/data/com.google.android.gms/files/safeboot_restarts
+/data/data/com.google.android.gms/shared_prefs/com.google.android.gms.safetynet.xml
+/data/data/com.android.safetycenter.resources
+/data/data/com.google.android.safetycore
+/data/icons/com.google.android.safetycore.png
+/data/app/~~j14vAeOMPNMJ59e9MPrETA==/com.google.android.safetycore-oFI8upKX2nMa_B1Kc7dFXQ==
+/data/user/0/com.android.chrome/app_chrome/SafetyTips/3091/safety_tips.pb
+/data/user/0/com.google.android.gms/files/phenotype/shared/com.google.android.gms.personalsafety.pb
+/data/user/0/com.google.android.gms/files/phenotype/shared/com.google.android.gms.security.safebrowsing#com.google.android.gms.pb
+/data/user/0/com.google.android.gms/files/personalsafety
+/data/user/0/com.google.android.gms/files/safeboot_restarts
+/data/user/0/com.google.android.gms/shared_prefs/com.google.android.gms.safetynet.xml
+/data/user/0/com.android.safetycenter.resources
+/data/user/0/com.google.android.safetycore
+/data/user_de/0/com.google.android.gms/files/safeboot_restarts
+/data/user_de/0/com.android.safetycenter.resources
+/data/user_de/0/com.google.android.safetycore
+/system/lib/arm/android.hidl.safe_union@1.0.so
+/system/lib/android.hidl.safe_union@1.0.so
+/system/apex/com.android.media.swcodec/lib64/android.hidl.safe_union@1.0.so
+/system/apex/com.android.vndk.current/lib/android.hidl.safe_union@1.0.so
+/system/apex/com.android.vndk.current/lib64/android.hidl.safe_union@1.0.so
+/system/apex/com.android.btservices/lib64/android.hidl.safe_union@1.0.so
+/system/lib64/arm64/android.hidl.safe_union@1.0.so
+/system/lib64/android.hidl.safe_union@1.0.so
+1
+user
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+echo "MODEL: $(getprop ro.product.model)"
+echo "FINGERPRINT: $(getprop ro.build.fingerprint)"
+echo "IMEI: $(getprop ro.ril.imei)"
+echo "Daemon: $(/data/adb/magisk/magisk -v 2>&1)"
+echo ""
+echo "Modules:"
+for m in /data/adb/modules/*/; do
+  n=$(basename "$m")
+  [ -f "$m/disable" ] && echo "  $n [DISABLED]" || echo "  $n [enabled]"
+done
+'
+MODEL: SM-S928B
+FINGERPRINT: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+IMEI: 357499130124581
+Daemon: No daemon is currently running!
+
+Modules:
+  fake_proc [enabled]
+  playintegrityfix [enabled]
+pirate101@DEBIAN13:~$ 
