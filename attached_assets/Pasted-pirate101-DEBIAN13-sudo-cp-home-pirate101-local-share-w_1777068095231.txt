@@ -1,0 +1,53 @@
+pirate101@DEBIAN13:~$ sudo cp /home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh /home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh.bak
+pirate101@DEBIAN13:~$ sudo sed -i '/^resetprop ro\.hardware/d; /^resetprop ro\.board\.platform/d; /^resetprop gralloc\.gbm/d' /home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh
+pirate101@DEBIAN13:~$ sudo sed -i '/^ro\.board\.platform=/d' /home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh
+pirate101@DEBIAN13:~$ sudo grep -E "ro\.hardware|ro\.board\.platform|gralloc\.gbm" /home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/00_zygisk_lsposed.sh
+sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/
+sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/service.d/
+total 16
+drwxr-xr-x 2 pirate101 pirate101 4096 Apr 25 00:58 .
+drwx------ 7 root      root      4096 Apr 25 00:52 ..
+-rwxr-xr-x 1 root      root       221 Apr 24 18:09 00_zygisk_enforce.sh
+-rwxr-xr-x 1 root      root       222 Apr 23 14:58 fake_proc.sh
+total 16
+drwxr-xr-x 2 pirate101 pirate101 4096 Apr 25 00:57 .
+drwx------ 7 root      root      4096 Apr 25 00:52 ..
+-rwxr-xr-x 1 root      root      3267 Apr 25 00:57 samsung_mask.sh
+-rwxr-xr-x 1 root      root      3542 Apr 25 00:57 samsung_mask.sh.bak
+pirate101@DEBIAN13:~$ sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db "UPDATE settings SET value=0 WHERE key='anti_bootloop';"
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db "SELECT * FROM settings;"
+zygisk|1
+hide|0
+denylist|0
+pirate101@DEBIAN13:~$ sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- cat /cache/magisk.log | tail -25
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -iE "surfaceflinger|gatekeeper" | tail -5
+sudo waydroid shell -- sh -c 'echo "MODEL: $(getprop ro.product.model) | FP: $(getprop ro.build.fingerprint) | EGL: $(getprop ro.hardware.egl) | HW: $(getprop ro.hardware) | BOARD: $(getprop ro.board.platform) | IMEI: $(getprop ro.ril.imei)"'
+No daemon is currently running!
+04-24 18:00:44.891    72    74 I : ** zygote restarted
+04-24 18:00:49.152  1421  1421 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:00:49.152  1421  1421 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:00:49.152  1421  1421 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:00:49.741    72    74 I : ** zygote restarted
+04-24 18:00:54.127  1438  1438 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:00:54.128  1438  1438 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:00:54.128  1438  1438 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:00:54.783    72    74 I : ** zygote restarted
+04-24 18:00:59.104  1457  1457 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:00:59.104  1457  1457 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:00:59.104  1457  1457 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:00:59.637    72    74 I : ** zygote restarted
+04-24 18:01:04.201  1476  1476 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:01:04.201  1476  1476 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:01:04.201  1476  1476 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:01:05.143    72    74 I : ** zygote restarted
+04-24 18:01:09.112  1495  1495 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:01:09.112  1495  1495 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:01:09.112  1495  1495 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:01:09.626    72    74 I : ** zygote restarted
+04-24 18:01:14.290  1514  1514 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:01:14.290  1514  1514 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:01:14.290  1514  1514 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+MODEL: SM-S928B | FP: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys | EGL: angle | HW: qcom | BOARD: pineapple | IMEI: 357499130124581
+pirate101@DEBIAN13:~$ 
