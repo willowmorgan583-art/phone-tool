@@ -1,0 +1,100 @@
+
+pirate101@DEBIAN13:~/Downloads$ sudo waydroid shell -- sh -c '
+echo "=== LSPosed module enabled? ==="
+ls /data/adb/modules/zygisk_lsposed/disable 2>/dev/null && echo "DISABLED!" || echo "enabled"
+echo "=== Zygisk enabled in Magisk? ==="
+magisk --sqlite "SELECT * FROM settings WHERE key=\"zygisk\""
+echo "=== Daemon processes ==="
+ps -A | grep -iE "lspd|zygisk"
+echo "=== LSPosed version on disk ==="
+cat /data/adb/modules/zygisk_lsposed/module.prop | grep version
+echo "=== Current loaded manager package ==="
+pm list packages | grep -iE "lsposed|lspd"
+'
+=== LSPosed module enabled? ===
+/data/adb/modules/zygisk_lsposed/disable
+DISABLED!
+=== Zygisk enabled in Magisk? ===
+key=zygisk|value=1
+=== Daemon processes ===
+=== LSPosed version on disk ===
+version=v1.9.2 (7024)
+versionCode=7024
+=== Current loaded manager package ===
+cmd: Can't find service: package
+grep: (standard input): Invalid argument
+pirate101@DEBIAN13:~/Downloads$ cd ..
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed/disable
+sudo waydroid shell -- rm -f /data/adb/modules/zygisk_lsposed/disable
+sudo waydroid shell -- magisk --sqlite "REPLACE INTO settings (key,value) VALUES('zygisk',1)"
+sudo systemctl restart waydroid-container
+sleep 25
+waydroid session start &
+sleep 60
+[1] 1815117
+[gbinder] Service manager /dev/anbox-binder has appeared
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+echo "=== LSPosed module enabled? ==="
+ls /data/adb/modules/zygisk_lsposed/disable 2>/dev/null && echo "DISABLED!" || echo "enabled"
+echo "=== Zygisk enabled in Magisk? ==="
+magisk --sqlite "SELECT * FROM settings WHERE key=\"zygisk\""
+echo "=== Daemon processes ==="
+ps -A | grep -iE "lspd|zygisk"
+echo "=== LSPosed version on disk ==="
+cat /data/adb/modules/zygisk_lsposed/module.prop | grep version
+echo "=== Current loaded manager package ==="
+pm list packages | grep -iE "lsposed|lspd"
+'
+=== LSPosed module enabled? ===
+enabled
+=== Zygisk enabled in Magisk? ===
+key=zygisk|value=1
+=== Daemon processes ===
+root              96       1 12951020 130652 futex_wait_queue   0 S lspd
+root             989       1 10862260  3288 do_sys_poll         0 S zygiskd64
+=== LSPosed version on disk ===
+version=v1.9.2 (7024)
+versionCode=7024
+=== Current loaded manager package ===
+cmd: Can't find service: package
+grep: (standard input): Invalid argument
+pirate101@DEBIAN13:~$ cd ~/Downloads
+HMA_URL=$(curl -s https://api.github.com/repos/Dr-TSNG/Hide-My-Applist/releases/latest | grep browser_download_url | grep -i "\.apk" | head -1 | cut -d'"' -f4)
+echo "Found HMA URL: $HMA_URL"
+wget -O hma.apk "$HMA_URL"
+file hma.apk
+ls -lh hma.apk
+Found HMA URL: https://github.com/Dr-TSNG/Hide-My-Applist/releases/download/V3.6.1/HMA-V3.6.1.r462.4524dde-release.apk
+--2026-04-24 23:08:43--  https://github.com/Dr-TSNG/Hide-My-Applist/releases/download/V3.6.1/HMA-V3.6.1.r462.4524dde-release.apk
+Resolving github.com (github.com)... 20.87.245.0
+Connecting to github.com (github.com)|20.87.245.0|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/349446219/ab656f6e-9cb5-4237-a4df-3d342daa735e?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-24T21%3A03%3A57Z&rscd=attachment%3B+filename%3DHMA-V3.6.1.r462.4524dde-release.apk&rsct=application%2Fvnd.android.package-archive&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-24T20%3A03%3A10Z&ske=2026-04-24T21%3A03%3A57Z&sks=b&skv=2018-11-09&sig=PFA48bNuxptdpzY7gVm3rcuTHynEGhKaWLuXZWNJnWo%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NzA2MTYyNSwibmJmIjoxNzc3MDYxMzI1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.UFTb6KHq77dPn3YiFKxk1mArxG-FlFtyjoeIb_APTp0&response-content-disposition=attachment%3B%20filename%3DHMA-V3.6.1.r462.4524dde-release.apk&response-content-type=application%2Fvnd.android.package-archive [following]
+--2026-04-24 23:08:44--  https://release-assets.githubusercontent.com/github-production-release-asset/349446219/ab656f6e-9cb5-4237-a4df-3d342daa735e?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-24T21%3A03%3A57Z&rscd=attachment%3B+filename%3DHMA-V3.6.1.r462.4524dde-release.apk&rsct=application%2Fvnd.android.package-archive&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-24T20%3A03%3A10Z&ske=2026-04-24T21%3A03%3A57Z&sks=b&skv=2018-11-09&sig=PFA48bNuxptdpzY7gVm3rcuTHynEGhKaWLuXZWNJnWo%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NzA2MTYyNSwibmJmIjoxNzc3MDYxMzI1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.UFTb6KHq77dPn3YiFKxk1mArxG-FlFtyjoeIb_APTp0&response-content-disposition=attachment%3B%20filename%3DHMA-V3.6.1.r462.4524dde-release.apk&response-content-type=application%2Fvnd.android.package-archive
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.109.133, 185.199.110.133, 185.199.111.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.109.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 3626015 (3.5M) [application/vnd.android.package-archive]
+Saving to: ‘hma.apk’
+
+hma.apk              100%[===================>]   3.46M  2.40MB/s    in 1.4s    
+
+2026-04-24 23:08:46 (2.40 MB/s) - ‘hma.apk’ saved [3626015/3626015]
+
+hma.apk: Android package (APK), with gradle app-metadata.properties, with APK Signing Block
+-rw-rw-r-- 1 pirate101 pirate101 3.5M Oct 18  2025 hma.apk
+pirate101@DEBIAN13:~/Downloads$ waydroid app install ~/Downloads/hma.apk
+[23:09:09] Failed to get service waydroidplatform, trying again...
+[23:09:10] Failed to get service waydroidplatform, trying again...
+[23:09:11] Failed to get service waydroidplatform, trying again...
+[23:09:12] Failed to get service waydroidplatform, trying again...
+[23:09:13] Failed to get service waydroidplatform, trying again...
+[23:09:14] Failed to get service waydroidplatform, trying again...
+[23:09:15] Failed to get service waydroidplatform, trying again...
+[23:09:16] Failed to get service waydroidplatform, trying again...
+[23:09:17] Failed to get service waydroidplatform, trying again...
+[23:09:18] Failed to get service waydroidplatform, trying again...
+[23:09:19] Failed to get service waydroidplatform, trying again...
+[23:09:20] Failed to get service waydroidplatform, trying again...
+[23:09:21] Failed to get service waydroidplatform, trying again...
+[23:09:22] Failed to get service waydroidplatform, trying again..
