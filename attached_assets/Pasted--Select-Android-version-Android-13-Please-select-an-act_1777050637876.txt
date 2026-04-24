@@ -1,0 +1,49 @@
+? Select Android version Android 13
+? Please select an action Install
+? Select apps ['gapps', 'microg', 'libndk', 'libhoudini', 'magisk', 'smartdock', 
+'fdroidpriv', 'widevine']
+? Select MicroG variant Standard
+INFO: Downloading gapps.zip now to /home/pirate101/.cache/waydroid-script/downloads/gapps.zip .....
+INFO: Extracting /home/pirate101/.cache/waydroid-script/downloads/gapps.zip to /tmp/gapps/extract
+INFO: MindTheGapps installation finished
+INFO: Downloading libndktranslation.zip now to /home/pirate101/.cache/waydroid-script/downloads/libndktranslation.zip .....
+17.8MiB [00:25, 706kiB/s] 
+INFO: Extracting /home/pirate101/.cache/waydroid-script/downloads/libndktranslation.zip to /tmp/libndkunpack
+INFO: Copying libndk library files ...
+INFO: libndk installation finished
+INFO: Downloading libhoudini.zip now to /home/pirate101/.cache/waydroid-script/downloads/libhoudini.zip .....
+INFO: Extracting /home/pirate101/.cache/waydroid-script/downloads/libhoudini.zip to /tmp/houdiniunpack
+INFO: Copying libhoudini library files ...
+INFO: libhoudini installation finished
+INFO: Downloading latest Magisk-Delta to /home/pirate101/.cache/waydroid-script/downloads/magisk.apk now ...
+100%|███████████████████████████████████████| 12.7M/12.7M [00:29<00:00, 424kiB/s]
+INFO: Extracting /home/pirate101/.cache/waydroid-script/downloads/magisk.apk to /tmp/magisk_unpack
+INFO: Copying magisk libs now ...
+INFO: Additional setup
+INFO: magisk delta installation finished
+INFO: Downloading widevine.zip now to /home/pirate101/.cache/waydroid-script/downloads/widevine.zip .....
+1.55MiB [00:01, 903kiB/s] 
+INFO: Extracting /home/pirate101/.cache/waydroid-script/downloads/widevine.zip to /tmp/widevineunpack
+INFO: Copying widevine library files ...
+INFO: widevine installation finished
+INFO: Downloading smartdock.apk now to /home/pirate101/.cache/waydroid-script/downloads/smartdock.apk .....
+100%|███████████████████████████████████████| 5.35M/5.35M [00:08<00:00, 629kiB/s]
+INFO: smartdock installation finished
+INFO: Downloading MinMicroG-Standard.zip now to /home/pirate101/.cache/waydroid-script/downloads/MinMicroG-Standard.zip .....
+100%|███████████████████████████████████████| 80.8M/80.8M [01:48<00:00, 748kiB/s]
+INFO: Extracting /home/pirate101/.cache/waydroid-script/downloads/MinMicroG-Standard.zip to /tmp/microg/extract
+INFO: Copying libs and apks...
+INFO: MicroG-Standard installation finished
+INFO: Downloading org.fdroid.fdroid.privileged.ota_2130.zip now to /home/pirate101/.cache/waydroid-script/downloads/org.fdroid.fdroid.privileged.ota_2130.zip .....
+100%|██████████████████████████████████████| 5.75M/5.75M [00:05<00:00, 1.07MiB/s]
+INFO: Extracting /home/pirate101/.cache/waydroid-script/downloads/org.fdroid.fdroid.privileged.ota_2130.zip to /tmp/fdroid_ota_2130
+INFO: fdroid priv installation finished
+pirate101@DEBIAN13:~/waydroid_script$ sudo waydroid shell getprop ro.build.fingerprint
+sudo waydroid shell getprop ro.bootloader
+sudo waydroid shell getprop ro.boot.verifiedbootstate
+sudo waydroid shell cat /proc/version
+samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+unknown
+
+Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678 (build@android-build) (Android (10552028, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362), LLD 17.0.2) #1 SMP PREEMPT Thu Feb 29 20:45:01 UTC 2024
+pirate101@DEBIAN13:~/waydroid_script$ 
