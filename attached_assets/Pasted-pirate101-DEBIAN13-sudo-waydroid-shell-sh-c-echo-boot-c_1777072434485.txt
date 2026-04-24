@@ -1,0 +1,28 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "boot_completed: $(getprop sys.boot_completed) | system_server: $(getprop init.svc.system_server) | model: $(getprop ro.product.model)"'
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+boot_completed: 1 | system_server:  | model: WayDroid x86_64 Device
+No daemon is currently running!
+pirate101@DEBIAN13:~$ sudo rm /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable
+sudo mv /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/fake_proc.sh.OFF /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/fake_proc.sh
+sudo chmod +x /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/fake_proc.sh
+pirate101@DEBIAN13:~$ sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/service.d/
+total 12
+drwxr-xr-x 2 pirate101 pirate101 4096 Apr 25 02:01 .
+drwx------ 7 root      root      4096 Apr 25 02:03 ..
+-rw-r--r-- 1 root      root      3267 Apr 25 00:57 samsung_mask.sh.OFF
+pirate101@DEBIAN13:~$ waydroid session stop 2>&1
+sudo systemctl stop waydroid-container
+sleep 5
+sudo systemctl start waydroid-container
+sleep 30
+waydroid session start &
+sleep 90
+[1]+  Done                    waydroid session start
+[1] 2443819
+[02:09:19] Skipping notification manager service because we could not connect to the notifications server: org.freedesktop.systemd1.UnitMasked: Unit swaync.service is masked.
+[gbinder] Service manager /dev/anbox-binder has appeared
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "boot_completed: $(getprop sys.boot_completed) | model: $(getprop ro.product.model) | brand: $(getprop ro.product.brand) | fp: $(getprop ro.build.fingerprint) | imei: $(getprop ro.ril.imei) | egl: $(getprop ro.hardware.egl) | board: $(getprop ro.board.platform)"'
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+boot_completed:  | model: SM-S928B | brand: samsung | fp: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys | imei: 357499130124581 | egl: mesa | board: waydroid
+No daemon is currently running!
+pirate101@DEBIAN13:~$ 
