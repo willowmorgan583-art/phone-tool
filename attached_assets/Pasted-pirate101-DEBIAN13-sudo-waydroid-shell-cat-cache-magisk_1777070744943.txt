@@ -1,0 +1,69 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- cat /cache/magisk.log 2>&1 | strings | tail -50
+04-24 18:33:03.796  2831  2831 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:03.796  2831  2831 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:04.677    72    74 I : ** zygote restarted
+04-24 18:33:08.681  2858  2858 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:08.681  2858  2858 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:08.681  2858  2858 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:09.249    72    74 I : ** zygote restarted
+04-24 18:33:13.730  2885  2885 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:13.730  2885  2885 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:13.730  2885  2885 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:14.526    72    74 I : ** zygote restarted
+04-24 18:33:18.641  2912  2912 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:18.641  2912  2912 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:18.641  2912  2912 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:19.355    72    74 I : ** zygote restarted
+04-24 18:33:23.697  2939  2939 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:23.697  2939  2939 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:23.697  2939  2939 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:24.460    72    74 I : ** zygote restarted
+04-24 18:33:28.713  2966  2966 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:28.713  2966  2966 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:28.713  2966  2966 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:29.651    72    74 I : ** zygote restarted
+04-24 18:33:33.775  2993  2993 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:33.776  2993  2993 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:33.776  2993  2993 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:34.316    72    74 I : ** zygote restarted
+04-24 18:33:38.737  3018  3018 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:38.737  3018  3018 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:38.737  3018  3018 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:39.567    72    74 I : ** zygote restarted
+04-24 18:33:43.750  3045  3045 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:43.751  3045  3045 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:43.751  3045  3045 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:44.484    72    74 I : ** zygote restarted
+04-24 18:33:48.628  3072  3072 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:48.628  3072  3072 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:48.628  3072  3072 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:49.352    72    74 I : ** zygote restarted
+04-24 18:33:53.641  3099  3099 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:53.641  3099  3099 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:53.641  3099  3099 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:54.189    72    74 I : ** zygote restarted
+04-24 18:33:58.719  3126  3126 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:33:58.720  3126  3126 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:33:58.721  3126  3126 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 18:33:59.631    72    74 I : ** zygote restarted
+04-24 18:34:03.692  3153  3153 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 18:34:03.692  3153  3153 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 18:34:03.693  3153  3153 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+pirate101@DEBIAN13:~$ sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aE "Cmdline|Abort message|signal" | tail -30
+04-24 18:26:53.801   151   229 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.graphics.composer@2.1-service --desktop_file_hint=Waydroid.desktop
+04-24 18:26:53.801   151   229 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 18:26:53.801   151   229 F DEBUG   : Abort message: 'Binder threadpool cannot be shrunk after starting'
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "boot_completed: $(getprop sys.boot_completed) | dev_boot: $(getprop dev.bootcomplete) | zygote: $(getprop init.svc.zygote) | zygote64: $(getprop init.svc.zygote_secondary) | system_server: $(getprop init.svc.system_server)"'
+boot_completed:  | dev_boot:  | zygote: restarting | zygote64: running | system_server: 
+pirate101@DEBIAN13:~$ sudo waydroid shell -- ps -A | grep -iE "magiskd|zygote|system_server"
+root              72       1 10942104  5764 do_sys_poll         0 S magiskd
+root             148       1 1578276  96184 do_sys_poll         0 S zygote
+pirate101@DEBIAN13:~$ sudo waydroid shell -- /data/adb/magisk/magiskd --daemon &
+sleep 5
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+[2] 2365922
+lxc-attach: waydroid: ../src/lxc/attach.c: lxc_attach_run_command: 1841 No such file or directory - Failed to exec "/data/adb/magisk/magiskd"
+[2]+  Done                    sudo waydroid shell -- /data/adb/magisk/magiskd --daemon
+No daemon is currently running!
+pirate101@DEBIAN13:~$ sudo touch /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+pirate101@DEBIAN13:~$
