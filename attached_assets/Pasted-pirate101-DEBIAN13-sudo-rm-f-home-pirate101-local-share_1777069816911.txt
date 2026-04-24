@@ -1,0 +1,46 @@
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/service.d/samsung_mask.sh.bak
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak
+pirate101@DEBIAN13:~$ sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/service.d/
+sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/post-fs-data.d/
+sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/ | grep -E "prop|sh"
+total 12
+drwxr-xr-x 2 pirate101 pirate101 4096 Apr 25 01:24 .
+drwx------ 7 root      root      4096 Apr 25 01:18 ..
+-rwxr-xr-x 1 root      root      3267 Apr 25 00:57 samsung_mask.sh
+total 16
+drwxr-xr-x 2 pirate101 pirate101 4096 Apr 25 00:58 .
+drwx------ 7 root      root      4096 Apr 25 01:18 ..
+-rwxr-xr-x 1 root      root       221 Apr 24 18:09 00_zygisk_enforce.sh
+-rwxr-xr-x 1 root      root       222 Apr 23 14:58 fake_proc.sh
+-rw-r--r-- 1 root      root         0 Apr 24 13:49 empty_waydroid.prop
+-rw-r--r-- 1 root      root       173 Apr 24 02:50 module.prop
+-rwxr-xr-x 1 root      root       156 Apr 24 19:57 post-fs-data.sh
+-rwxr-xr-x 1 root      root       963 Apr 24 20:16 service.sh
+-rw-r--r-- 1 root      root      4744 Apr 25 00:50 system.prop
+pirate101@DEBIAN13:~$ waydroid session stop 2>&1
+sudo systemctl stop waydroid-container
+sleep 5
+ps aux | grep -iE "waydroid|lxc-start" | grep -v grep
+[1]+  Done                    waydroid session start
+pirate101@DEBIAN13:~$ sudo systemctl start waydroid-container
+sleep 30
+waydroid session start &
+sleep 60
+[1] 2341963
+[01:26:50] Skipping notification manager service because we could not connect to the notifications server: org.freedesktop.systemd1.UnitMasked: Unit swaync.service is masked.
+[gbinder] Service manager /dev/anbox-binder has appeared
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "EGL: $(getprop ro.hardware.egl) | HW: $(getprop ro.hardware) | BOARD: $(getprop ro.board.platform) | MODEL: $(getprop ro.product.model) | IMEI: $(getprop ro.ril.imei) | FP: $(getprop ro.build.fingerprint)"'
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- cat /cache/magisk.log 2>&1 | strings | grep -aE "service.d:|post-fs-data.d:|boot-complete|Safe mode" | tail -20
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aiE "surfaceflinger|gatekeeper" | tail -5
+EGL: mesa | HW: unknown | BOARD: waydroid | MODEL: SM-S928B | IMEI: 357499130124581 | FP: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+No daemon is currently running!
+04-24 22:26:52.007    77    77 I : post-fs-data.d: exec [00_zygisk_enforce.sh]
+04-24 22:26:52.023    77    77 I : post-fs-data.d: exec [fake_proc.sh]
+04-24 18:26:53.707    72    74 I : service.d: exec [samsung_mask.sh]
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --denylist enforce true
+sudo waydroid shell -- magisk --denylist add com.google.android.gms
+sudo waydroid shell -- magisk --denylist add com.google.android.gsf
+sudo waydroid shell -- magisk --denylist add com.android.vending
+sudo waydroid shell -- magisk --denylist ls
+pirate101@DEBIAN13:~$ 
