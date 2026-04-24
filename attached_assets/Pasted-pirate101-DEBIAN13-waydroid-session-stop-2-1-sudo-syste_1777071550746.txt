@@ -1,0 +1,85 @@
+pirate101@DEBIAN13:~$ waydroid session stop 2>&1
+sudo systemctl stop waydroid-container
+sleep 5
+sudo systemctl start waydroid-container
+sleep 30
+waydroid session start &
+sleep 60
+[sudo] password for pirate101: 
+[1] 2402825
+[01:51:20] Skipping notification manager service because we could not connect to the notifications server: org.freedesktop.systemd1.UnitMasked: Unit swaync.service is masked.
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "boot_completed: $(getprop sys.boot_completed) | system_server: $(getprop init.svc.system_server) | zygote: $(getprop init.svc.zygote)"'
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aE "Cmdline|Abort message" | tail -10
+sudo waydroid shell -- cat /cache/magisk.log 2>&1 | strings | grep -aE "boot-complete|Safe mode|Loading modules" | tail -10
+boot_completed:  | system_server:  | zygote: restarting
+No daemon is currently running!
+04-24 22:51:22.025    72    74 I : * Loading modules
+pirate101@DEBIAN13:~$ sudo waydroid shell -- logcat -d 2>&1 | grep -aE "FATAL|cannot|failed" | tail -30
+04-24 18:52:58.626   978   978 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:03.676   987   987 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:08.803   996   996 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:13.598  1005  1005 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:18.579  1014  1014 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:23.860  1023  1023 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:28.666  1032  1032 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:33.763  1041  1041 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:38.611  1050  1050 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:43.894  1059  1059 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:48.813  1068  1068 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:53.777  1077  1077 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:58.680  1086  1086 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:03.814  1095  1095 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:08.738  1104  1104 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:13.901  1113  1113 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:18.814  1122  1122 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:23.675  1131  1131 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:28.876  1140  1140 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:33.663  1149  1149 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:38.827  1158  1158 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:43.974  1167  1167 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:48.839  1176  1176 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:54.016  1185  1185 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:54:58.690  1206  1206 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:55:03.860  1215  1215 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:55:08.866  1224  1224 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:55:13.964  1233  1233 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:55:18.824  1242  1242 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:55:23.831  1251  1251 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+pirate101@DEBIAN13:~$ sudo cp /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak2
+sudo sed -i '/^ro\.build\.version\.release/d; /^ro\.build\.version\.sdk/d; /^ro\.build\.version\.security_patch/d' /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop.bak2  # immediately delete to prevent .bak execution issue
+sudo grep -nE "version" /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop
+17:ro.build.version.incremental=S928BXXU1AXBA
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "boot_completed: $(getprop sys.boot_completed) | system_server: $(getprop init.svc.system_server) | zygote: $(getprop init.svc.zygote)"'
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aE "Cmdline|Abort message" | tail -10
+sudo waydroid shell -- cat /cache/magisk.log 2>&1 | strings | grep -aE "boot-complete|Safe mode|Loading modules" | tail -10
+boot_completed:  | system_server:  | zygote: running
+No daemon is currently running!
+04-24 22:51:22.025    72    74 I : * Loading modules
+pirate101@DEBIAN13:~$ pirate101@DEBIAN13:~$ waydroid session stop 2>&1
+sudo systemctl stop waydroid-container
+sleep 5
+sudo systemctl start waydroid-container
+sleep 30
+waydroid session start &
+sleep 60
+[sudo] password for pirate101: 
+[1] 2402825
+[01:51:20] Skipping notification manager service because we could not connect to the notifications server: org.freedesktop.systemd1.UnitMasked: Unit swaync.service is masked.
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "boot_completed: $(getprop sys.boot_completed) | system_server: $(getprop init.svc.system_server) | zygote: $(getprop init.svc.zygote)"'
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aE "Cmdline|Abort message" | tail -10
+sudo waydroid shell -- cat /cache/magisk.log 2>&1 | strings | grep -aE "boot-complete|Safe mode|Loading modules" | tail -10
+boot_completed:  | system_server:  | zygote: restarting
+No daemon is currently running!
+04-24 22:51:22.025    72    74 I : * Loading modules
+pirate101@DEBIAN13:~$ sudo waydroid shell -- logcat -d 2>&1 | grep -aE "FATAL|cannot|failed" | tail -30
+04-24 18:52:58.626   978   978 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:03.676   987   987 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:08.803   996   996 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:13.598  1005  1005 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:18.579  1014  1014 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:23.860  1023  1023 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lang.IllegalStateException: Failed to create system AssetManager
+04-24 18:53:28.666  1032  1032 W zygote64: Lcom/android/internal/telephony/GsmAlphabet; failed initialization: java.lapirate101@DEBIAN13:~$ 72    74 I : * Loading modulesstrings | grep -aE "boot-complete|Safe mode|Loading modules" | tai
