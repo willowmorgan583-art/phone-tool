@@ -1,0 +1,271 @@
+pirate101@DEBIAN13:~$ sudo waydroid status
+Session:        RUNNING
+Container:      RUNNING
+Vendor type:    MAINLINE
+IP address:     192.168.240.112
+Session user:   pirate101(1000)
+Wayland display:        wayland-0
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+echo "=== SPOOF ==="
+echo "MODEL:    $(getprop ro.product.model)"
+echo "FINGERPR: $(getprop ro.build.fingerprint)"
+echo "IMEI:     $(getprop ro.ril.imei)"
+echo "IMEI1:    $(getprop ro.ril.imei1)"
+echo ""
+echo "=== HIDING ==="
+echo "Zygisk:   $(magisk --sqlite "SELECT value FROM settings WHERE key=\"zygisk\"")"
+echo "Enforce:  $(magisk --sqlite "SELECT value FROM settings WHERE key=\"denylist\"")"
+echo "DenyList apps:"
+magisk --denylist ls
+echo ""
+echo "=== MODULES ==="
+for m in /data/adb/modules/*/; do
+  n=$(basename "$m")
+  [ -f "$m/disable" ] && echo "  $n [DISABLED]" || echo "  $n [enabled]"
+done
+'
+=== SPOOF ===
+MODEL:    WayDroid x86_64 Device
+FINGERPR: waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/eng.aleast.20260403.132616:userdebug/test-keys
+IMEI:     
+IMEI1:    
+
+=== HIDING ===
+Zygisk:   value=1
+Enforce:  value=0
+DenyList apps:
+
+=== MODULES ===
+  fake_proc [DISABLED]
+  playintegrityfix [DISABLED]
+  zygisk_lsposed [DISABLED]
+pirate101@DEBIAN13:~$ sudo waydroid shell -- ls -la /data/adb/magisk/ 2>&1 | head -20
+total 17424
+drwxr-xr-x 3 root root     4096 2026-04-23 13:28 .
+drwx------ 7 root root     4096 2026-04-24 20:54 ..
+-rwxr-xr-x 1 root root     4372 2026-04-24 17:07 addon.d.sh
+-rwxr-xr-x 1 root root     7298 2026-04-24 17:07 boot_patch.sh
+-rwxr-xr-x 1 root root  2245448 2026-04-24 17:07 busybox
+drwxr-xr-x 2 root root     4096 2026-04-24 17:07 chromeos
+lrwxrwxrwx 1 root root       25 2026-04-23 15:19 magisk -> /data/adb/magisk/magisk64
+-rwxr-xr-x 1 root root 12714968 2026-04-24 17:07 magisk.apk
+-rwxr-xr-x 1 root root   333032 2026-04-24 17:07 magisk64
+-rwxr-xr-x 1 root root  1349160 2026-04-24 17:07 magiskboot
+-rwxr-xr-x 1 root root   720040 2026-04-24 17:07 magiskinit
+-rwxr-xr-x 1 root root   377176 2026-04-24 17:07 magiskpolicy
+-rwxr-xr-x 1 root root    29063 2026-04-24 17:07 stub.apk
+-rwxr-xr-x 1 root root    21528 2026-04-24 17:07 util_functions.sh
+pirate101@DEBIAN13:~$ sudo waydroid shell -- /data/adb/magisk/magisk --version 2>&1
+Magisk - Multi-purpose Utility
+
+Usage: magisk [applet [arguments]...]
+   or: magisk [options]...
+
+Options:
+   -c                        print current binary version
+   -v                        print running daemon version
+   -V                        print running daemon version code
+   --list                    list all available applets
+   --remove-modules [-n]     remove all modules, reboot if -n is not provided
+   --install-module ZIP      install a module zip file
+   --install [PATH]          install applets into PATH
+
+Advanced Options (Internal APIs):
+   --daemon                  manually start magisk daemon
+   --stop                    remove all magisk changes and stop daemon
+   --[init trigger]          callback on init triggers. Valid triggers:
+                             post-fs-data, service, boot-complete, zygote-restart
+   --unlock-blocks           set BLKROSET flag to OFF for all block devices
+   --restorecon              restore selinux context on Magisk files
+   --clone-attr SRC DEST     clone permission, owner, and selinux context
+   --clone SRC DEST          clone SRC to DEST
+   --sqlite SQL              exec SQL commands to Magisk database
+   --path                    print Magisk tmpfs mount path
+   --preinit-device          resolve a device to store preinit files
+   --hide ARGS               MagiskHide config CLI
+
+Available applets:
+    su, resetprop, magiskhide
+
+pirate101@DEBIAN13:~$ sudo waydroid shell -- /data/adb/magisk/magisk --version 2>&1
+Magisk - Multi-purpose Utility
+
+Usage: magisk [applet [arguments]...]
+   or: magisk [options]...
+
+Options:
+   -c                        print current binary version
+   -v                        print running daemon version
+   -V                        print running daemon version code
+   --list                    list all available applets
+   --remove-modules [-n]     remove all modules, reboot if -n is not provided
+   --install-module ZIP      install a module zip file
+   --install [PATH]          install applets into PATH
+
+Advanced Options (Internal APIs):
+   --daemon                  manually start magisk daemon
+   --stop                    remove all magisk changes and stop daemon
+   --[init trigger]          callback on init triggers. Valid triggers:
+                             post-fs-data, service, boot-complete, zygote-restart
+   --unlock-blocks           set BLKROSET flag to OFF for all block devices
+   --restorecon              restore selinux context on Magisk files
+   --clone-attr SRC DEST     clone permission, owner, and selinux context
+   --clone SRC DEST          clone SRC to DEST
+   --sqlite SQL              exec SQL commands to Magisk database
+   --path                    print Magisk tmpfs mount path
+   --preinit-device          resolve a device to store preinit files
+   --hide ARGS               MagiskHide config CLI
+
+Available applets:
+    su, resetprop, magiskhide
+
+pirate101@DEBIAN13:~$ sudo waydroid shell -- mount 2>&1 | grep -iE "magisk|tmpfs.*adb"
+magisk on /dev/magisk_iqeoVo2mDrO type tmpfs (rw,relatime,mode=755,inode64)
+devpts on /dev/magisk_iqeoVo2mDrO/.magisk/pts type devpts (rw,nosuid,noexec,relatime,mode=600,ptmxmode=000)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/modules type ext4 (ro,relatime)
+worker on /dev/magisk_iqeoVo2mDrO/.magisk/worker type tmpfs (rw,relatime,mode=755,inode64)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/system type overlay (ro,nodev,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/waydroid.prop type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/host-permissions type ext4 (rw,relatime)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gbm_mesa.allocator@4.0.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gbm_mesa.mapper@4.0.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gralloc1.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/waydroid.prop type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/host-permissions type ext4 (rw,relatime)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gbm_mesa.allocator@4.0.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gbm_mesa.mapper@4.0.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gralloc1.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+proc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc type proc (rw,nosuid,nodev,noexec,relatime)
+proc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc/sys type proc (ro,relatime)
+proc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc/sys/net type proc (rw,nosuid,nodev,noexec,relatime)
+binfmt_misc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc/sys/fs/binfmt_misc type binfmt_misc (rw,relatime)
+proc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc/sysrq-trigger type proc (ro,relatime)
+sysfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys type sysfs (ro,relatime)
+debugfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/kernel/debug type debugfs (rw,nosuid,nodev,noexec,relatime)
+tracefs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/kernel/debug/tracing type tracefs (rw,nosuid,nodev,noexec,relatime)
+none on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/fs/cgroup type cgroup2 (ro,nosuid,nodev,noexec,relatime)
+tracefs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/kernel/tracing type tracefs (rw,relatime)
+none on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/fs/fuse/connections type fusectl (rw,relatime)
+bpf on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/fs/bpf type bpf (rw,nosuid,nodev,noexec,relatime)
+pstore on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/fs/pstore type pstore (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev type tmpfs (rw,nosuid,relatime,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/zero type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/null type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/full type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/fuse type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/tty type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/char type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/dri/renderD128 type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/fb0 type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/video1 type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/video0 type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/dma_heap/system type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/binder type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/vndbinder type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/hwbinder type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/uhid type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/tun type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+devpts on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666,max=10)
+devpts on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/ptmx type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666,max=10)
+magisk on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO type tmpfs (rw,relatime,mode=755,inode64)
+devpts on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/pts type devpts (rw,nosuid,noexec,relatime,mode=600,ptmxmode=000)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/modules type ext4 (ro,relatime)
+worker on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/worker type tmpfs (rw,relatime,mode=755,inode64)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/system type overlay (ro,nodev,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/waydroid.prop type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/host-permissions type ext4 (rw,relatime)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gbm_mesa.allocator@4.0.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gbm_mesa.mapper@4.0.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gralloc1.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/waydroid.prop type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/host-permissions type ext4 (rw,relatime)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gbm_mesa.allocator@4.0.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gbm_mesa.mapper@4.0.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/vendor/etc/vintf/manifest/gralloc1.xml type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay/vendor:/var/lib/waydroid/rootfs/vendor,upperdir=/var/lib/waydroid/overlay_rw/vendor,workdir=/var/lib/waydroid/overlay_work/vendor)
+proc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc type proc (rw,nosuid,nodev,noexec,relatime)
+proc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc/sys type proc (ro,relatime)
+proc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc/sys/net type proc (rw,nosuid,nodev,noexec,relatime)
+binfmt_misc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc/sys/fs/binfmt_misc type binfmt_misc (rw,relatime)
+proc on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/proc/sysrq-trigger type proc (ro,relatime)
+sysfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys type sysfs (ro,relatime)
+debugfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/kernel/debug type debugfs (rw,nosuid,nodev,noexec,relatime)
+tracefs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/kernel/debug/tracing type tracefs (rw,nosuid,nodev,noexec,relatime)
+none on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/fs/cgroup type cgroup2 (ro,nosuid,nodev,noexec,relatime)
+tracefs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/kernel/tracing type tracefs (rw,relatime)
+none on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/fs/fuse/connections type fusectl (rw,relatime)
+bpf on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/fs/bpf type bpf (rw,nosuid,nodev,noexec,relatime)
+pstore on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/magisk_iqeoVo2mDrO/.magisk/mirror/sys/fs/pstore type pstore (rw,nosuid,nodev,noexec,relatime)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/zero type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/null type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/tty type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/video1 type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/video0 type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/vndbinder type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/uhid type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+udev on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/tun type devtmpfs (rw,nosuid,relatime,size=3711180k,nr_inodes=927795,mode=755,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/mnt_extra type tmpfs (rw,nodev,relatime,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/tmp type tmpfs (rw,nodev,relatime,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/var type tmpfs (rw,nodev,relatime,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/run type tmpfs (rw,nodev,relatime,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/run/xdg/wayland-0 type tmpfs (rw,nosuid,nodev,relatime,size=756608k,nr_inodes=189152,mode=700,uid=1000,gid=1001,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/run/xdg/pulse/native type tmpfs (rw,nosuid,nodev,relatime,size=756608k,nr_inodes=189152,mode=700,uid=1000,gid=1001,inode64)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data/user/0 type ext4 (rw,relatime)
+devpts on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666,max=10)
+devpts on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/dev/ptmx type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666,max=10)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/mnt type tmpfs (rw,nosuid,nodev,noexec,relatime,mode=755,gid=1000,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/mnt/installer type tmpfs (rw,nosuid,nodev,noexec,relatime,mode=755,gid=1000,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/mnt/androidwritable type tmpfs (rw,nosuid,nodev,noexec,relatime,mode=755,gid=1000,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex type tmpfs (rw,nosuid,nodev,noexec,relatime,mode=755,inode64)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.adbd type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.adservices type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.appsearch type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.art type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.btservices type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.conscrypt type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.extservices type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.i18n type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.ipsec type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.media type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.media.swcodec type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.mediaprovider type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.neuralnetworks type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.ondevicepersonalization type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.os.statsd type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.permission type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.resolv type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.runtime type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.scheduling type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.sdkext type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.tethering type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.tzdata type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.uwb type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.vndk.v33 type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/apex/com.android.wifi type overlay (ro,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/linkerconfig type tmpfs (rw,nosuid,nodev,noexec,relatime,mode=755,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/linkerconfig type tmpfs (rw,nosuid,nodev,noexec,relatime,mode=755,inode64)
+none on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/config type configfs (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/storage type tmpfs (rw,nosuid,nodev,noexec,relatime,mode=755,gid=1000,inode64)
+tmpfs on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data_mirror type tmpfs (rw,nosuid,nodev,noexec,relatime,mode=700,gid=1000,inode64)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data_mirror/data_ce/null type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data_mirror/data_ce/null/0 type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data_mirror/data_de/null type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data_mirror/misc_ce/null type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data_mirror/misc_de/null type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data_mirror/cur_profiles type ext4 (rw,relatime)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/data_mirror/ref_profiles type ext4 (rw,relatime)
+magisk on /system/bin/magisk type tmpfs (ro,relatime,mode=755,inode64)
+magisk on /system/bin/magisk64 type tmpfs (ro,relatime,mode=755,inode64)
+magisk on /system/bin/magiskhide type tmpfs (ro,relatime,mode=755,inode64)
+magisk on /system/bin/magiskpolicy type tmpfs (ro,relatime,mode=755,inode64)
+magisk on /system/bin/resetprop type tmpfs (ro,relatime,mode=755,inode64)
+magisk on /system/bin/su type tmpfs (ro,relatime,mode=755,inode64)
+magisk on /system/bin/supolicy type tmpfs (ro,relatime,mode=755,inode64)
+pirate101@DEBIAN13:~$ sudo waydroid shell -- ls -la /sbin/magisk /system/bin/magisk 2>&1
+ls: /sbin/magisk: Invalid argument
+-rwxr-xr-x 1 root shell 333032 2026-04-24 20:54 /system/bin/magisk
+pirate101@DEBIAN13:~$ 
