@@ -1,0 +1,33 @@
+pirate101@DEBIAN13:~$ # Restore the navigation bar immediately
+sudo waydroid shell -- settings put global policy_control "null"
+
+# Send a BACK key to escape the Smart Dock settings screen
+sudo waydroid shell -- input keyevent KEYCODE_BACK
+sudo waydroid shell -- input keyevent KEYCODE_HOME
+[sudo] password for pirate101: 
+pirate101@DEBIAN13:~$ sudo waydroid shell -- am force-stop com.farmerbb.taskbar
+sudo waydroid shell -- input keyevent KEYCODE_HOME
+pirate101@DEBIAN13:~$ # Find its exact package name
+sudo waydroid shell -- pm list packages | grep -iE "dock|taskbar|farmerbb"
+
+# Disable it (replace package name with what shows above)
+sudo waydroid shell -- pm disable-user com.farmerbb.taskbar
+package:cu.axel.smartdock
+
+Exception occurred while executing 'disable-user':
+java.lang.IllegalArgumentException: Unknown package: com.farmerbb.taskbar
+        at com.android.server.pm.PackageManagerService.setEnabledSettings(PackageManagerService.java:3820)
+        at com.android.server.pm.PackageManagerService.-$$Nest$msetEnabledSettings(Unknown Source:0)
+        at com.android.server.pm.PackageManagerService$IPackageManagerImpl.setApplicationEnabledSetting(PackageManagerService.java:5552)
+        at com.android.server.pm.PackageManagerShellCommand.runSetEnabledSetting(PackageManagerShellCommand.java:2356)
+        at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:274)
+        at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+        at android.os.ShellCommand.exec(ShellCommand.java:38)
+        at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:6088)
+        at android.os.Binder.shellCommand(Binder.java:1049)
+        at android.os.Binder.onTransact(Binder.java:877)
+        at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4318)
+        at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:6072)
+        at android.os.Binder.execTransactInternal(Binder.java:1285)
+        at android.os.Binder.execTransact(Binder.java:1244)
+pirate101@DEBIAN13:~$ 
