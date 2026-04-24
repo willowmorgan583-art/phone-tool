@@ -1,0 +1,138 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- logcat -d -b crash 2>&1 | tail -60
+04-24 17:34:56.677  4832  4832 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:34:57.296  4834  4840 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+04-24 17:34:57.296  4834  4840 F DEBUG   : LineageOS Version: '20.0-20260403-VANILLA-e3q'
+04-24 17:34:57.296  4834  4840 F DEBUG   : Build fingerprint: 'samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys'
+04-24 17:34:57.296  4834  4840 F DEBUG   : Revision: '0'
+04-24 17:34:57.296  4834  4840 F DEBUG   : ABI: 'x86_64'
+04-24 17:34:57.296  4834  4840 F DEBUG   : Timestamp: 2026-04-24 17:34:57.246505424-0400
+04-24 17:34:57.296  4834  4840 F DEBUG   : Process uptime: 2s
+04-24 17:34:57.296  4834  4840 F DEBUG   : Cmdline: /system/bin/surfaceflinger
+04-24 17:34:57.296  4834  4840 F DEBUG   : pid: 4834, tid: 4840, name: surfaceflinger  >>> /system/bin/surfaceflinger <<<
+04-24 17:34:57.296  4834  4840 F DEBUG   : uid: 1000
+04-24 17:34:57.296  4834  4840 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:34:57.296  4834  4840 F DEBUG   : Abort message: 'no suitable EGLConfig found, giving up'
+04-24 17:34:57.296  4834  4840 F DEBUG   :     rax 0000000000000000  rbx 00000000000012e2  rcx 00007fdbb455268f  rdx 0000000000000006
+04-24 17:34:57.296  4834  4840 F DEBUG   :     r8  e5c1c7c0a2569648  r9  e5c1c7c0a2569648  r10 00007fd91d903450  r11 0000000000000207
+04-24 17:34:57.296  4834  4840 F DEBUG   :     r12 00007fd91d903ba0  r13 00007fda3dc12a20  r14 00007fd91d903448  r15 00000000000012e8
+04-24 17:34:57.296  4834  4840 F DEBUG   :     rdi 00000000000012e2  rsi 00000000000012e8
+04-24 17:34:57.296  4834  4840 F DEBUG   :     rbp 0000000000000001  rsp 00007fd91d903440  rip 00007fdbb455268f
+04-24 17:34:57.296  4834  4840 F DEBUG   : backtrace:
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #01 pc 00000000000069aa  /system/lib64/liblog.so (__android_log_default_aborter+10) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #02 pc 0000000000007562  /system/lib64/liblog.so (__android_log_assert+370) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #03 pc 000000000065c660  /system/bin/surfaceflinger (android::renderengine::skia::SkiaGLRenderEngine::chooseEglConfig(void*, int, bool)+544) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #04 pc 000000000065bc02  /system/bin/surfaceflinger (android::renderengine::skia::SkiaGLRenderEngine::create(android::renderengine::RenderEngineCreationArgs const&)+162) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #05 pc 0000000000642dac  /system/bin/surfaceflinger (std::__1::__function::__func<android::renderengine::RenderEngine::create(android::renderengine::RenderEngineCreationArgs const&)::$_1, std::__1::allocator<android::renderengine::RenderEngine::create(android::renderengine::RenderEngineCreationArgs const&)::$_1>, std::__1::unique_ptr<android::renderengine::RenderEngine, std::__1::default_delete<android::renderengine::RenderEngine> > ()>::operator()() (.f853b653ec5f0649c15b11b979e782e0)+12) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #06 pc 00000000006579b1  /system/bin/surfaceflinger (android::renderengine::threaded::RenderEngineThreaded::threadMain(std::__1::function<std::__1::unique_ptr<android::renderengine::RenderEngine, std::__1::default_delete<android::renderengine::RenderEngine> > ()>)+353) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #07 pc 000000000065a231  /system/bin/surfaceflinger (void* std::__1::__thread_proxy<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct> >, void (android::renderengine::threaded::RenderEngineThreaded::*)(std::__1::function<std::__1::unique_ptr<android::renderengine::RenderEngine, std::__1::default_delete<android::renderengine::RenderEngine> > ()>), android::renderengine::threaded::RenderEngineThreaded*, std::__1::function<std::__1::unique_ptr<android::renderengine::RenderEngine, std::__1::default_delete<android::renderengine::RenderEngine> > ()> > >(void*)+145) (BuildId: 8f5b17a11631b711271d61bc4dfab7dc)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #08 pc 00000000000ccd3a  /apex/com.android.runtime/lib64/bionic/libc.so (__pthread_start(void*)+58) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:34:57.296  4834  4840 F DEBUG   :       #09 pc 0000000000060cc7  /apex/com.android.runtime/lib64/bionic/libc.so (__start_thread+55) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:34:57.686  4844  4844 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+04-24 17:34:57.686  4844  4844 F DEBUG   : LineageOS Version: '20.0-20260403-VANILLA-e3q'
+04-24 17:34:57.686  4844  4844 F DEBUG   : Build fingerprint: 'samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys'
+04-24 17:34:57.686  4844  4844 F DEBUG   : Revision: '0'
+04-24 17:34:57.686  4844  4844 F DEBUG   : ABI: 'x86_64'
+04-24 17:34:57.686  4844  4844 F DEBUG   : Timestamp: 2026-04-24 17:34:57.665775757-0400
+04-24 17:34:57.686  4844  4844 F DEBUG   : Process uptime: 1s
+04-24 17:34:57.686  4844  4844 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
+04-24 17:34:57.686  4844  4844 F DEBUG   : pid: 4844, tid: 4844, name: android.hardwar  >>> /vendor/bin/hw/android.hardware.gatekeeper@1.0-service <<<
+04-24 17:34:57.686  4844  4844 F DEBUG   : uid: 1000
+04-24 17:34:57.686  4844  4844 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:34:57.686  4844  4844 F DEBUG   : Abort message: 'Unable to open GateKeeper HAL'
+04-24 17:34:57.686  4844  4844 F DEBUG   :     rax 0000000000000000  rbx 00000000000012ec  rcx 00007fbe0e5ba68f  rdx 0000000000000006
+04-24 17:34:57.686  4844  4844 F DEBUG   :     r8  1a2a0bbfcc717837  r9  1a2a0bbfcc717837  r10 00007ffd6e1278a0  r11 0000000000000207
+04-24 17:34:57.686  4844  4844 F DEBUG   :     r12 00007ffd6e128118  r13 00007ffd6e127ff0  r14 00007ffd6e127898  r15 00000000000012ec
+04-24 17:34:57.686  4844  4844 F DEBUG   :     rdi 00000000000012ec  rsi 00000000000012ec
+04-24 17:34:57.686  4844  4844 F DEBUG   :     rbp 00007ffd6e127f40  rsp 00007ffd6e127890  rip 00007fbe0e5ba68f
+04-24 17:34:57.686  4844  4844 F DEBUG   : backtrace:
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #01 pc 00000000000069aa  /system/lib64/liblog.so (__android_log_default_aborter+10) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #02 pc 0000000000007562  /system/lib64/liblog.so (__android_log_assert+370) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #03 pc 00000000000037b1  /vendor/lib64/hw/android.hardware.gatekeeper@1.0-impl.so (HIDL_FETCH_IGatekeeper+145) (BuildId: 6a45b01ccf5438c390f1c34bdbdc4f9f)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #04 pc 00000000000633d0  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::get(android::hardware::hidl_string const&, android::hardware::hidl_string const&)::'lambda'(void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)::operator()(void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const+96) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #05 pc 000000000005d225  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::openLibs(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::function<bool (void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)> const&)+2149) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #06 pc 0000000000060e45  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::get(android::hardware::hidl_string const&, android::hardware::hidl_string const&)+101) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #07 pc 000000000005e6e6  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::details::getRawServiceInternal(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, bool, bool)+2310) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #08 pc 000000000005b741  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::details::registerPassthroughServiceImplementation(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::function<int (android::sp<android::hidl::base::V1_0::IBase> const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)>, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+81) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #09 pc 000000000005bb61  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::registerPassthroughServiceImplementation(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+49) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-24 17:34:57.686  4844  4844 F DEBUG   :       #10 pc 0000000000001a2e  /vendor/bin/hw/android.hardware.gatekeeper@1.0-service (int android::hardware::registerPassthroughServiceImplementation<android::hardware::gatekeeper::V1_0::IGatekeeper, android::hardware::gatekeeper::V1_0::IGatekeeper>(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+78) (BuildId: 1f94fab514f1b22cb1661796ca3f1dee)
+04-24 17:34:57.687  4844  4844 F DEBUG   :       #11 pc 00000000000018f5  /vendor/bin/hw/android.hardware.gatekeeper@1.0-service (main+69) (BuildId: 1f94fab514f1b22cb1661796ca3f1dee)
+04-24 17:34:57.687  4844  4844 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+pirate101@DEBIAN13:~$ sudo waydroid shell -- logcat -d 2>&1 | grep -iE "FATAL|tombstone|libc|signal|SIGSEGV|playintegrity|fake_proc" | tail -40
+04-24 17:35:02.662  4881  4881 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:02.662  4881  4881 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:02.664    44    44 E tombstoned: Tombstone written to: tombstone_23
+04-24 17:35:03.649    44    44 I tombstoned: received crash request for pid 4885
+04-24 17:35:03.659  4885  4885 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:35:03.659  4885  4885 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:03.659  4885  4885 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:03.661    44    44 E tombstoned: Tombstone written to: tombstone_24
+04-24 17:35:04.661    44    44 I tombstoned: received crash request for pid 4889
+04-24 17:35:04.672  4889  4889 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:35:04.672  4889  4889 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:04.672  4889  4889 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:04.678    44    44 E tombstoned: Tombstone written to: tombstone_25
+04-24 17:35:05.660    44    44 I tombstoned: received crash request for pid 4893
+04-24 17:35:05.681  4893  4893 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:35:05.681  4893  4893 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:05.681  4893  4893 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:05.685    44    44 E tombstoned: Tombstone written to: tombstone_26
+04-24 17:35:06.660    44    44 I tombstoned: received crash request for pid 4903
+04-24 17:35:06.674  4903  4903 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:35:06.674  4903  4903 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:06.674  4903  4903 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:06.677    44    44 E tombstoned: Tombstone written to: tombstone_27
+04-24 17:35:06.807  4894  4894 E Zygote  : System zygote died with fatal exception
+04-24 17:35:07.030    44    44 I tombstoned: received crash request for pid 4908
+04-24 17:35:07.076  4908  4911 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:35:07.076  4908  4911 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:07.076  4908  4911 F DEBUG   :       #08 pc 00000000000ccd3a  /apex/com.android.runtime/lib64/bionic/libc.so (__pthread_start(void*)+58) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:07.076  4908  4911 F DEBUG   :       #09 pc 0000000000060cc7  /apex/com.android.runtime/lib64/bionic/libc.so (__start_thread+55) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:07.082    44    44 E tombstoned: Tombstone written to: tombstone_28
+04-24 17:35:07.660    44    44 I tombstoned: received crash request for pid 4915
+04-24 17:35:07.682  4915  4915 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:35:07.682  4915  4915 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:07.682  4915  4915 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:07.685    44    44 E tombstoned: Tombstone written to: tombstone_29
+04-24 17:35:08.657    44    44 I tombstoned: received crash request for pid 4919
+04-24 17:35:08.666  4919  4919 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-24 17:35:08.666  4919  4919 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:08.666  4919  4919 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-24 17:35:08.668    44    44 E tombstoned: Tombstone written to: tombstone_30
+pirate101@DEBIAN13:~$ sudo touch /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+pirate101@DEBIAN13:~$ sudo waydroid shell -- cat /cache/magisk.log | tail -30
+sudo waydroid shell -- /data/adb/magisk/magisk -v
+sudo waydroid shell -- getprop ro.product.model
+04-24 17:37:37.753   837   837 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:37:38.902    71    73 I : ** zygote restarted
+04-24 17:37:42.772   865   865 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:37:42.772   865   865 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:37:42.772   865   865 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:37:43.511    71    73 I : ** zygote restarted
+04-24 17:37:47.782   893   893 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:37:47.782   893   893 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:37:47.782   893   893 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:37:48.746    71    73 I : ** zygote restarted
+04-24 17:37:52.800   917   917 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:37:52.800   917   917 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:37:52.800   917   917 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:37:53.822    71    73 I : ** zygote restarted
+04-24 17:37:57.716   941   941 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:37:57.716   941   941 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:37:57.722   941   941 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:37:58.654    71    73 I : ** zygote restarted
+04-24 17:38:02.766   965   965 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:38:02.766   965   965 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:38:02.766   965   965 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:38:03.922    71    73 I : ** zygote restarted
+04-24 17:38:07.786   989   989 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:38:07.787   989   989 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:38:07.787   989   989 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-24 17:38:08.654    71    73 I : ** zygote restarted
+04-24 17:38:12.765  1013  1013 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-24 17:38:12.765  1013  1013 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-24 17:38:12.765  1013  1013 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+No daemon is currently running!
+SM-S928B
+pirate101@DEBIAN13:~$ 
