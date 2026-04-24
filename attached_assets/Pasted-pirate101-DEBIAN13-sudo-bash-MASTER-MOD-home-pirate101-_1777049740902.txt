@@ -1,0 +1,83 @@
+pirate101@DEBIAN13:~$ sudo bash << 'MASTER'
+MOD=/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc
+
+echo "[1/7] Writing complete S24 Ultra system.prop..."
+cat > "$MOD/system.prop" << 'PROPEOF'
+# === Identity ===
+ro.product.model=SM-S928B
+ro.product.brand=samsung
+ro.product.manufacturer=Samsung
+ro.product.device=e3q
+ro.product.name=e3qxxx
+ro.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.build.description=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+ro.build.display.id=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+ro.build.flavor=user
+ro.build.product=e3q
+ro.build.tags=release-keys
+ro.build.type=user
+ro.build.user=nobody
+ro.build.host=android-build
+ro.build.characteristics=phone
+ro.build.id=UP1A.231005.007
+ro.build.version.release=14
+ro.build.version.release_or_codename=14
+ro.build.version.sdk=34
+ro.build.version.security_patch=2024-02-01
+ro.build.version.incremental=S928BXXU1AXBA
+ro.bootimage.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+# === Hardware ===
+ro.hardware=qcom
+ro.hardware.egl=angle
+MASTER===================================================="eage|qemu|goldfish|ran
+[sudo] password for pirate101: 
+[1/7] Writing complete S24 Ultra system.prop...
+[2/7] Writing proper S24 Ultra kernel string...
+[3/7] Writing Samsung S24 Ultra fake_cpuinfo...
+[4/7] Writing post-fs-data.sh (early bind mounts: kernel + cpuinfo)...
+[5/7] Writing service.sh (late-boot blanking + display)...
+[6/7] Restarting waydroid-container...
+[7/7] Starting session and verifying...
+[19:54:31] WAYLAND_DISPLAY is not set, defaulting to "wayland-0"
+[19:54:31] XDG_RUNTIME_DIR is not set; please don't start a Waydroid session with 'sudo'!
+
+================ FINAL VERIFICATION ================
+--- Identity ---
+[19:54:46] WayDroid container is STOPPED
+[19:54:47] WayDroid container is STOPPED
+--- Kernel ---
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: -a
+[19:54:47] WayDroid container is STOPPED
+--- Hardware ---
+[19:54:47] WayDroid container is STOPPED
+[19:54:48] WayDroid container is STOPPED
+[19:54:48] WayDroid container is STOPPED
+--- ABI / 64-bit ---
+[19:54:48] WayDroid container is STOPPED
+[19:54:48] WayDroid container is STOPPED
+[19:54:49] WayDroid container is STOPPED
+[19:54:49] WayDroid container is STOPPED
+--- Bootloader / Verified Boot ---
+[19:54:49] WayDroid container is STOPPED
+[19:54:49] WayDroid container is STOPPED
+[19:54:49] WayDroid container is STOPPED
+[19:54:50] WayDroid container is STOPPED
+--- Remaining leaks (should be empty/samsung) ---
+[19:54:50] WayDroid container is STOPPED
+--- /proc/cpuinfo first lines ---
+[19:54:50] WayDroid container is STOPPED
+====================================================
+pirate101@DEBIAN13:~$ sudo waydroid prop set persist.waydroid.fake_touch "com.* org.*"
+# And for ARM translation, the standard tool is the Waydroid script:
+git clone https://github.com/casualsnek/waydroid_script
+cd waydroid_script
+sudo python3 main.py install libndk
+[19:55:19] WayDroid session is stopped
+fatal: destination path 'waydroid_script' already exists and is not an empty directory.
+Traceback (most recent call last):
+  File "/home/pirate101/waydroid_script/main.py", line 2, in <module>
+    from InquirerPy import inquirer
+ModuleNotFoundError: No module named 'InquirerPy'
+pirate101@DEBIAN13:~/waydroid_script$ 
