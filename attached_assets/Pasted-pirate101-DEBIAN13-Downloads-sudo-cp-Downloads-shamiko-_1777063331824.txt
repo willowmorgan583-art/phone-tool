@@ -1,0 +1,67 @@
+pirate101@DEBIAN13:~/Downloads$ sudo cp ~/Downloads/shamiko.zip /home/pirate101/.local/share/waydroid/data/local/tmp/shamiko.zip
+sudo chmod 644 /home/pirate101/.local/share/waydroid/data/local/tmp/shamiko.zip
+sudo waydroid shell magisk --install-module /data/local/tmp/shamiko.zip
+sudo waydroid shell ls /data/adb/modules/
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --install-module /data/local/tmp/shamiko.zip
+fake_proc  playintegrityfix  zygisk_lsposed
+pirate101@DEBIAN13:~/Downloads$ sudo waydroid shell magisk --sqlite "REPLACE INTO settings (key,value) VALUES('zygisk',1)"
+sudo waydroid shell magisk --denylist enforce false
+sudo waydroid shell magisk --denylist ls
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --sqlite REPLACE INTO settings (key,value) VALUES('zygisk',1)
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist enforce false
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist ls
+pirate101@DEBIAN13:~/Downloads$ cd ..
+pirate101@DEBIAN13:~$ sudo waydroid shell -- getprop ro.product.model
+SM-S928B
+pirate101@DEBIAN13:~$ sudo waydroid shell -- getprop ro.build.fingerprint
+samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+pirate101@DEBIAN13:~$ sudo waydroid shell -- getprop ro.bootloader
+unknown
+pirate101@DEBIAN13:~$ sudo waydroid shell -- getprop ro.ril.imei
+
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --denylist enforce true
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --denylist add com.google.android.gms
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --denylist add com.google.android.gsf
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --denylist add com.android.vending
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --denylist ls
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --install-module /data/local/tmp/shamiko.zip
+***********************
+ Shamiko 
+ by LSPosed Developers 
+***********************
+*******************
+ Powered by Magisk 
+*******************
+- Shamiko version v1.2.5 (414)
+- Extracting verify.sh
+- Verified META-INF/com/google/android/update-binary
+- Verified customize.sh
+- Verified verify.sh
+- Installing from Magisk / KernelSU app
+- Magisk version: 26301
+*********************************************************
+! Please install Magisk Canary (>27005)
+*********************************************************
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --sqlite "REPLACE INTO settings (key,value) VALUES('zygisk',1)"
+pirate101@DEBIAN13:~$ sudo waydroid shell -- magisk --denylist enforce false
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "MODEL: $(getprop ro.product.model)"; echo "FINGERPRINT: $(getprop ro.build.fingerprint)"; echo "Zygisk: $(magisk --sqlite "SELECT value FROM settings WHERE key=\"zygisk\"")"; echo "DenyList apps:"; magisk --denylist ls; echo ""; echo "Modules:"; for m in /data/adb/modules/*/; do n=$(basename "$m"); [ -f "$m/disable" ] && echo "  $n [DISABLED]" || echo "  $n [enabled]"; done'
+[23:38:36] WayDroid container is STOPPED
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "MODEL: $(getprop ro.product.model)"; echo "FINGERPRINT: $(getprop ro.build.fingerprint)"; echo "Zygisk: $(magisk --sqlite "SELECT value FROM settings WHERE key=\"zygisk\"")"; echo "DenyList apps:"; magisk --denylist ls; echo ""; echo "Modules:"; for m in /data/adb/modules/*/; do n=$(basename "$m"); [ -f "$m/disable" ] && echo "  $n [DISABLED]" || echo "  $n [enabled]"; done'
+MODEL: SM-S928B
+FINGERPRINT: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+Zygisk: value=1
+DenyList apps:
+
+Modules:
+  fake_proc [DISABLED]
+  playintegrityfix [DISABLED]
+  zygisk_lsposed [DISABLED]
+pirate101@DEBIAN13:~$ 
