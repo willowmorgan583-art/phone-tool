@@ -1,0 +1,83 @@
+pirate101@DEBIAN13:~$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+sudo ls /home/pirate101/.local/share/waydroid/data/adb/modules/
+fake_proc  playintegrityfix  zygisk_lsposed
+pirate101@DEBIAN13:~$ [gbinder] WARNING: Service manager /dev/anbox-binder has died
+^C
+[1]+  Done                    waydroid session start
+pirate101@DEBIAN13:~$ sudo waydroid shell getprop ro.product.model
+sudo waydroid shell getprop ro.build.fingerprint
+sudo waydroid shell getprop ro.bootloader
+sudo waydroid shell getprop ro.ril.imei
+sudo waydroid shell cat /proc/version
+WayDroid x86_64 Device
+waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/eng.aleast.20260403.132616:userdebug/test-keys
+unknown
+
+Linux version 6.12.74+deb13+1-amd64 (debian-kernel@lists.debian.org) (x86_64-linux-gnu-gcc-14 (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 SMP PREEMPT_DYNAMIC Debian 6.12.74-2 (2026-03-08)
+pirate101@DEBIAN13:~$ sudo waydroid shell magisk --denylist enforce true
+sudo waydroid shell magisk --denylist add com.google.android.gms
+sudo waydroid shell magisk --denylist add com.google.android.gsf
+sudo waydroid shell magisk --denylist add com.android.vending
+sudo waydroid shell magisk --denylist ls
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist enforce true
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist add com.google.android.gms
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist add com.google.android.gsf
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist add com.android.vending
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist ls
+pirate101@DEBIAN13:~$ cd ~/Downloads
+SHAMIKO_URL=$(curl -s https://api.github.com/repos/LSPosed/LSPosed.github.io/releases/latest | grep browser_download_url | grep -i shamiko | grep -i release | head -1 | cut -d'"' -f4)
+echo "Shamiko URL: $SHAMIKO_URL"
+wget -O shamiko.zip "$SHAMIKO_URL"
+file shamiko.zip
+ls -lh shamiko.zip
+Shamiko URL: https://github.com/LSPosed/LSPosed.github.io/releases/download/shamiko-414/Shamiko-v1.2.5-414-release.zip
+--2026-04-24 23:28:00--  https://github.com/LSPosed/LSPosed.github.io/releases/download/shamiko-414/Shamiko-v1.2.5-414-release.zip
+Resolving github.com (github.com)... 20.87.245.0
+Connecting to github.com (github.com)|20.87.245.0|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/450091983/7dbb208d-2c11-43f6-ae97-f52010e42e6c?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-24T21%3A04%3A11Z&rscd=attachment%3B+filename%3DShamiko-v1.2.5-414-release.zip&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-24T20%3A03%3A40Z&ske=2026-04-24T21%3A04%3A11Z&sks=b&skv=2018-11-09&sig=GRmuVO1xD6srmtvaXHnpcfbGkCZkW%2Fs7CKGb3cK1r24%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NzA2Mjc4MSwibmJmIjoxNzc3MDYyNDgxLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.OOGMSQb0CuJzM2JHGPHKrnMshh52n3eTH_F8o2May0U&response-content-disposition=attachment%3B%20filename%3DShamiko-v1.2.5-414-release.zip&response-content-type=application%2Foctet-stream [following]
+--2026-04-24 23:28:02--  https://release-assets.githubusercontent.com/github-production-release-asset/450091983/7dbb208d-2c11-43f6-ae97-f52010e42e6c?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-24T21%3A04%3A11Z&rscd=attachment%3B+filename%3DShamiko-v1.2.5-414-release.zip&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-24T20%3A03%3A40Z&ske=2026-04-24T21%3A04%3A11Z&sks=b&skv=2018-11-09&sig=GRmuVO1xD6srmtvaXHnpcfbGkCZkW%2Fs7CKGb3cK1r24%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NzA2Mjc4MSwibmJmIjoxNzc3MDYyNDgxLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.OOGMSQb0CuJzM2JHGPHKrnMshh52n3eTH_F8o2May0U&response-content-disposition=attachment%3B%20filename%3DShamiko-v1.2.5-414-release.zip&response-content-type=application%2Foctet-stream
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.110.133, 185.199.111.133, 185.199.108.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.110.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 6523936 (6.2M) [application/octet-stream]
+Saving to: ‘shamiko.zip’
+
+shamiko.zip          100%[===================>]   6.22M  1.35MB/s    in 7.9s    
+
+2026-04-24 23:28:11 (805 KB/s) - ‘shamiko.zip’ saved [6523936/6523936]
+
+shamiko.zip: Zip archive data, made by v2.0 UNIX, extract using at least v2.0, last modified Jun 16 2025 06:07:46, uncompressed size 64, method=deflate
+-rw-rw-r-- 1 pirate101 pirate101 6.3M Jun 18  2025 shamiko.zip
+pirate101@DEBIAN13:~/Downloads$ sudo cp ~/Downloads/shamiko.zip /home/pirate101/.local/share/waydroid/data/local/tmp/shamiko.zip
+sudo chmod 644 /home/pirate101/.local/share/waydroid/data/local/tmp/shamiko.zip
+sudo waydroid shell magisk --install-module /data/local/tmp/shamiko.zip
+sudo waydroid shell ls /data/adb/modules/
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --install-module /data/local/tmp/shamiko.zip
+fake_proc  playintegrityfix  zygisk_lsposed
+pirate101@DEBIAN13:~/Downloads$ sudo waydroid shell magisk --sqlite "REPLACE INTO settings (key,value) VALUES('zygisk',1)"
+sudo waydroid shell magisk --denylist enforce false
+sudo waydroid shell magisk --denylist ls
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --sqlite REPLACE INTO settings (key,value) VALUES('zygisk',1)
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist enforce false
+usage: waydroid [-h] [-V] [-l LOG] [--details-to-stdout] [-v] [-q]
+                {status,log,init,upgrade,session,container,app,prop,show-full-ui,first-launch,shell,logcat,adb,bugreport} ...
+waydroid: error: unrecognized arguments: --denylist ls
+pirate101@DEBIAN13:~/Downloads$ 
