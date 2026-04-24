@@ -1,0 +1,42 @@
+pirate101@DEBIAN13:~/waydroid_script$ sudo waydroid shell -- sh -c '
+rm -f /data/adb/modules/fake_proc/disable
+rm -f /data/adb/modules/playintegrityfix/disable
+echo "Removed disable flags. Verifying:"
+ls /data/adb/modules/fake_proc/disable 2>/dev/null && echo "STILL DISABLED" || echo "fake_proc enabled OK"
+ls /data/adb/modules/playintegrityfix/disable 2>/dev/null && echo "STILL DISABLED" || echo "playintegrityfix enabled OK"
+'
+Removed disable flags. Verifying:
+fake_proc enabled OK
+playintegrityfix enabled OK
+pirate101@DEBIAN13:~/waydroid_script$ sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+pirate101@DEBIAN13:~/waydroid_script$ sudo systemctl restart waydroid-container
+sleep 25
+waydroid session start &
+echo "Waiting 60s for full boot..."
+sleep 60
+sudo waydroid shell getprop ro.build.fingerprint
+sudo waydroid shell getprop ro.bootloader
+sudo waydroid shell getprop ro.boot.verifiedbootstate
+sudo waydroid shell getprop ro.serialno
+sudo waydroid shell cat /proc/version
+sudo waydroid shell mount | grep proc/version
+[gbinder] WARNING: Service manager /dev/anbox-binder has died
+                                                             [1]+  Done                    waydroid session start
+[1] 1463586
+Waiting 60s for full boot...
+[gbinder] Service manager /dev/anbox-binder has appeared
+samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+S928BXXU1AXBA
+green
+R3CW80XXXXX
+Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678 (build@android-build) (Android (10552028, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362), LLD 17.0.2) #1 SMP PREEMPT Thu Feb 29 20:45:01 UTC 2024
+/dev/sda2 on /proc/version type ext4 (rw,relatime)
+/dev/sda2 on /proc/version type ext4 (rw,relatime)
+/dev/sda2 on /proc/version type ext4 (rw,relatime)
+/dev/sda2 on /proc/version type ext4 (rw,relatime)
+/dev/sda2 on /proc/version type ext4 (rw,relatime)
+/dev/sda2 on /proc/version type ext4 (rw,relatime)
+/dev/sda2 on /proc/version type ext4 (rw,relatime)
+/dev/sda2 on /proc/version type ext4 (rw,relatime)
+pirate101@DEBIAN13:~/waydroid_script$ 
