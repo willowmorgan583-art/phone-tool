@@ -1,0 +1,59 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+resetprop --delete ro.lineage.display.version
+resetprop --delete ro.lineage.version
+resetprop --delete ro.lineage.device
+resetprop -n ro.lineage.display.version ""
+resetprop -n ro.lineage.version ""
+resetprop -n ro.lineage.device ""
+echo "--- After cleanup ---"
+getprop | grep -i lineage
+'
+--- After cleanup ---
+[ro.lineage.build.version]: []
+[ro.lineage.build.version.plat.rev]: []
+[ro.lineage.build.version.plat.sdk]: []
+[ro.lineage.device]: []
+[ro.lineage.display.version]: []
+[ro.lineage.releasetype]: []
+[ro.lineage.version]: []
+[ro.lineagelegal.url]: []
+pirate101@DEBIAN13:~$ sudo bash -c '
+cat >> /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh << "EOF"
+resetprop --delete ro.lineage.device 2>/dev/null
+resetprop --delete ro.lineage.version 2>/dev/null
+resetprop --delete ro.lineage.display.version 2>/dev/null
+EOF
+'
+pirate101@DEBIAN13:~$ sudo waydroid shell getprop ro.product.model
+sudo waydroid shell getprop ro.build.fingerprint
+sudo waydroid shell getprop ro.hardware.egl
+sudo waydroid shell getprop ro.board.platform
+sudo waydroid shell -- sh -c 'getprop | grep -iE "waydroid\.|lineage|product\.(odm|system|vendor)\.brand"'
+SM-S928B
+samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+angle
+pineapple
+[ro.lineage.build.version]: []
+[ro.lineage.build.version.plat.rev]: []
+[ro.lineage.build.version.plat.sdk]: []
+[ro.lineage.device]: []
+[ro.lineage.display.version]: []
+[ro.lineage.releasetype]: []
+[ro.lineage.version]: []
+[ro.lineagelegal.url]: []
+[ro.product.odm.brand]: [samsung]
+[ro.product.system.brand]: [samsung]
+[ro.product.vendor.brand]: [samsung]
+[waydroid.background_start]: []
+[waydroid.host.gid]: []
+[waydroid.host.uid]: []
+[waydroid.host.user]: []
+[waydroid.host_data_path]: []
+[waydroid.pulse_runtime_path]: []
+[waydroid.stub_sensors_hal]: []
+[waydroid.system_ota]: []
+[waydroid.tools_version]: []
+[waydroid.vendor_ota]: []
+[waydroid.wayland_display]: []
+[waydroid.xdg_runtime_dir]: []
+pirate101@DEBIAN13:~$ 
