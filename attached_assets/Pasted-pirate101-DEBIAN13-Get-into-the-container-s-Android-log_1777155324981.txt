@@ -1,0 +1,103 @@
+pirate101@DEBIAN13:~$ # Get into the container's Android logs
+sudo lxc-attach -P /var/lib/waydroid/lxc -n waydroid -- /system/bin/logcat -d 2>&1 | tail -100
+04-25 22:14:08.336    20  2076 W libc    : Unable to set property "ctl.interface_start" to "android.hardware.graphics.composer@2.1::IComposer/default": error code: 0x20
+04-25 22:14:08.336    20  2076 I hwservicemanager: Tried to start android.hardware.graphics.composer@2.1::IComposer/default as a lazy service, but was unable to. Usually this happens when a service is not installed, but if the service is intended to be used as a lazy service, then it may be configured incorrectly.
+04-25 22:14:08.730  1653  1653 W HidlServiceManagement: Waited one second for android.hardware.memtrack@1.0::IMemtrack/default
+04-25 22:14:08.730    20    20 I hwservicemanager: Since android.hardware.memtrack@1.0::IMemtrack/default is not registered, trying to start it as a lazy HAL.
+04-25 22:14:08.730  1653  1653 I HidlServiceManagement: getService: Trying again for android.hardware.memtrack@1.0::IMemtrack/default...
+04-25 22:14:08.747  2078  2078 E android.hardware.memtrack@1.0-impl: hw_get_module memtrack failed: -2
+04-25 22:14:08.747  2078  2078 E HidlServiceManagement: Could not find instance 'default' in library android.hardware.memtrack@1.0-impl.so. Keeping library open.
+04-25 22:14:08.747  2078  2078 E LegacySupport: Could not get passthrough implementation for android.hardware.memtrack@1.0::IMemtrack/default.
+04-25 22:14:08.940   238   238 W HidlServiceManagement: Waited one second for android.hardware.gatekeeper@1.0::IGatekeeper/default
+04-25 22:14:08.941    20    20 I hwservicemanager: Since android.hardware.gatekeeper@1.0::IGatekeeper/default is not registered, trying to start it as a lazy HAL.
+04-25 22:14:08.941   238   238 I HidlServiceManagement: getService: Trying again for android.hardware.gatekeeper@1.0::IGatekeeper/default...
+04-25 22:14:08.951  2082  2082 F android.hardware.gatekeeper@1.0-service: Unable to open GateKeeper HAL
+04-25 22:14:08.951    44    44 I tombstoned: received crash request for pid 2082
+04-25 22:14:08.961  2082  2082 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+04-25 22:14:08.961  2082  2082 F DEBUG   : LineageOS Version: 'unknown'
+04-25 22:14:08.961  2082  2082 F DEBUG   : Build fingerprint: 'samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys'
+04-25 22:14:08.961  2082  2082 F DEBUG   : Revision: '0'
+04-25 22:14:08.961  2082  2082 F DEBUG   : ABI: 'x86_64'
+04-25 22:14:08.961  2082  2082 F DEBUG   : Timestamp: 2026-04-25 22:14:08.952371734+0000
+04-25 22:14:08.961  2082  2082 F DEBUG   : Process uptime: 1s
+04-25 22:14:08.961  2082  2082 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
+04-25 22:14:08.961  2082  2082 F DEBUG   : pid: 2082, tid: 2082, name: android.hardwar  >>> /vendor/bin/hw/android.hardware.gatekeeper@1.0-service <<<
+04-25 22:14:08.961  2082  2082 F DEBUG   : uid: 1000
+04-25 22:14:08.961  2082  2082 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-25 22:14:08.961  2082  2082 F DEBUG   : Abort message: 'Unable to open GateKeeper HAL'
+04-25 22:14:08.961  2082  2082 F DEBUG   :     rax 0000000000000000  rbx 0000000000000822  rcx 00007f8c9951f68f  rdx 0000000000000006
+04-25 22:14:08.961  2082  2082 F DEBUG   :     r8  716bef08c7b1c320  r9  716bef08c7b1c320  r10 00007ffd53dccf00  r11 0000000000000207
+04-25 22:14:08.961  2082  2082 F DEBUG   :     r12 00007ffd53dcd778  r13 00007ffd53dcd650  r14 00007ffd53dccef8  r15 0000000000000822
+04-25 22:14:08.961  2082  2082 F DEBUG   :     rdi 0000000000000822  rsi 0000000000000822
+04-25 22:14:08.961  2082  2082 F DEBUG   :     rbp 00007ffd53dcd5a0  rsp 00007ffd53dccef0  rip 00007f8c9951f68f
+04-25 22:14:08.961  2082  2082 F DEBUG   : backtrace:
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #01 pc 00000000000069aa  /system/lib64/liblog.so (__android_log_default_aborter+10) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #02 pc 0000000000007562  /system/lib64/liblog.so (__android_log_assert+370) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #03 pc 00000000000037b1  /vendor/lib64/hw/android.hardware.gatekeeper@1.0-impl.so (HIDL_FETCH_IGatekeeper+145) (BuildId: 6a45b01ccf5438c390f1c34bdbdc4f9f)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #04 pc 00000000000633d0  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::get(android::hardware::hidl_string const&, android::hardware::hidl_string const&)::'lambda'(void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)::operator()(void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const+96) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #05 pc 000000000005d225  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::openLibs(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::function<bool (void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)> const&)+2149) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #06 pc 0000000000060e45  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::get(android::hardware::hidl_string const&, android::hardware::hidl_string const&)+101) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #07 pc 000000000005e6e6  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::details::getRawServiceInternal(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, bool, bool)+2310) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #08 pc 000000000005b741  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::details::registerPassthroughServiceImplementation(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::function<int (android::sp<android::hidl::base::V1_0::IBase> const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)>, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+81) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #09 pc 000000000005bb61  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::registerPassthroughServiceImplementation(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+49) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #10 pc 0000000000001a2e  /vendor/bin/hw/android.hardware.gatekeeper@1.0-service (int android::hardware::registerPassthroughServiceImplementation<android::hardware::gatekeeper::V1_0::IGatekeeper, android::hardware::gatekeeper::V1_0::IGatekeeper>(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+78) (BuildId: 1f94fab514f1b22cb1661796ca3f1dee)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #11 pc 00000000000018f5  /vendor/bin/hw/android.hardware.gatekeeper@1.0-service (main+69) (BuildId: 1f94fab514f1b22cb1661796ca3f1dee)
+04-25 22:14:08.961  2082  2082 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-25 22:14:08.963    44    44 E tombstoned: Tombstone written to: tombstone_13
+04-25 22:14:09.258   267   267 I LSPosedService: service package is not started, wait 1s.
+04-25 22:14:09.336   172   172 W HidlServiceManagement: Waited one second for android.hardware.graphics.composer@2.1::IComposer/default
+04-25 22:14:09.336    20    20 I hwservicemanager: Since android.hardware.graphics.composer@2.1::IComposer/default is not registered, trying to start it as a lazy HAL.
+04-25 22:14:09.336   172   172 I HidlServiceManagement: getService: Trying again for android.hardware.graphics.composer@2.1::IComposer/default...
+04-25 22:14:09.337    20  2083 W libc    : Unable to set property "ctl.interface_start" to "android.hardware.graphics.composer@2.1::IComposer/default": error code: 0x20
+04-25 22:14:09.337    20  2083 I hwservicemanager: Tried to start android.hardware.graphics.composer@2.1::IComposer/default as a lazy service, but was unable to. Usually this happens when a service is not installed, but if the service is intended to be used as a lazy service, then it may be configured incorrectly.
+04-25 22:14:09.731  1653  1653 W HidlServiceManagement: Waited one second for android.hardware.memtrack@1.0::IMemtrack/default
+04-25 22:14:09.731    20    20 I hwservicemanager: Since android.hardware.memtrack@1.0::IMemtrack/default is not registered, trying to start it as a lazy HAL.
+04-25 22:14:09.731  1653  1653 I HidlServiceManagement: getService: Trying again for android.hardware.memtrack@1.0::IMemtrack/default...
+04-25 22:14:09.741  2085  2085 E android.hardware.memtrack@1.0-impl: hw_get_module memtrack failed: -2
+04-25 22:14:09.741  2085  2085 E HidlServiceManagement: Could not find instance 'default' in library android.hardware.memtrack@1.0-impl.so. Keeping library open.
+04-25 22:14:09.741  2085  2085 E LegacySupport: Could not get passthrough implementation for android.hardware.memtrack@1.0::IMemtrack/default.
+04-25 22:14:09.941   238   238 W HidlServiceManagement: Waited one second for android.hardware.gatekeeper@1.0::IGatekeeper/default
+04-25 22:14:09.941    20    20 I hwservicemanager: Since android.hardware.gatekeeper@1.0::IGatekeeper/default is not registered, trying to start it as a lazy HAL.
+04-25 22:14:09.941   238   238 I HidlServiceManagement: getService: Trying again for android.hardware.gatekeeper@1.0::IGatekeeper/default...
+04-25 22:14:09.953  2089  2089 F android.hardware.gatekeeper@1.0-service: Unable to open GateKeeper HAL
+04-25 22:14:09.953    44    44 I tombstoned: received crash request for pid 2089
+04-25 22:14:09.964  2089  2089 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+04-25 22:14:09.964  2089  2089 F DEBUG   : LineageOS Version: 'unknown'
+04-25 22:14:09.964  2089  2089 F DEBUG   : Build fingerprint: 'samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys'
+04-25 22:14:09.964  2089  2089 F DEBUG   : Revision: '0'
+04-25 22:14:09.964  2089  2089 F DEBUG   : ABI: 'x86_64'
+04-25 22:14:09.964  2089  2089 F DEBUG   : Timestamp: 2026-04-25 22:14:09.954766629+0000
+04-25 22:14:09.964  2089  2089 F DEBUG   : Process uptime: 1s
+04-25 22:14:09.964  2089  2089 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
+04-25 22:14:09.964  2089  2089 F DEBUG   : pid: 2089, tid: 2089, name: android.hardwar  >>> /vendor/bin/hw/android.hardware.gatekeeper@1.0-service <<<
+04-25 22:14:09.964  2089  2089 F DEBUG   : uid: 1000
+04-25 22:14:09.964  2089  2089 F DEBUG   : signal 0 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+04-25 22:14:09.964  2089  2089 F DEBUG   : Abort message: 'Unable to open GateKeeper HAL'
+04-25 22:14:09.964  2089  2089 F DEBUG   :     rax 0000000000000000  rbx 0000000000000829  rcx 00007fd4f959068f  rdx 0000000000000006
+04-25 22:14:09.964  2089  2089 F DEBUG   :     r8  4e1b17e5c449b98a  r9  4e1b17e5c449b98a  r10 00007ffcefbab650  r11 0000000000000207
+04-25 22:14:09.964  2089  2089 F DEBUG   :     r12 00007ffcefbabec8  r13 00007ffcefbabda0  r14 00007ffcefbab648  r15 0000000000000829
+04-25 22:14:09.964  2089  2089 F DEBUG   :     rdi 0000000000000829  rsi 0000000000000829
+04-25 22:14:09.964  2089  2089 F DEBUG   :     rbp 00007ffcefbabcf0  rsp 00007ffcefbab640  rip 00007fd4f959068f
+04-25 22:14:09.964  2089  2089 F DEBUG   : backtrace:
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #00 pc 000000000005f68f  /apex/com.android.runtime/lib64/bionic/libc.so (abort+191) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #01 pc 00000000000069aa  /system/lib64/liblog.so (__android_log_default_aborter+10) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #02 pc 0000000000007562  /system/lib64/liblog.so (__android_log_assert+370) (BuildId: f0538d632eee5d6820b96914c8a1657c)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #03 pc 00000000000037b1  /vendor/lib64/hw/android.hardware.gatekeeper@1.0-impl.so (HIDL_FETCH_IGatekeeper+145) (BuildId: 6a45b01ccf5438c390f1c34bdbdc4f9f)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #04 pc 00000000000633d0  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::get(android::hardware::hidl_string const&, android::hardware::hidl_string const&)::'lambda'(void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)::operator()(void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const+96) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #05 pc 000000000005d225  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::openLibs(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::function<bool (void*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)> const&)+2149) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #06 pc 0000000000060e45  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::PassthroughServiceManager::get(android::hardware::hidl_string const&, android::hardware::hidl_string const&)+101) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #07 pc 000000000005e6e6  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::details::getRawServiceInternal(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, bool, bool)+2310) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #08 pc 000000000005b741  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::details::registerPassthroughServiceImplementation(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::function<int (android::sp<android::hidl::base::V1_0::IBase> const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)>, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+81) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #09 pc 000000000005bb61  /apex/com.android.vndk.v33/lib64/libhidlbase.so (android::hardware::registerPassthroughServiceImplementation(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+49) (BuildId: 80921d70729c48225e4dc5443775bc93)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #10 pc 0000000000001a2e  /vendor/bin/hw/android.hardware.gatekeeper@1.0-service (int android::hardware::registerPassthroughServiceImplementation<android::hardware::gatekeeper::V1_0::IGatekeeper, android::hardware::gatekeeper::V1_0::IGatekeeper>(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)+78) (BuildId: 1f94fab514f1b22cb1661796ca3f1dee)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #11 pc 00000000000018f5  /vendor/bin/hw/android.hardware.gatekeeper@1.0-service (main+69) (BuildId: 1f94fab514f1b22cb1661796ca3f1dee)
+04-25 22:14:09.964  2089  2089 F DEBUG   :       #12 pc 0000000000050d29  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+89) (BuildId: f8176795d7be7c9d6098611eff6e8f6c)
+04-25 22:14:09.966    44    44 E tombstoned: Tombstone written to: tombstone_14
+04-25 22:14:10.260   267   267 I LSPosedService: service package is not started, wait 1s.
+04-25 22:14:10.336   172   172 W HidlServiceManagement: Waited one second for android.hardware.graphics.composer@2.1::IComposer/default
+04-25 22:14:10.337    20    20 I hwservicemanager: Since android.hardware.graphics.composer@2.1::IComposer/default is not registered, trying to start it as a lazy HAL.
+04-25 22:14:10.337   172   172 I HidlServiceManagement: getService: Trying again for android.hardware.graphics.composer@2.1::IComposer/default...
+04-25 22:14:10.338    20  2090 W libc    : Unable to set property "ctl.interface_start" to "android.hardware.graphics.composer@2.1::IComposer/default": error code: 0x20
+04-25 22:14:10.338    20  2090 I hwservicemanager: Tried to start android.hardware.graphics.composer@2.1::IComposer/default as a lazy service, but was unable to. Usually this happens when a service is not installed, but if the service is intended to be used as a lazy service, then it may be configured incorrectly.
+pirate101@DEBIAN13:~$ 
