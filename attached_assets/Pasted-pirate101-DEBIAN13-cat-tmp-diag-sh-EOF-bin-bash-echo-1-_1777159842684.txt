@@ -1,0 +1,282 @@
+pirate101@DEBIAN13:~$ cat > /tmp/diag.sh << 'EOF'
+#!/bin/bash
+echo "===== 1/6 Container + session status ====="
+sudo systemctl is-active waydroid-container
+waydroid status 2>&1 | sed 's/^/  /'
+
+echo ""
+echo "===== 2/6 All Android init services state ====="
+timeout 8 sudo waydroid shell -- sh -c 'getprop | grep "^\[init.svc" | sort' 2>&1 | sed 's/^/  /'
+
+echo ""
+echo "===== 3/6 Look for waydroidplatform in init scripts ====="
+timeout 8 sudo waydroid shell -- sh -c '
+  echo "  init.waydroid.vendor.rc exists?"
+  ls -la /vendor/etc/init/init.waydroid.vendor.rc 2>&1
+  echo ""
+  echo "  Content (first 30 lines):"
+  head -30 /vendor/etc/init/init.waydroid.vendor.rc 2>&1
+  echo ""
+  echo "  All init files in /vendor/etc/init/:"
+  ls -la /vendor/etc/init/ 2>&1 | head -20
+' 2>&1 | sed 's/^/  /'
+
+echo ""
+echo "===== 4/6 Logcat — surfaceflinger + waydroid + init failures ====="
+timeout 10 sudo waydroid shell -- logcat -d -t 200 2>&1 | grep -iE "surfaceflinger|waydroid|hwcomposer|fail|cannot|error" | tail -40 | sed 's/^/  /'
+
+echo ""
+echo "===== 5/6 Container journal — last 30 lines ====="
+sudo journalctl -u waydroid-container -n 30 --no-pager 2>&1 | sed 's/^/  /'
+
+bash /tmp/diag.sh-ui exit code: $?"&1 | sed 's/^/    /'IR=$XDG_RUNTIME_DIR"
+===== 1/6 Container + session status =====
+active
+  Session:      RUNNING
+  Container:    RUNNING
+  Vendor type:  MAINLINE
+  IP address:   192.168.240.112
+  Session user: pirate101(1000)
+  Wayland display:      wayland-0
+
+===== 2/6 All Android init services state =====
+  [init.svc.adb_root]: [running]
+  [init.svc.adbd]: [running]
+  [init.svc.apexd-bootstrap]: [stopped]
+  [init.svc.apexd-snapshotde]: [stopped]
+  [init.svc.apexd]: [stopped]
+  [init.svc.audioserver]: [running]
+  [init.svc.bootanim]: [stopped]
+  [init.svc.boringssl_self_test32]: [stopped]
+  [init.svc.boringssl_self_test32_vendor]: [stopped]
+  [init.svc.boringssl_self_test64]: [stopped]
+  [init.svc.boringssl_self_test64_vendor]: [stopped]
+  [init.svc.boringssl_self_test_apex32]: [stopped]
+  [init.svc.boringssl_self_test_apex64]: [stopped]
+  [init.svc.bpfloader]: [stopped]
+  [init.svc.cameraserver]: [running]
+  [init.svc.credstore]: [running]
+  [init.svc.derive_classpath]: [stopped]
+  [init.svc.derive_sdk]: [stopped]
+  [init.svc.gatekeeperd]: [running]
+  [init.svc.gpu]: [running]
+  [init.svc.heapprofd]: [stopped]
+  [init.svc.hidl_memory]: [running]
+  [init.svc.hwservicemanager]: [running]
+  [init.svc.idmap2d]: [stopping]
+  [init.svc.incidentd]: [running]
+  [init.svc.installd]: [running]
+  [init.svc.keystore2]: [running]
+  [init.svc.lmkd]: [running]
+  [init.svc.logd-auditctl]: [stopped]
+  [init.svc.logd-reinit]: [stopped]
+  [init.svc.logd]: [running]
+  [init.svc.mdnsd]: [running]
+  [init.svc.media.swcodec]: [running]
+  [init.svc.media]: [running]
+  [init.svc.mediadrm]: [running]
+  [init.svc.mediaextractor]: [running]
+  [init.svc.mediametrics]: [running]
+  [init.svc.netd]: [running]
+  [init.svc.odsign]: [stopped]
+  [init.svc.prng_seeder]: [running]
+  [init.svc.servicemanager]: [running]
+  [init.svc.set_home_activity]: [stopped]
+  [init.svc.statsd]: [running]
+  [init.svc.storaged]: [running]
+  [init.svc.surfaceflinger]: [running]
+  [init.svc.system_suspend]: [running]
+  [init.svc.task-hal-1-0]: [running]
+  [init.svc.tombstoned]: [running]
+  [init.svc.traced]: [running]
+  [init.svc.traced_perf]: [stopped]
+  [init.svc.traced_probes]: [running]
+  [init.svc.ueventd]: [running]
+  [init.svc.usbd]: [stopped]
+  [init.svc.vendor.audio-hal]: [running]
+  [init.svc.vendor.camera-provider-2-7-ext]: [running]
+  [init.svc.vendor.cas-hal-1-2]: [running]
+  [init.svc.vendor.configstore-hal]: [running]
+  [init.svc.vendor.gatekeeper-1-0]: [running]
+  [init.svc.vendor.gralloc-2-0]: [stopped]
+  [init.svc.vendor.graphics.allocator-4-0]: [running]
+  [init.svc.vendor.health-hal-2-0]: [running]
+  [init.svc.vendor.hwcomposer-2-1]: [running]
+  [init.svc.vendor.keymaster-4-0]: [running]
+  [init.svc.vendor.light-hal-2-0]: [running]
+  [init.svc.vendor.media.omx]: [running]
+  [init.svc.vendor.memtrack-hal-1-0]: [running]
+  [init.svc.vendor.power-hal-1-0]: [running]
+  [init.svc.vendor.sensors-hal-1-0]: [running]
+  [init.svc.vendor.vibrator-1-0]: [running]
+  [init.svc.vndservicemanager]: [running]
+  [init.svc.vold]: [running]
+  [init.svc.wificond]: [running]
+  [init.svc.zygote]: [running]
+  [init.svc.zygote_secondary]: [running]
+  [init.svc_debug_pid.adb_root]: [162]
+  [init.svc_debug_pid.adbd]: [143]
+  [init.svc_debug_pid.apexd-bootstrap]: []
+  [init.svc_debug_pid.apexd-snapshotde]: []
+  [init.svc_debug_pid.apexd]: []
+  [init.svc_debug_pid.audioserver]: [114]
+  [init.svc_debug_pid.bootanim]: []
+  [init.svc_debug_pid.boringssl_self_test32]: []
+  [init.svc_debug_pid.boringssl_self_test32_vendor]: []
+  [init.svc_debug_pid.boringssl_self_test64]: []
+  [init.svc_debug_pid.boringssl_self_test64_vendor]: []
+  [init.svc_debug_pid.boringssl_self_test_apex32]: []
+  [init.svc_debug_pid.boringssl_self_test_apex64]: []
+  [init.svc_debug_pid.bpfloader]: []
+  [init.svc_debug_pid.cameraserver]: [151]
+  [init.svc_debug_pid.credstore]: [115]
+  [init.svc_debug_pid.derive_classpath]: []
+  [init.svc_debug_pid.derive_sdk]: []
+  [init.svc_debug_pid.gatekeeperd]: [165]
+  [init.svc_debug_pid.gpu]: [116]
+  [init.svc_debug_pid.heapprofd]: []
+  [init.svc_debug_pid.hidl_memory]: [99]
+  [init.svc_debug_pid.hwservicemanager]: [20]
+  [init.svc_debug_pid.idmap2d]: [154]
+  [init.svc_debug_pid.incidentd]: [155]
+  [init.svc_debug_pid.installd]: [156]
+  [init.svc_debug_pid.keystore2]: [38]
+  [init.svc_debug_pid.lmkd]: [18]
+  [init.svc_debug_pid.logd-auditctl]: []
+  [init.svc_debug_pid.logd-reinit]: []
+  [init.svc_debug_pid.logd]: [17]
+  [init.svc_debug_pid.mdnsd]: [175]
+  [init.svc_debug_pid.media.swcodec]: [164]
+  [init.svc_debug_pid.media]: [159]
+  [init.svc_debug_pid.mediaextractor]: [157]
+  [init.svc_debug_pid.mediametrics]: [158]
+  [init.svc_debug_pid.netd]: [96]
+  [init.svc_debug_pid.odsign]: []
+  [init.svc_debug_pid.prng_seeder]: [13]
+  [init.svc_debug_pid.servicemanager]: [19]
+  [init.svc_debug_pid.set_home_activity]: []
+  [init.svc_debug_pid.statsd]: [95]
+  [init.svc_debug_pid.storaged]: [160]
+  [init.svc_debug_pid.surfaceflinger]: [117]
+  [init.svc_debug_pid.system_suspend]: [37]
+  [init.svc_debug_pid.task-hal-1-0]: [102]
+  [init.svc_debug_pid.tombstoned]: [44]
+  [init.svc_debug_pid.traced]: [150]
+  [init.svc_debug_pid.traced_perf]: []
+  [init.svc_debug_pid.traced_probes]: [149]
+  [init.svc_debug_pid.ueventd]: [5]
+  [init.svc_debug_pid.usbd]: []
+  [init.svc_debug_pid.vendor.audio-hal]: [100]
+  [init.svc_debug_pid.vendor.camera-provider-2-7-ext]: [103]
+  [init.svc_debug_pid.vendor.cas-hal-1-2]: [104]
+  [init.svc_debug_pid.vendor.configstore-hal]: [105]
+  [init.svc_debug_pid.vendor.gatekeeper-1-0]: [106]
+  [init.svc_debug_pid.vendor.gralloc-2-0]: []
+  [init.svc_debug_pid.vendor.graphics.allocator-4-0]: [107]
+  [init.svc_debug_pid.vendor.health-hal-2-0]: [108]
+  [init.svc_debug_pid.vendor.hwcomposer-2-1]: [101]
+  [init.svc_debug_pid.vendor.keymaster-4-0]: [39]
+  [init.svc_debug_pid.vendor.light-hal-2-0]: [109]
+  [init.svc_debug_pid.vendor.media.omx]: [163]
+  [init.svc_debug_pid.vendor.memtrack-hal-1-0]: [110]
+  [init.svc_debug_pid.vendor.power-hal-1-0]: [111]
+  [init.svc_debug_pid.vendor.sensors-hal-1-0]: [112]
+  [init.svc_debug_pid.vendor.vibrator-1-0]: [113]
+  [init.svc_debug_pid.vndservicemanager]: [21]
+  [init.svc_debug_pid.vold]: [31]
+  [init.svc_debug_pid.wificond]: [161]
+  [init.svc_debug_pid.zygote]: [97]
+  [init.svc_debug_pid.zygote_secondary]: [98]
+
+===== 3/6 Look for waydroidplatform in init scripts =====
+    init.waydroid.vendor.rc exists?
+  -rw-r--r-- 1 root root 110 2026-04-03 12:57 /vendor/etc/init/init.waydroid.vendor.rc
+  
+    Content (first 30 lines):
+  on early-init
+     exec -- /vendor/bin/sh -c "[ -c /dev/host_hwbinder ] && setprop ctl.stop vendor.gralloc-2-0"
+  
+    All init files in /vendor/etc/init/:
+  total 92
+  drwxr-xr-x 1 root root 4096 2026-04-24 17:07 .
+  drwxr-xr-x 1 root root 4096 2026-04-24 17:07 ..
+  -rw-r--r-- 1 root root  517 2026-04-03 12:57 android.hardware.audio.service.rc
+  -rw-r--r-- 1 root root  597 2026-04-03 12:57 android.hardware.camera.provider@2.7-external-service.rc
+  -rw-r--r-- 1 root root  184 2026-04-03 12:57 android.hardware.cas@1.2-service.rc
+  -rw-r--r-- 1 root root  302 2026-04-03 12:57 android.hardware.configstore@1.1-service.rc
+  -rw-r--r-- 1 root root  288 2026-04-03 12:57 android.hardware.drm-service-lazy.clearkey.rc
+  -rw-r--r-- 1 root root  393 2026-04-24 17:07 android.hardware.drm-service-lazy.widevine.rc
+  -rw-r--r-- 1 root root  199 2026-04-03 12:57 android.hardware.gatekeeper@1.0-service.rc
+  -rw-r--r-- 1 root root  367 2026-04-03 12:57 android.hardware.graphics.allocator@2.0-service.rc
+  -rw-r--r-- 1 root root 1494 2026-04-03 12:57 android.hardware.graphics.allocator@4.0-service.minigbm_gbm_mesa.rc
+  -rw-r--r-- 1 root root  330 2026-04-03 12:57 android.hardware.graphics.composer@2.1-service.rc
+  -rw-r--r-- 1 root root  137 2026-04-03 12:57 android.hardware.health@2.0-service.waydroid.rc
+  -rw-r--r-- 1 root root  214 2026-04-03 12:57 android.hardware.keymaster@4.0-service.rc
+  -rw-r--r-- 1 root root  268 2026-04-03 12:57 android.hardware.light@2.0-service.waydroid.rc
+  -rw-r--r-- 1 root root  207 2026-04-03 12:57 android.hardware.media.omx@1.0-service.rc
+  -rw-r--r-- 1 root root  195 2026-04-03 12:57 android.hardware.memtrack@1.0-service.rc
+  -rw-r--r-- 1 root root  135 2026-04-03 12:57 android.hardware.power@1.0-service.waydroid.rc
+  -rw-r--r-- 1 root root  151 2026-04-03 12:57 android.hardware.sensors@1.0-service.waydroid.rc
+
+===== 4/6 Logcat — surfaceflinger + waydroid + init failures =====
+  04-25 23:28:32.461   337   363 E NotificationVibratorHelper: Error creating vibration waveform with pattern: [0]
+  04-25 23:28:33.177   337   578 D SntpClient: request time failed: java.net.SocketTimeoutException: Poll timed out
+  04-25 23:28:38.181   337   578 D SntpClient: request time failed: java.net.SocketTimeoutException: Poll timed out
+  04-25 23:28:38.181   337   578 D SntpClient: request time failed
+  04-25 23:28:47.464   337   363 E NotificationVibratorHelper: Error creating vibration waveform with pattern: [0]
+  04-25 23:29:02.461   337   363 E NotificationVibratorHelper: Error creating vibration waveform with pattern: [0]
+  04-25 23:29:17.462   337   363 E NotificationVibratorHelper: Error creating vibration waveform with pattern: [0]
+  04-25 23:29:32.463   337   363 E NotificationVibratorHelper: Error creating vibration waveform with pattern: [0]
+  04-25 23:29:42.288  1003  3062 I TrafficStats: tagSocketFd(-1, 1031, -1) failed with errno-9
+  04-25 23:29:47.461   337   363 E NotificationVibratorHelper: Error creating vibration waveform with pattern: [0]
+  04-25 23:29:58.540   661   878 D NetworkMonitor/100: isDataStall: result=2, tcp packets received=0, latest tcp fail rate=100, consecutive dns timeout count=0
+  04-25 23:30:02.461   337   363 E NotificationVibratorHelper: Error creating vibration waveform with pattern: [0]
+  04-25 23:30:05.876  1003  1017 W GLSUser : [DeviceKeyStore] Cannot load key: Device key file not found.
+  04-25 23:30:06.253  1003  1017 W GLSUser : [DeviceKeyStore] Cannot load key: Device key file not found.
+  04-25 23:30:06.691  1137  1458 W Auth    : [GeneralRestrictionsSyncer] Sync for accountId 112604719405084405924 failed with error [CONTEXT service_id=343 ]
+  04-25 23:30:06.745  1137  2144 W Auth    : [GeneralRestrictionsSyncer] Sync post work failed [CONTEXT service_id=343 ]
+  04-25 23:30:06.786  1003  1017 W GLSUser : [DeviceKeyStore] Cannot load key: Device key file not found.
+  04-25 23:30:06.787  1003  1017 W GLSUser : [DeviceKeyStore] Cannot load key: Device key file not found.
+  04-25 23:30:10.849   337   578 D SntpClient: request time failed: java.net.SocketTimeoutException: Poll timed out
+  04-25 23:30:15.853   337   578 D SntpClient: request time failed: java.net.SocketTimeoutException: Poll timed out
+  04-25 23:30:17.461   337   363 E NotificationVibratorHelper: Error creating vibration waveform with pattern: [0]
+  04-25 23:30:20.859   337   578 D SntpClient: request time failed: java.net.SocketTimeoutException: Poll timed out
+  04-25 23:30:25.861   337   578 D SntpClient: request time failed: java.net.SocketTimeoutException: Poll timed out
+  04-25 23:30:25.861   337   578 D SntpClient: request time failed
+
+===== 5/6 Container journal — last 30 lines =====
+  Apr 26 02:22:17 DEBIAN13 dnsmasq[806158]: reading /etc/resolv.conf
+  Apr 26 02:22:17 DEBIAN13 dnsmasq[806158]: using nameserver 41.89.1.4#53
+  Apr 26 02:22:17 DEBIAN13 dnsmasq[806158]: using nameserver 41.204.164.3#53
+  Apr 26 02:22:17 DEBIAN13 dnsmasq[806158]: read /etc/hosts - 8 names
+  Apr 26 02:22:29 DEBIAN13 dnsmasq-dhcp[806158]: DHCPDISCOVER(waydroid0) 00:16:3e:f9:d3:03
+  Apr 26 02:22:29 DEBIAN13 dnsmasq-dhcp[806158]: DHCPOFFER(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+  Apr 26 02:22:29 DEBIAN13 dnsmasq-dhcp[806158]: DHCPREQUEST(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+  Apr 26 02:22:29 DEBIAN13 dnsmasq-dhcp[806158]: DHCPACK(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03 SM-S928B
+  Apr 26 02:25:43 DEBIAN13 waydroid[804867]: [02:25:43] Stopping container
+  Apr 26 02:25:44 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+  Apr 26 02:25:44 DEBIAN13 waydroid[804867]: [02:25:44] Stopping container
+  Apr 26 02:25:44 DEBIAN13 waydroid[804867]: [gbinder] Service manager /dev/anbox-binder has appeared
+  Apr 26 02:25:44 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+  Apr 26 02:25:44 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+  Apr 26 02:25:51 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+  Apr 26 02:25:51 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+  Apr 26 02:26:16 DEBIAN13 waydroid[816206]: [02:26:16] Starting up container for a new session
+  Apr 26 02:26:17 DEBIAN13 dnsmasq[817536]: started, version 2.91 cachesize 150
+  Apr 26 02:26:17 DEBIAN13 dnsmasq[817536]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+  Apr 26 02:26:17 DEBIAN13 dnsmasq-dhcp[817536]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+  Apr 26 02:26:17 DEBIAN13 dnsmasq-dhcp[817536]: DHCP, sockets bound exclusively to interface waydroid0
+  Apr 26 02:26:17 DEBIAN13 dnsmasq[817536]: reading /etc/resolv.conf
+  Apr 26 02:26:17 DEBIAN13 dnsmasq[817536]: using nameserver 41.89.1.4#53
+  Apr 26 02:26:17 DEBIAN13 dnsmasq[817536]: using nameserver 41.204.164.3#53
+  Apr 26 02:26:17 DEBIAN13 dnsmasq[817536]: read /etc/hosts - 8 names
+  Apr 26 02:26:17 DEBIAN13 waydroid[816206]: [02:26:17] waiting 10 seconds for container to start...
+  Apr 26 02:26:27 DEBIAN13 dnsmasq-dhcp[817536]: DHCPDISCOVER(waydroid0) 00:16:3e:f9:d3:03
+  Apr 26 02:26:27 DEBIAN13 dnsmasq-dhcp[817536]: DHCPOFFER(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+  Apr 26 02:26:27 DEBIAN13 dnsmasq-dhcp[817536]: DHCPREQUEST(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+  Apr 26 02:26:27 DEBIAN13 dnsmasq-dhcp[817536]: DHCPACK(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03 SM-S928B
+
+===== 6/6 Try UI (foreground, full output, 15s) =====
+  WAYLAND_DISPLAY=wayland-0  XDG_RUNTIME_DIR=/run/user/1000
+  show-full-ui exit code: 0
+pirate101@DEBIAN13:~$ 
