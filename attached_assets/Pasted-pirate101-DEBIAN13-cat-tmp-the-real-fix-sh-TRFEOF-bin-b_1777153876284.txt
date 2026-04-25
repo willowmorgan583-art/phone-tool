@@ -1,0 +1,318 @@
+pirate101@DEBIAN13:~$ cat > /tmp/the_real_fix.sh << 'TRFEOF'
+#!/bin/bash
+set -u
+DB=/home/pirate101/.local/share/waydroid/data/adb/magisk.db
+FP=/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/8 Inspect hidelist schema (the table Magisk Delta actually reads)"
+sudo sqlite3 $DB ".schema hidelist" | sed 's/^/  /'
+echo "  Current hidelist (almost certainly empty):"
+sudo sqlite3 $DB "SELECT * FROM hidelist;" | sed 's/^/    /'
+
+step "2/8 STOP container"
+waydroid session stop 2>/dev/null || true
+sudo systemctl stop waydroid-container
+sleep 5
+
+step "3/8 Populate hidelist with same entries as denylist"
+sudo cp $DB ${DB}.bak.realfix.$(date +%s)
+sudo sqlite3 $DB << 'SQL'
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gms','com.google.android.gms');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gms','com.google.android.gms.unstable');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gms','com.google.android.gms.persistent');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gsf','com.google.android.gsf');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gsf','com.google.process.gapps');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gsf','com.google.android.gsf:search');
+INSERT OR IGNORE INTO hidelist VALUES ('com.android.vending','com.android.vending');
+INSERT OR IGNORE INTO hidelist VALUES ('com.android.webview','com.android.webview');
+INSERT OR IGNORE INTO hidelist VALUES ('gr.nikolasspyr.integritycheck','gr.nikolasspyr.inbash /tmp/the_real_fix.sh = $(getprop ro.build.fingerprint)"64)"api \d.vending \.kblack.d
+
+===== 1/8 Inspect hidelist schema (the table Magisk Delta actually reads) =====
+[sudo] password for pirate101: 
+  CREATE TABLE hidelist (package_name TEXT, process TEXT, PRIMARY KEY(package_name, process));
+  Current hidelist (almost certainly empty):
+    com.google.ar.core|com.google.ar.core
+    com.google.ar.core|com.google.ar.core:playcore_missing_splits_activity
+    com.google.ar.core|com.google.ar.core:primes_lifeboat
+    com.google.android.apps.adm|com.google.android.apps.adm
+    com.google.android.apps.adm|com.google.android.apps.adm:primes_lifeboat
+    com.nordvpn.android|com.nordvpn.android
+    com.android.chrome|com.android.chrome
+    isolated|com.android.chrome:androidx.pdf.service.PdfDocumentService
+    isolated|com.android.chrome:androidx.pdf.service.PdfDocumentServiceImpl
+    com.android.chrome|com.android.chrome:browser_restart_process
+    isolated|com.android.chrome:decoder_service:org.chromium.chrome.browser.photo_picker.DecoderService
+    com.android.chrome|com.android.chrome:launch_failed
+    com.android.chrome|com.android.chrome:playcore_missing_splits_activity
+    com.android.chrome|com.android.chrome:privileged_process0
+    com.android.chrome|com.android.chrome:privileged_process1
+    com.android.chrome|com.android.chrome:privileged_process2
+    com.android.chrome|com.android.chrome:privileged_process4
+    com.android.chrome|com.android.chrome:privileged_process5
+    com.android.chrome|com.android.chrome:privileged_process3
+    com.android.chrome|com.android.chrome_zygote
+    isolated|com.android.chrome:sandboxed_process9:org.chromium.content.app.SandboxedProcessService9
+    isolated|com.android.chrome:sandboxed_process8:org.chromium.content.app.SandboxedProcessService8
+    isolated|com.android.chrome:sandboxed_process7:org.chromium.content.app.SandboxedProcessService7
+    isolated|com.android.chrome:sandboxed_process6:org.chromium.content.app.SandboxedProcessService6
+    isolated|com.android.chrome:sandboxed_process5:org.chromium.content.app.SandboxedProcessService5
+    isolated|com.android.chrome:sandboxed_process4:org.chromium.content.app.SandboxedProcessService4
+    isolated|com.android.chrome:sandboxed_process3:org.chromium.content.app.SandboxedProcessService3
+    isolated|com.android.chrome:sandboxed_process39:org.chromium.content.app.SandboxedProcessService39
+    isolated|com.android.chrome:sandboxed_process38:org.chromium.content.app.SandboxedProcessService38
+    isolated|com.android.chrome:sandboxed_process37:org.chromium.content.app.SandboxedProcessService37
+    isolated|com.android.chrome:sandboxed_process36:org.chromium.content.app.SandboxedProcessService36
+    isolated|com.android.chrome:sandboxed_process34:org.chromium.content.app.SandboxedProcessService34
+    isolated|com.android.chrome:sandboxed_process35:org.chromium.content.app.SandboxedProcessService35
+    isolated|com.android.chrome:sandboxed_process33:org.chromium.content.app.SandboxedProcessService33
+    isolated|com.android.chrome:sandboxed_process32:org.chromium.content.app.SandboxedProcessService32
+    isolated|com.android.chrome:sandboxed_process31:org.chromium.content.app.SandboxedProcessService31
+    isolated|com.android.chrome:sandboxed_process30:org.chromium.content.app.SandboxedProcessService30
+    isolated|com.android.chrome:sandboxed_process2:org.chromium.content.app.SandboxedProcessService2
+    isolated|com.android.chrome:sandboxed_process29:org.chromium.content.app.SandboxedProcessService29
+    isolated|com.android.chrome:sandboxed_process28:org.chromium.content.app.SandboxedProcessService28
+    isolated|com.android.chrome:sandboxed_process27:org.chromium.content.app.SandboxedProcessService27
+    isolated|com.android.chrome:sandboxed_process26:org.chromium.content.app.SandboxedProcessService26
+    isolated|com.android.chrome:sandboxed_process25:org.chromium.content.app.SandboxedProcessService25
+    isolated|com.android.chrome:sandboxed_process24:org.chromium.content.app.SandboxedProcessService24
+    isolated|com.android.chrome:sandboxed_process23:org.chromium.content.app.SandboxedProcessService23
+    isolated|com.android.chrome:sandboxed_process22:org.chromium.content.app.SandboxedProcessService22
+    isolated|com.android.chrome:sandboxed_process21:org.chromium.content.app.SandboxedProcessService21
+    isolated|com.android.chrome:sandboxed_process20:org.chromium.content.app.SandboxedProcessService20
+    isolated|com.android.chrome:sandboxed_process1:org.chromium.content.app.SandboxedProcessService1
+    isolated|com.android.chrome:sandboxed_process19:org.chromium.content.app.SandboxedProcessService19
+    isolated|com.android.chrome:sandboxed_process18:org.chromium.content.app.SandboxedProcessService18
+    isolated|com.android.chrome:sandboxed_process17:org.chromium.content.app.SandboxedProcessService17
+    isolated|com.android.chrome:sandboxed_process16:org.chromium.content.app.SandboxedProcessService16
+    isolated|com.android.chrome:sandboxed_process15:org.chromium.content.app.SandboxedProcessService15
+    isolated|com.android.chrome:sandboxed_process14:org.chromium.content.app.SandboxedProcessService14
+    isolated|com.android.chrome:sandboxed_process13:org.chromium.content.app.SandboxedProcessService13
+    isolated|com.android.chrome:sandboxed_process12:org.chromium.content.app.SandboxedProcessService12
+    isolated|com.android.chrome:sandboxed_process11:org.chromium.content.app.SandboxedProcessService11
+    isolated|com.android.chrome:sandboxed_process10:org.chromium.content.app.SandboxedProcessService10
+    com.android.chrome|com.android.chrome:privileged_process9
+    com.android.chrome|com.android.chrome:privileged_process8
+    com.android.chrome|com.android.chrome:privileged_process7
+    com.android.chrome|com.android.chrome:privileged_process6
+    com.google.android.safetycore|com.google.android.safetycore
+    com.google.android.safetycore|com.google.android.safetycore:learning_bg
+    com.google.android.safetycore|com.google.android.safetycore:primes_lifeboat
+    com.google.android.contactkeys|com.google.android.contactkeys
+    com.google.android.contactkeys|com.google.android.contactkeys:primes_lifeboat
+    org.fitchfamily.android.dejavu|org.fitchfamily.android.dejavu
+    org.fitchfamily.android.gsmlocation|org.fitchfamily.android.gsmlocation
+    gr.nikolasspyr.integritycheck|gr.nikolasspyr.integritycheck
+    org.fitchfamily.android.wifi_backend|org.fitchfamily.android.wifi_backend
+
+===== 2/8 STOP container =====
+
+===== 3/8 Populate hidelist with same entries as denylist =====
+  hidelist now:
+    com.google.ar.core|com.google.ar.core
+    com.google.ar.core|com.google.ar.core:playcore_missing_splits_activity
+    com.google.ar.core|com.google.ar.core:primes_lifeboat
+    com.google.android.apps.adm|com.google.android.apps.adm
+    com.google.android.apps.adm|com.google.android.apps.adm:primes_lifeboat
+    com.nordvpn.android|com.nordvpn.android
+    com.android.chrome|com.android.chrome
+    isolated|com.android.chrome:androidx.pdf.service.PdfDocumentService
+    isolated|com.android.chrome:androidx.pdf.service.PdfDocumentServiceImpl
+    com.android.chrome|com.android.chrome:browser_restart_process
+    isolated|com.android.chrome:decoder_service:org.chromium.chrome.browser.photo_picker.DecoderService
+    com.android.chrome|com.android.chrome:launch_failed
+    com.android.chrome|com.android.chrome:playcore_missing_splits_activity
+    com.android.chrome|com.android.chrome:privileged_process0
+    com.android.chrome|com.android.chrome:privileged_process1
+    com.android.chrome|com.android.chrome:privileged_process2
+    com.android.chrome|com.android.chrome:privileged_process4
+    com.android.chrome|com.android.chrome:privileged_process5
+    com.android.chrome|com.android.chrome:privileged_process3
+    com.android.chrome|com.android.chrome_zygote
+    isolated|com.android.chrome:sandboxed_process9:org.chromium.content.app.SandboxedProcessService9
+    isolated|com.android.chrome:sandboxed_process8:org.chromium.content.app.SandboxedProcessService8
+    isolated|com.android.chrome:sandboxed_process7:org.chromium.content.app.SandboxedProcessService7
+    isolated|com.android.chrome:sandboxed_process6:org.chromium.content.app.SandboxedProcessService6
+    isolated|com.android.chrome:sandboxed_process5:org.chromium.content.app.SandboxedProcessService5
+    isolated|com.android.chrome:sandboxed_process4:org.chromium.content.app.SandboxedProcessService4
+    isolated|com.android.chrome:sandboxed_process3:org.chromium.content.app.SandboxedProcessService3
+    isolated|com.android.chrome:sandboxed_process39:org.chromium.content.app.SandboxedProcessService39
+    isolated|com.android.chrome:sandboxed_process38:org.chromium.content.app.SandboxedProcessService38
+    isolated|com.android.chrome:sandboxed_process37:org.chromium.content.app.SandboxedProcessService37
+    isolated|com.android.chrome:sandboxed_process36:org.chromium.content.app.SandboxedProcessService36
+    isolated|com.android.chrome:sandboxed_process34:org.chromium.content.app.SandboxedProcessService34
+    isolated|com.android.chrome:sandboxed_process35:org.chromium.content.app.SandboxedProcessService35
+    isolated|com.android.chrome:sandboxed_process33:org.chromium.content.app.SandboxedProcessService33
+    isolated|com.android.chrome:sandboxed_process32:org.chromium.content.app.SandboxedProcessService32
+    isolated|com.android.chrome:sandboxed_process31:org.chromium.content.app.SandboxedProcessService31
+    isolated|com.android.chrome:sandboxed_process30:org.chromium.content.app.SandboxedProcessService30
+    isolated|com.android.chrome:sandboxed_process2:org.chromium.content.app.SandboxedProcessService2
+    isolated|com.android.chrome:sandboxed_process29:org.chromium.content.app.SandboxedProcessService29
+    isolated|com.android.chrome:sandboxed_process28:org.chromium.content.app.SandboxedProcessService28
+    isolated|com.android.chrome:sandboxed_process27:org.chromium.content.app.SandboxedProcessService27
+    isolated|com.android.chrome:sandboxed_process26:org.chromium.content.app.SandboxedProcessService26
+    isolated|com.android.chrome:sandboxed_process25:org.chromium.content.app.SandboxedProcessService25
+    isolated|com.android.chrome:sandboxed_process24:org.chromium.content.app.SandboxedProcessService24
+    isolated|com.android.chrome:sandboxed_process23:org.chromium.content.app.SandboxedProcessService23
+    isolated|com.android.chrome:sandboxed_process22:org.chromium.content.app.SandboxedProcessService22
+    isolated|com.android.chrome:sandboxed_process21:org.chromium.content.app.SandboxedProcessService21
+    isolated|com.android.chrome:sandboxed_process20:org.chromium.content.app.SandboxedProcessService20
+    isolated|com.android.chrome:sandboxed_process1:org.chromium.content.app.SandboxedProcessService1
+    isolated|com.android.chrome:sandboxed_process19:org.chromium.content.app.SandboxedProcessService19
+    isolated|com.android.chrome:sandboxed_process18:org.chromium.content.app.SandboxedProcessService18
+    isolated|com.android.chrome:sandboxed_process17:org.chromium.content.app.SandboxedProcessService17
+    isolated|com.android.chrome:sandboxed_process16:org.chromium.content.app.SandboxedProcessService16
+    isolated|com.android.chrome:sandboxed_process15:org.chromium.content.app.SandboxedProcessService15
+    isolated|com.android.chrome:sandboxed_process14:org.chromium.content.app.SandboxedProcessService14
+    isolated|com.android.chrome:sandboxed_process13:org.chromium.content.app.SandboxedProcessService13
+    isolated|com.android.chrome:sandboxed_process12:org.chromium.content.app.SandboxedProcessService12
+    isolated|com.android.chrome:sandboxed_process11:org.chromium.content.app.SandboxedProcessService11
+    isolated|com.android.chrome:sandboxed_process10:org.chromium.content.app.SandboxedProcessService10
+    com.android.chrome|com.android.chrome:privileged_process9
+    com.android.chrome|com.android.chrome:privileged_process8
+    com.android.chrome|com.android.chrome:privileged_process7
+    com.android.chrome|com.android.chrome:privileged_process6
+    com.google.android.safetycore|com.google.android.safetycore
+    com.google.android.safetycore|com.google.android.safetycore:learning_bg
+    com.google.android.safetycore|com.google.android.safetycore:primes_lifeboat
+    com.google.android.contactkeys|com.google.android.contactkeys
+    com.google.android.contactkeys|com.google.android.contactkeys:primes_lifeboat
+    org.fitchfamily.android.dejavu|org.fitchfamily.android.dejavu
+    org.fitchfamily.android.gsmlocation|org.fitchfamily.android.gsmlocation
+    gr.nikolasspyr.integritycheck|gr.nikolasspyr.integritycheck
+    org.fitchfamily.android.wifi_backend|org.fitchfamily.android.wifi_backend
+    com.google.android.gms|com.google.android.gms
+    com.google.android.gms|com.google.android.gms.unstable
+    com.google.android.gms|com.google.android.gms.persistent
+    com.google.android.gsf|com.google.android.gsf
+    com.google.android.gsf|com.google.process.gapps
+    com.google.android.gsf|com.google.android.gsf:search
+    com.android.vending|com.android.vending
+    com.android.webview|com.android.webview
+    com.kblack.demo_play_integrity_api|com.kblack.demo_play_integrity_api
+
+===== 4/8 Append ABI + SELinux fix to system.prop =====
+  system.prop appended
+
+===== 5/8 Update service.sh with ABI/SELinux runtime spoof =====
+/tmp/the_real_fix.sh: line 95: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh: Permission denied
+  service.sh:  lines
+
+===== 6/8 START container =====
+
+===== 7/8 Activate magiskhide via CLI (the applet that actually works) =====
+  --- magisk applets available ---
+    su
+    resetprop
+    magiskhide
+
+  --- magiskhide enable ---
+
+  --- add packages via CLI as belt-and-suspenders ---
+    [com.google.android.gms] Target already exists in hidelist
+    [com.google.android.gsf] Target already exists in hidelist
+    [com.android.vending] Target already exists in hidelist
+    [com.android.webview] Target already exists in hidelist
+    [com.kblack.demo_play_integrity_api] Target already exists in hidelist
+    [gr.nikolasspyr.integritycheck] Target already exists in hidelist
+
+  --- final magiskhide status + ls ---
+    MagiskHide is enabled
+    com.android.chrome|com.android.chrome
+    com.android.chrome|com.android.chrome:browser_restart_process
+    com.android.chrome|com.android.chrome:launch_failed
+    com.android.chrome|com.android.chrome:playcore_missing_splits_activity
+    com.android.chrome|com.android.chrome:privileged_process0
+    com.android.chrome|com.android.chrome:privileged_process1
+    com.android.chrome|com.android.chrome:privileged_process2
+    com.android.chrome|com.android.chrome:privileged_process3
+    com.android.chrome|com.android.chrome:privileged_process4
+    com.android.chrome|com.android.chrome:privileged_process5
+    com.android.chrome|com.android.chrome:privileged_process6
+    com.android.chrome|com.android.chrome:privileged_process7
+    com.android.chrome|com.android.chrome:privileged_process8
+    com.android.chrome|com.android.chrome:privileged_process9
+    com.android.chrome|com.android.chrome_zygote
+    com.android.vending|com.android.vending
+    com.android.webview|com.android.webview
+    com.google.android.apps.adm|com.google.android.apps.adm
+    com.google.android.apps.adm|com.google.android.apps.adm:primes_lifeboat
+    com.google.android.contactkeys|com.google.android.contactkeys
+    com.google.android.contactkeys|com.google.android.contactkeys:primes_lifeboat
+    com.google.android.gms|com.google.android.gms
+    com.google.android.gms|com.google.android.gms.persistent
+    com.google.android.gms|com.google.android.gms.unstable
+    com.google.android.gsf|com.google.android.gsf
+    com.google.android.gsf|com.google.android.gsf:search
+    com.google.android.gsf|com.google.process.gapps
+    com.google.android.safetycore|com.google.android.safetycore
+    com.google.android.safetycore|com.google.android.safetycore:learning_bg
+    com.google.android.safetycore|com.google.android.safetycore:primes_lifeboat
+    com.google.ar.core|com.google.ar.core
+    com.google.ar.core|com.google.ar.core:playcore_missing_splits_activity
+    com.google.ar.core|com.google.ar.core:primes_lifeboat
+    com.kblack.demo_play_integrity_api|com.kblack.demo_play_integrity_api
+    com.nordvpn.android|com.nordvpn.android
+    gr.nikolasspyr.integritycheck|gr.nikolasspyr.integritycheck
+    isolated|com.android.chrome:androidx.pdf.service.PdfDocumentService
+    isolated|com.android.chrome:androidx.pdf.service.PdfDocumentServiceImpl
+    isolated|com.android.chrome:decoder_service:org.chromium.chrome.browser.photo_picker.DecoderService
+    isolated|com.android.chrome:sandboxed_process10:org.chromium.content.app.SandboxedProcessService10
+    isolated|com.android.chrome:sandboxed_process11:org.chromium.content.app.SandboxedProcessService11
+    isolated|com.android.chrome:sandboxed_process12:org.chromium.content.app.SandboxedProcessService12
+    isolated|com.android.chrome:sandboxed_process13:org.chromium.content.app.SandboxedProcessService13
+    isolated|com.android.chrome:sandboxed_process14:org.chromium.content.app.SandboxedProcessService14
+    isolated|com.android.chrome:sandboxed_process15:org.chromium.content.app.SandboxedProcessService15
+    isolated|com.android.chrome:sandboxed_process16:org.chromium.content.app.SandboxedProcessService16
+    isolated|com.android.chrome:sandboxed_process17:org.chromium.content.app.SandboxedProcessService17
+    isolated|com.android.chrome:sandboxed_process18:org.chromium.content.app.SandboxedProcessService18
+    isolated|com.android.chrome:sandboxed_process19:org.chromium.content.app.SandboxedProcessService19
+    isolated|com.android.chrome:sandboxed_process1:org.chromium.content.app.SandboxedProcessService1
+    isolated|com.android.chrome:sandboxed_process20:org.chromium.content.app.SandboxedProcessService20
+    isolated|com.android.chrome:sandboxed_process21:org.chromium.content.app.SandboxedProcessService21
+    isolated|com.android.chrome:sandboxed_process22:org.chromium.content.app.SandboxedProcessService22
+    isolated|com.android.chrome:sandboxed_process23:org.chromium.content.app.SandboxedProcessService23
+    isolated|com.android.chrome:sandboxed_process24:org.chromium.content.app.SandboxedProcessService24
+    isolated|com.android.chrome:sandboxed_process25:org.chromium.content.app.SandboxedProcessService25
+    isolated|com.android.chrome:sandboxed_process26:org.chromium.content.app.SandboxedProcessService26
+    isolated|com.android.chrome:sandboxed_process27:org.chromium.content.app.SandboxedProcessService27
+    isolated|com.android.chrome:sandboxed_process28:org.chromium.content.app.SandboxedProcessService28
+    isolated|com.android.chrome:sandboxed_process29:org.chromium.content.app.SandboxedProcessService29
+    isolated|com.android.chrome:sandboxed_process2:org.chromium.content.app.SandboxedProcessService2
+    isolated|com.android.chrome:sandboxed_process30:org.chromium.content.app.SandboxedProcessService30
+    isolated|com.android.chrome:sandboxed_process31:org.chromium.content.app.SandboxedProcessService31
+    isolated|com.android.chrome:sandboxed_process32:org.chromium.content.app.SandboxedProcessService32
+    isolated|com.android.chrome:sandboxed_process33:org.chromium.content.app.SandboxedProcessService33
+    isolated|com.android.chrome:sandboxed_process34:org.chromium.content.app.SandboxedProcessService34
+    isolated|com.android.chrome:sandboxed_process35:org.chromium.content.app.SandboxedProcessService35
+    isolated|com.android.chrome:sandboxed_process36:org.chromium.content.app.SandboxedProcessService36
+    isolated|com.android.chrome:sandboxed_process37:org.chromium.content.app.SandboxedProcessService37
+    isolated|com.android.chrome:sandboxed_process38:org.chromium.content.app.SandboxedProcessService38
+    isolated|com.android.chrome:sandboxed_process39:org.chromium.content.app.SandboxedProcessService39
+    isolated|com.android.chrome:sandboxed_process3:org.chromium.content.app.SandboxedProcessService3
+    isolated|com.android.chrome:sandboxed_process4:org.chromium.content.app.SandboxedProcessService4
+    isolated|com.android.chrome:sandboxed_process5:org.chromium.content.app.SandboxedProcessService5
+    isolated|com.android.chrome:sandboxed_process6:org.chromium.content.app.SandboxedProcessService6
+    isolated|com.android.chrome:sandboxed_process7:org.chromium.content.app.SandboxedProcessService7
+    isolated|com.android.chrome:sandboxed_process8:org.chromium.content.app.SandboxedProcessService8
+    isolated|com.android.chrome:sandboxed_process9:org.chromium.content.app.SandboxedProcessService9
+    org.fitchfamily.android.dejavu|org.fitchfamily.android.dejavu
+    org.fitchfamily.android.gsmlocation|org.fitchfamily.android.gsmlocation
+    org.fitchfamily.android.wifi_backend|org.fitchfamily.android.wifi_backend
+
+===== 8/8 Verify ABI + SELinux + identity all align =====
+  --- ABI (must be arm64-v8a first now) ---
+    cpu.abi       = arm64-v8a
+    cpu.abilist   = arm64-v8a,armeabi-v7a,armeabi
+    cpu.abilist64 = arm64-v8a
+
+  --- SELinux ---
+    ro.boot.selinux  = enforcing
+    ro.build.selinux = 1
+    getenforce       = Disabled
+
+  --- Identity ---
+    model         = SM-S928B
+    bootloader    = S928BXXU1AXBA
+    fingerprint   = samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+pirate101@DEBIAN13:~$ 
