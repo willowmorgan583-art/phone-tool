@@ -1,0 +1,81 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c 'echo "android=$(getprop ro.build.version.release) | sdk=$(getprop ro.build.version.sdk) | lineage=$(getprop ro.lineage.version)"'
+[sudo] password for pirate101: 
+android=13 | sdk=33 | lineage=20.0-20260403-VANILLA-waydroid_x86_64
+pirate101@DEBIAN13:~$ SNAP_DIR=~/waydroid_snapshot_$(date +%Y%m%d_%H%M%S) ; \
+mkdir -p "$SNAP_DIR"/{host,container,magisk,props,modules,scripts,packages,logs} ; \
+echo "===== SNAPSHOT TARGET: $SNAP_DIR =====" ; \
+\
+echo "===== [1/9] HOST CONFIG =====" ; \
+sudo cp -a /var/lib/waydroid/waydroid.cfg              "$SNAP_DIR/host/" 2>/dev/null ; \
+sudo cp -a /var/lib/waydroid/waydroid_base.prop        "$SNAP_DIR/host/" 2>/dev/null ; \
+sudo cp -a /var/lib/waydroid/lxc                       "$SNAP_DIR/host/" 2>/dev/null ; \
+sudo cp -ar /etc/waydroid-extra                        "$SNAP_DIR/host/" 2>/dev/null ; \
+sudo ls -laR /var/lib/waydroid/ > "$SNAP_DIR/host/var_lib_waydroid_tree.txt" 2>&1 ; \
+sudo systemctl status waydroid-container > "$SNAP_DIR/host/service_status.txt" 2>&1 ; \
+sudo cat /etc/systemd/system/waydroid-container.service > "$SNAP_DIR/host/service_unit.txt" 2>&1 ; \
+waydroid --version > "$SNAP_DIR/host/waydroid_version.txt" 2>&1 ; \
+waydroid status > "$SNAP_DIR/host/waydroid_status.txt" 2>&1 ; \
+\
+echo "===== [2/9] CONTAINER PROPS (build, vendor, system, default) =====" ; \
+sudo waydroid shell -- getprop > "$SNAP_DIR/props/all_getprop.txt" 2>&1 ; \
+for f in /system/build.prop /vendor/build.prop /vendor/default.prop /odm/etc/build.prop /product/build.prop /system_ext/build.prop /default.prop ; do \
+  sudo waydroid shell -- cat "$f" > "$SNAP_DIR/props/$(echo $f | tr / _).txt" 2>&1 ; \
+done ; \
+sudo waydroid shell -- cat /data/adb/pif.prop > "$SNAP_DIR/props/pif.prop" 2>&1 ; \
+sudo waydroid shell -- cat /data/adb/pif.json > "$SNAP_DIR/props/pif.json" 2>&1 ; \
+\
+echo "===== [3/9] MAGISK STATE =====" ; \
+sudo waydroid shell -- sh -c 'magisk -V; echo ---; magisk -c' > "$SNAP_DIR/magisk/version.txt" 2>&1 ; \
+sudo waydroid shell -- sh -c 'su -c "magisk --denylist status"'  > "$SNAP_DIR/magisk/denylist_status.txt" 2>&1 ; \
+sudo waydroid shell -- sh -c 'su -c "magisk --denylist ls"'      > "$SNAP_DIR/magisk/denylist_apps.txt" 2>&1 ; \
+sudo waydroid shell -- sh -c 'su -c "magisk --sqlite \"select * from settings\""' > "$SNAP_DIR/mals "$SNAP_DIR"ference: ls $SNAP_DIR" ; \==========" ; \-l)" ; \ull | cut -f1)" ; \dev/null ; \R/h
+===== SNAPSHOT TARGET: /home/pirate101/waydroid_snapshot_20260425_151557 =====
+===== [1/9] HOST CONFIG =====
+[sudo] password for pirate101: 
+===== [2/9] CONTAINER PROPS (build, vendor, system, default) =====
+===== [3/9] MAGISK STATE =====
+===== [4/9] MAGISK MODULES (full copy) =====
+===== [5/9] PIF / AUTOPIF SCRIPTS =====
+===== [6/9] INSTALLED PACKAGES (GMS / target apps) =====
+Failed to write while dumping service package: Broken pipe
+Failed to write while dumping service package: Broken pipe
+Failed to write while dumping service package: Broken pipe
+===== [7/9] OVERLAYS / MOUNTS / NAMESPACES =====
+===== [8/9] LOGS =====
+===== [9/9] HOST USER FILES (waydroid_script, custom configs) =====
+===== FINALIZE: PACKAGE EVERYTHING =====
+
+============================================
+ SNAPSHOT DIR:     /home/pirate101/waydroid_snapshot_20260425_151557
+ SNAPSHOT TARBALL: /home/pirate101/waydroid_snapshot_20260425_151557.tar.gz
+ SIZE:             33M
+ FILES CAPTURED:   1750
+============================================
+
+Quick reference: ls /home/pirate101/waydroid_snapshot_20260425_151557
+container  host  logs  magisk  modules  packages  props  scripts
+pirate101@DEBIAN13:~$ SNAP=$(ls -td ~/waydroid_snapshot_* 2>/dev/null | head -1) ; \
+echo "Latest snapshot: $SNAP" ; \
+echo "" ; \
+echo "===== KEY FACTS FROM SNAPSHOT =====" ; \
+grep -E "^ro.product.(model|brand|manufacturer|device)|^ro.build.fingerprint" "$SNAP/props/all_getprop.txt" 2>/dev/null | head -20 ; \
+echo "" ; \
+echo "===== INSTALLED MODULES =====" ; \
+ls "$SNAP/modules/modules/" 2>/dev/null ; \
+echo "" ; \
+echo "===== MAGISK VERSION =====" ; \
+head -3 "$SNAP/magisk/version.txt" ; \
+echo "" ; \
+echo "===== ANDROID VERSION =====" ; \
+grep -E "ro.build.version.(release|sdk)" "$SNAP/props/all_getprop.txt" 2>/dev/null | head -5
+Latest snapshot: /home/pirate101/waydroid_snapshot_20260425_151557.tar.gz
+
+===== KEY FACTS FROM SNAPSHOT =====
+
+===== INSTALLED MODULES =====
+
+===== MAGISK VERSION =====
+head: cannot open '/home/pirate101/waydroid_snapshot_20260425_151557.tar.gz/magisk/version.txt' for reading: Not a directory
+
+===== ANDROID VERSION =====
+pirate101@DEBIAN13:~$ 

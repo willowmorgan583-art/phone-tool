@@ -1,0 +1,85 @@
+pirate101@DEBIAN13:~$ SNAP=$(ls -td ~/waydroid_snapshot_*/ 2>/dev/null | head -1) ; \
+SNAP=${SNAP%/} ; \
+echo "Latest snapshot dir: $SNAP" ; \
+echo "" ; \
+echo "===== ANDROID / LINEAGE / KERNEL =====" ; \
+grep -E "^\[ro\.build\.version\.(release|sdk|incremental)\]|^\[ro\.lineage\.version\]|^\[ro\.kernel\.|^\[ro\.bootimage\." "$SNAP/props/all_getprop.txt" 2>/dev/null | head -10 ; \
+echo "" ; \
+echo "===== CURRENT SPOOFED IDENTITY (PIF) =====" ; \
+grep -E "^\[ro\.product\.(model|brand|manufacturer|device|name)\]|^\[ro\.build\.fingerprint\]|^\[ro\.build\.product\]" "$SNAP/props/all_getprop.txt" 2>/dev/null | head -15 ; \
+echo "" ; \
+echo "===== MAGISK VERSION =====" ; \
+head -5 "$SNAP/magisk/version.txt" ; \
+echo "" ; \
+echo "===== ZYGISK STATUS =====" ; \
+grep -i zygisk "$SNAP/magisk/version.txt" "$SNAP/magisk/denylist_status.txt" 2>/dev/null ; \
+echo "" ; \
+echo "===== INSTALLED MAGISK MODULES =====" ; \
+ls -la "$SNAP/modules/modules/" 2>/dev/null ; \
+echo "" ; \
+echo "===== MODULE STATES (enabled/disabled/remove) =====" ; \
+for m in "$SNAP"/modules/modules/*/ ; do \
+  name=$(basename "$m") ; \
+  state="enabled" ; \
+  [ -f "$m/disable" ] && state="DISABLED" ; \
+  [ -f "$m/remove" ]  && state="MARKED-FOR-REMOVAL" ; \
+  ver=$(grep "^version=" "$m/module.prop" 2>/dev/null | cut -d= -f2) ; \
+  echo "  $name [$state] v$ver" ; \
+done ; \
+echo "" ; \
+echo "===== ANY LSPOSED LEFTOVERS? =====" ; \
+find "$SNAP" -iname "*lsposed*" 2>/dev/null ; \
+head -20 "$SNAP/props/pif.prop" 2>/dev/nullev/null ; \
+Latest snapshot dir: /home/pirate101/waydroid_snapshot_20260425_151557
+
+===== ANDROID / LINEAGE / KERNEL =====
+[ro.build.version.incremental]: [eng.aleast.20260403.132616]
+[ro.build.version.release]: [13]
+[ro.build.version.sdk]: [33]
+[ro.kernel.version]: [6.12]
+[ro.lineage.version]: [20.0-20260403-VANILLA-waydroid_x86_64]
+
+===== CURRENT SPOOFED IDENTITY (PIF) =====
+[ro.build.fingerprint]: [waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/eng.aleast.20260403.132616:userdebug/test-keys]
+[ro.build.product]: [waydroid_x86_64]
+[ro.product.brand]: [waydroid]
+[ro.product.device]: [waydroid_x86_64]
+[ro.product.manufacturer]: [Waydroid]
+[ro.product.model]: [WayDroid x86_64 Device]
+[ro.product.name]: [lineage_waydroid_x86_64]
+
+===== MAGISK VERSION =====
+26301
+---
+0fe46c5a-delta:MAGISK:R (26301)
+
+===== ZYGISK STATUS =====
+
+===== INSTALLED MAGISK MODULES =====
+total 16
+drwxr-xr-x  4 pirate101 pirate101 4096 Apr 25 00:22 .
+drwxrwxr-x  3 pirate101 pirate101 4096 Apr 25 15:16 ..
+drwxr-xr-x  6 pirate101 pirate101 4096 Apr 25 13:48 fake_proc
+drwxr-xr-x. 2 pirate101 pirate101 4096 Apr 25 03:42 playintegrityfix
+
+===== MODULE STATES (enabled/disabled/remove) =====
+  fake_proc [enabled] vv2.0
+  playintegrityfix [enabled] vv4.5-inject-s
+
+===== ANY LSPOSED LEFTOVERS? =====
+
+===== DENYLIST STATUS =====
+
+===== PIF.PROP FINGERPRINT =====
+FINGERPRINT=google/komodo_beta/komodo:CANARY/ZP11.260320.007/15154667:user/release-keys
+MANUFACTURER=Google
+MODEL=Pixel 9 Pro XL
+SECURITY_PATCH=2026-04-05
+spoofBuild=true
+spoofProps=false
+spoofProvider=false
+spoofSignature=false
+spoofVendingBuild=true
+spoofVendingSdk=false
+DEBUG=false
+pirate101@DEBIAN13:~$ 
