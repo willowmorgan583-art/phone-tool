@@ -1,0 +1,95 @@
+pirate101@DEBIAN13:~$ cat > /tmp/fix_gsf.sh << 'FGEOF'
+#!/bin/bash
+set -u
+DB=/home/pirate101/.local/share/waydroid/data/adb/magisk.db
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/7 Ensure sqlite3 is installed on host"
+which sqlite3 >/dev/null || { echo "  installing sqlite3..."; sudo apt-get install -y sqlite3 2>&1 | tail -3; }
+sudo ls -la $DB | sed 's/^/  /'
+
+step "2/7 STOP Waydroid container (release magisk.db lock)"
+waydroid session stop 2>/dev/null || true
+sleep 3
+sudo systemctl stop waydroid-container
+sleep 5
+echo "  container stopped"
+
+step "3/7 Inspect current magisk.db schema + state"
+echo "  Tables:"
+sudo sqlite3 $DB ".tables" | sed 's/^/    /'
+echo "  denylist schema:"
+sudo sqlite3 $DB ".schema denylist" | sed 's/^/    /'
+echo "  denylist current rows:"
+sudo sqlite3 $DB "SELECT * FROM denylist;" | sed 's/^/    /'
+echo "  settings (looking for denylist flag):"
+sudo sqlite3 $DB "SELECT * FROM settings;" | sed 's/^/    /'
+
+step "4/7 Backup DB and inject the entries the GUI refuses to keep"
+sudo cp $DB ${DB}.bak.$(date +%s)
+sudo sqlite3 $DB << 'SQL'
+INSERT OR IGNORE INTO denylist VALUES ('com.google.android.gsf','com.google.android.gsf');
+INSERT OR IGNORE INTO denylist VALUES ('com.google.android.gsf','com.google.process.gapps');
+INSERT OR IGNORE INTO denylist VALUES ('com.google.android.gsf','com.google.android.gsf:sbash /tmp/fix_gsf.sh=============================="60s"ws unchecked)" $m/disable ] && s=D
+
+===== 1/7 Ensure sqlite3 is installed on host =====
+[sudo] password for pirate101: 
+  -rw------- 1 root root 110592 Apr 25 23:40 /home/pirate101/.local/share/waydroid/data/adb/magisk.db
+
+===== 2/7 STOP Waydroid container (release magisk.db lock) =====
+  container stopped
+
+===== 3/7 Inspect current magisk.db schema + state =====
+  Tables:
+    denylist  hidelist  policies  settings  strings   sulist  
+  denylist schema:
+    CREATE TABLE denylist (package_name TEXT, process TEXT, PRIMARY KEY(package_name, process));
+  denylist current rows:
+    com.google.android.gms|com.google.android.gms
+    com.android.vending|com.android.vending
+  settings (looking for denylist flag):
+    zygisk|1
+    sulist|1
+    denylist|0
+    hide|1
+
+===== 4/7 Backup DB and inject the entries the GUI refuses to keep =====
+  injected
+
+===== 5/7 Verify entries landed before restart =====
+  denylist now contains:
+    com.google.android.gms|com.google.android.gms
+    com.android.vending|com.android.vending
+    com.google.android.gsf|com.google.android.gsf
+    com.google.android.gsf|com.google.process.gapps
+    com.google.android.gsf|com.google.android.gsf:search
+    com.android.webview|com.android.webview
+  denylist master flag:
+    denylist|1
+
+===== 6/7 START Waydroid container with new denylist =====
+
+===== 7/7 Confirm Magisk read denylist after boot =====
+  boot              = 1
+  ro.product.model  = SM-S928B
+  ro.bootloader     = S928BXXU1AXBA
+  /proc/version     : Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678...
+
+  Magisk denylist (from inside Android, should include GSF):
+
+  Modules:
+    fake_proc: enabled
+    playintegrityfix: enabled
+    zygisk_lsposed: enabled
+
+============================================
+ GSF entry injected at DB level — GUI cannot
+ auto-uncheck a row that does not appear there.
+
+ NOW DO IN WAYDROID:
+ 1. Open Magisk -> Settings -> verify Unmount modules ON
+    (do NOT touch the GSF checkbox even if it shows unchecked)
+ 2. Open Play Store -> sign in fresh -> wait 60s
+ 3. PI Checker -> CHECK -> paste verdict
+============================================
+pirate101@DEBIAN13:~$ 
