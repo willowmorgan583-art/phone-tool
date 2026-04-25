@@ -1,0 +1,94 @@
+pirate101@DEBIAN13:~$ cat > /tmp/egl_hunt.sh << 'EOF'
+#!/bin/bash
+
+echo "===== 1/5 Stop + restore LXC config from .bak ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 5
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+if [ -f /var/lib/waydroid/lxc/waydroid/config.bak ]; then
+  sudo cp /var/lib/waydroid/lxc/waydroid/config.bak /var/lib/waydroid/lxc/waydroid/config 
+  echo "  restored config from .bak"
+fi
+echo "  console line in restored config:"
+sudo grep "console" /var/lib/waydroid/lxc/waydroid/config | sed 's/^/    /'
+
+echo ""
+echo "===== 2/5 LXC startup errors from systemd journal ====="
+sudo journalctl -u waydroid-container -n 30 --no-pager 2>&1 | tail -20 | sed 's/^/    /'
+
+echo ""
+echo "===== 3/5 Hunt for EGL/GPU/GLES spoofs anywhere in Waydroid config ====="
+echo "  --- waydroid.cfg [properties] EGL/GPU lines ---"
+sudo grep -iE "egl|gles|opengl|gpu|gralloc|hwcomposer|mali|adreno|vulkan|ro\.hardware|ro\.board" /var/lib/waydroid/waydroid.cfg 2>&1 | sed 's/^/    /'
+echo ""
+echo "  --- fake_proc system.prop EGL/GPU lines ---"
+sudo grep -iE "egl|gles|opengl|gpu|gralloc|hwcomposer|mali|adreno|vulkan|ro\.hardware|ro\.board" /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop 2>&1 | sed 's/^/    /'
+echo ""
+bash /tmp/egl_hunt.sh /'orm      = $(getprop ro.board.platform)")"r)"| sed 's/^/    /''s/
+===== 1/5 Stop + restore LXC config from .bak =====
+  restored config from .bak
+  console line in restored config:
+    lxc.console.path = none
+
+===== 2/5 LXC startup errors from systemd journal =====
+    Apr 26 01:49:31 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+    Apr 26 01:49:31 DEBIAN13 waydroid[702751]: [gbinder] Service manager /dev/anbox-binder has appeared
+    Apr 26 01:49:31 DEBIAN13 waydroid[702751]: [gbinder] Service manager /dev/anbox-binder has appeared
+    Apr 26 01:49:32 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+    Apr 26 01:49:32 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+    Apr 26 01:49:32 DEBIAN13 systemd[1]: waydroid-container.service: Consumed 1.008s CPU time, 33.9M memory peak.
+    Apr 26 01:49:39 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+    Apr 26 01:49:39 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+    Apr 26 01:54:09 DEBIAN13 waydroid[722264]: [01:54:09] Stopping container
+    Apr 26 01:54:09 DEBIAN13 waydroid[722264]: [01:54:09] Stopping container
+    Apr 26 01:54:09 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+    Apr 26 01:54:09 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+    Apr 26 01:54:09 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+    Apr 26 01:54:16 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+    Apr 26 01:54:17 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+    Apr 26 01:58:44 DEBIAN13 waydroid[737502]: [01:58:44] Stopping container
+    Apr 26 01:58:44 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+    Apr 26 01:58:44 DEBIAN13 waydroid[737502]: [01:58:44] Stopping container
+    Apr 26 01:58:44 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+    Apr 26 01:58:44 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+
+===== 3/5 Hunt for EGL/GPU/GLES spoofs anywhere in Waydroid config =====
+  --- waydroid.cfg [properties] EGL/GPU lines ---
+
+  --- fake_proc system.prop EGL/GPU lines ---
+    # ro.hardware patch (was leaking 'unknown')
+    ro.hardware=s5e9945
+    ro.hardware.chipname=s5e9945
+    ro.board.platform=s5e9945
+
+  --- fake_proc service.sh EGL/GPU lines ---
+
+  --- any other .prop files in /data ---
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/module.prop
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/empty_waydroid.prop
+    /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/module.prop
+    /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/pif.prop
+    /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed/module.prop
+    /home/pirate101/.local/share/waydroid/data/adb/pif.prop
+    /home/pirate101/.local/share/waydroid/data/data/com.liuzh.deviceinfo/files/tt_set_apm.prop
+    /home/pirate101/.local/share/waydroid/data/data/com.liuzh.deviceinfo/files/tt_sdk_settings_sr.prop
+
+===== 4/5 Try container start with original config =====
+  state: STOPPED
+  journal:
+    Apr 26 01:54:17 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+    Apr 26 01:58:44 DEBIAN13 waydroid[737502]: [01:58:44] Stopping container
+    Apr 26 01:58:44 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+    Apr 26 01:58:44 DEBIAN13 waydroid[737502]: [01:58:44] Stopping container
+    Apr 26 01:58:44 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+    Apr 26 01:58:44 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+    Apr 26 01:58:52 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+    Apr 26 01:58:52 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+
+===== 5/5 If running, check EGL/GPU props inside Android =====
+    [01:59:12] WayDroid container is STOPPED
+pirate101@DEBIAN13:~$ 
