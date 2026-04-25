@@ -1,0 +1,180 @@
+pirate101@DEBIAN13:~$ cat > /tmp/fix2.sh << 'EOF'
+#!/bin/bash
+FP=/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc
+MODS=/home/pirate101/.local/share/waydroid/data/adb/modules
+
+echo "===== 1/9 Stop everything ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 5
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+echo ""
+echo "===== 2/9 Re-disable PIF + LSPosed (in case Step A/B/C ran) ====="
+sudo touch $MODS/playintegrityfix/disable
+sudo touch $MODS/zygisk_lsposed/disable
+sudo sqlite3 $MODS/../magisk.db "UPDATE settings SET value=0 WHERE key IN ('zygisk','hide');" 2>/dev/null
+echo "  modules disabled now:"
+sudo bash -c 'ls -la /home/pirate101/.local/share/waydroid/data/adb/modules/*/disable 2>/dev/null' | sed 's/^/    /'
+echo "  magisk settings:"
+sudo sqlite3 $MODS/../magisk.db "SELECT * FROM settings;" 2>/dev/null | sed 's/^/    /'
+
+echo ""
+echo "===== 3/9 Inspect fake_proc/vendor for HAL overlay files ====="
+echo "  full vendor tree:"
+sudo find $FP/vendor -type f 2>/dev/null | sed 's/^/    /'
+echo "  any .so files (these would OVERLAY real Waydroid HAL):"
+sudo find $FP/vendor -name "*.so" -exec ls -la {} \; 2>/dev/null | sed 's/^/    /'
+
+echo ""
+echo "===== 4/9 Show current system.prop ====="
+bash /tmp/fix2.shid show-full-ui 2>&1 | head -5surfaceflinger is running):" 's/^/    /'; 
+===== 1/9 Stop everything =====
+[sudo] password for pirate101: 
+
+===== 2/9 Re-disable PIF + LSPosed (in case Step A/B/C ran) =====
+  modules disabled now:
+    -rw-r--r-- 1 root root 0 Apr 26 02:21 /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+    -rw-r--r-- 1 root root 0 Apr 26 02:21 /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed/disable
+  magisk settings:
+    zygisk|0
+    sulist|0
+    hide|0
+    denylist|0
+
+===== 3/9 Inspect fake_proc/vendor for HAL overlay files =====
+  full vendor tree:
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.task@1.0.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.clipboard@1.0.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/hw/memtrack.waydroid.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/hw/gatekeeper.waydroid.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/hw/audio.primary.waydroid.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/hw/hwcomposer.waydroid.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.display@1.2.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.window@1.1.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.display@1.0.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.window@1.0.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.window@1.2.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.display@1.1.so
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/etc/init/vendor.waydroid.task@1.0-service.rc
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/etc/init/init.waydroid.vendor.rc
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/etc/init/android.hardware.health@2.0-service.waydroid.rc
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/etc/init/android.hardware.power@1.0-service.waydroid.rc
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/etc/init/android.hardware.vibrator@1.0-service.waydroid.rc
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/etc/init/android.hardware.light@2.0-service.waydroid.rc
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/etc/init/android.hardware.sensors@1.0-service.waydroid.rc
+  any .so files (these would OVERLAY real Waydroid HAL):
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.task@1.0.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.clipboard@1.0.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/hw/memtrack.waydroid.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/hw/gatekeeper.waydroid.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/hw/audio.primary.waydroid.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/hw/hwcomposer.waydroid.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.display@1.2.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.window@1.1.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.display@1.0.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.window@1.0.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.window@1.2.so
+    -rw-r--r-- 1 root root 0 Apr 24 15:43 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/vendor/lib64/vendor.waydroid.display@1.1.so
+
+===== 4/9 Show current system.prop =====
+    # Samsung S24 Ultra identity - apps query these via Build.* class
+    ro.product.model=SM-S928B
+    ro.product.brand=samsung
+    ro.product.manufacturer=Samsung
+    ro.product.device=e3q
+    ro.product.name=e3qxxx
+    ro.build.product=e3q
+    ro.build.flavor=user
+    ro.build.tags=release-keys
+    ro.build.type=user
+    ro.build.id=UP1A.231005.007
+    ro.build.version.incremental=S928BXXU1AXBA
+    ro.build.characteristics=phone
+    ro.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+    ro.build.description=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+    ro.build.display.id=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+    ro.bootimage.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+    
+    # Per-partition identity - model/brand/manufacturer only (NO build.fingerprint)
+    ro.product.system.brand=samsung
+    ro.product.system.device=e3q
+    ro.product.system.manufacturer=Samsung
+    ro.product.system.model=SM-S928B
+    ro.product.system.name=e3qxxx
+    ro.product.vendor.brand=samsung
+    ro.product.vendor.device=e3q
+    ro.product.vendor.manufacturer=Samsung
+    ro.product.vendor.model=SM-S928B
+    ro.product.vendor.name=e3qxxx
+    ro.product.product.brand=samsung
+    ro.product.product.device=e3q
+    ro.product.product.manufacturer=Samsung
+    ro.product.product.model=SM-S928B
+    ro.product.product.name=e3qxxx
+    
+    # Carrier identity (Verizon)
+    ro.csc.country_code=USA
+    ro.csc.countryiso_code=US
+    ro.csc.sales_code=XAA
+    gsm.sim.operator.alpha=Verizon
+    gsm.sim.operator.numeric=311480
+    gsm.sim.operator.iso-country=us
+    gsm.operator.alpha=Verizon
+    gsm.operator.numeric=311480
+    gsm.operator.iso-country=us
+    
+    # Serial / IMEI
+    ro.serialno=R3CW80E4XAB
+    ro.boot.serialno=R3CW80E4XAB
+    ro.ril.imei=357499130124581
+    ro.ril.imei1=357499130124581
+    ro.ril.imei2=357499130124599
+    persist.radio.imei=357499130124581
+    persist.radio.imei1=357499130124581
+    persist.radio.imei2=357499130124599
+    
+    # ro.hardware patch (was leaking 'unknown')
+    
+    
+    ro.boot.selinux=enforcing
+    ro.build.selinux=1
+    
+
+===== 5/9 Force ro.hardware=waydroid (HAL needs this) =====
+  appended hardware=waydroid block. Verifying:
+    ro.hardware=waydroid
+    ro.hardware.chipname=waydroid
+    ro.board.platform=waydroid
+
+===== 6/9 Confirm only fake_proc is enabled =====
+  fake_proc = ENABLED
+  playintegrityfix = DISABLED
+  zygisk_lsposed = DISABLED
+
+===== 7/9 Cold start =====
+  waiting 25s for LXC...
+  session started, waiting 60s for boot...
+
+===== 8/9 Verify boot state =====
+  boot_completed       = 1
+  surfaceflinger       = stopping
+  waydroidplatform     = 
+  zygote_secondary     = running
+  ro.hardware          = waydroid
+  ro.boot.hardware     = waydroid
+  ro.product.model     = SM-S928B
+  ro.product.brand     = samsung
+  ro.build.fingerprint = samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+  ro.hardware.gralloc  = minigbm_gbm_mesa
+  ro.hardware.hwcomposer = 
+
+===== 9/9 Wait 30s, check if container is still alive =====
+  container status:
+    active
+  surfaceflinger after 30s:
+    stopping
+
+  Try UI now (should not be necessary if surfaceflinger is running):
+pirate101@DEBIAN13:~$ 
