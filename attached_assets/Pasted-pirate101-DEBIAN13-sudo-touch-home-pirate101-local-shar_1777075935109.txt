@@ -1,0 +1,161 @@
+pirate101@DEBIAN13:~$ sudo touch /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable && \
+sudo rm -f /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable && \
+waydroid session stop 2>/dev/null; \
+sudo systemctl stop waydroid-container && sleep 5 && \
+sudo systemctl start waydroid-container && sleep 30 && \
+(waydroid session start &) && sleep 90 && \
+echo "===== BOOT STATUS =====" && \
+sudo waydroid shell -- sh -c 'echo "boot_completed=$(getprop sys.boot_completed) | system_server=$(getprop init.svc.system_server) | zygote=$(getprop init.svc.zygote) | model=$(getprop ro.product.model)"' && \
+echo "===== ARM64 TRANSLATION =====" && \
+sudo waydroid shell -- sh -c 'echo "abilist=$(getprop ro.product.cpu.abilist) | abilist64=$(getprop ro.product.cpu.abilist64) | native_bridge=$(getprop ro.dalvik.vm.native.bridge) | bridge_exec=$(getprop ro.enable.native.bridge.exec)"' && \
+sudo waydroid shell -- sh -c 'ls -la /system/lib64/libndk_translation.so /system/lib64/libhoudini.so 2>&1 | head -5' && \
+echo "===== MAGISK + PIF =====" && \
+sudo waydroid shell -- /data/adb/magisk/magisk -v && \
+sudo waydroid shell -- ls /data/adb/modules/playintegrityfix/ && \
+sudo waydroid shell -- sh -c 'cat /cache/magisk.log 2>&1 | strings | grep -aiE "pif|playintegrity|boot-complete|Loading modules" | tail -10' && \
+echo "===== APPLYING DENYLIST =====" && \
+sudo waydroid shell -- magisk --denylist enforce true 2>&1 && \
+sudo waydroid shell -- magisk --denylist add com.google.android.gms 2>&1 && \
+sudo waydroid shell -- magisk --denylist add com.google.android.gsf 2>&1 && \
+sudo waydroid shell -- magisk --denylist add com.android.vending 2>&1 && \
+sudo waydroid shell -- magisk --denylist ls 2>&1 && \
+echo "===== DONE — Path B applied ====="
+[sudo] password for pirate101: 
+[1]+  Done                    waydroid session start
+[03:02:51] Skipping notification manager service because we could not connect to the notifications server: org.freedesktop.systemd1.UnitMasked: Unit swaync.service is masked.
+[gbinder] Service manager /dev/anbox-binder has appeared
+[03:03:30] Android with user 0 is ready
+===== BOOT STATUS =====
+boot_completed=1 | system_server= | zygote=stopping | model=WayDroid x86_64 Device
+===== ARM64 TRANSLATION =====
+abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi | abilist64=x86_64,arm64-v8a | native_bridge=libhoudini.so | bridge_exec=1
+-rw-r--r-- 1 root root 9323480 2026-04-24 17:06 /system/lib64/libhoudini.so
+-rw-r--r-- 1 root root 2500792 2026-04-24 17:06 /system/lib64/libndk_translation.so
+===== MAGISK + PIF =====
+No daemon is currently running!
+action.sh       common_func.sh  pif.prop           service.sh
+autopif.sh      module.prop     post-fs-data.sh    uninstall.sh
+autopif_ota.sh  pif.json        security_patch.sh
+04-25 00:02:54.112    83    83 I : playintegrityfix: exec [post-fs-data.sh]
+04-25 00:02:54.332    72    74 I : * Loading modules
+04-25 00:02:56.046    72    74 I : playintegrityfix: exec [service.sh]
+04-25 00:03:27.859    72    74 I : ** boot-complete triggered
+===== APPLYING DENYLIST =====
+===== DONE — Path B applied =====
+pirate101@DEBIAN13:~$ echo "===== WHICH APPS ARE CRASHING =====" && \
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aE "Cmdline|Abort message|signal|FATAL" | tail -30 && \
+echo "===== PIF MODULE STATE =====" && \
+sudo ls -la /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/ && \
+echo "===== PIF FINGERPRINT IN USE =====" && \
+sudo find /home/pirate101/.local/share/waydroid/data/adb -name "pif.json" -o -name "custom.pif.json" 2>/dev/null && \
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/pif.json 2>/dev/null | head -30 && \
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/pif.json 2>/dev/null | head -30 && \
+echo "===== PIF VERSION =====" && \
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/module.prop 2>/dev/null && \
+echo "===== ZYGISK STATUS =====" && \
+sudo waydroid shell -- sh -c 'getprop persist.sys.zygisk.enable; magisk --denylist ls 2>&1' && \
+echo "===== GMS VERSION =====" && \
+sudo waydroid shell -- pm list packages -f --user 0 | grep -E "gms|gsf|vending"
+===== WHICH APPS ARE CRASHING =====
+04-25 00:04:49.760  4412  4412 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:04:53.140  4442  4442 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:04:53.236  4461  4461 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:04:54.336  4489  4489 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:04:54.516  4512  4512 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:04:55.705  4536  4536 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:23.189  4589  4589 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:23.303  4606  4606 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:24.091  4644  4644 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:24.543  4674  4674 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:24.665  4694  4694 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:25.061  4566  4660 E AndroidRuntime: FATAL EXCEPTION: BG Thread #3
+04-25 00:05:25.815  4759  4759 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:38.203  4780  4833 E AndroidRuntime: FATAL EXCEPTION: EventBus0
+04-25 00:05:41.647  4845  4876 E AndroidRuntime: FATAL EXCEPTION: BG Thread #2
+04-25 00:05:53.273  4953  4953 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:53.372  4972  4972 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:54.515  4996  4996 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:54.628  5014  5014 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:05:55.873  5037  5037 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:06:11.993  5055  5102 E AndroidRuntime: FATAL EXCEPTION: BG Thread #0
+04-25 00:06:23.448  5160  5160 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:06:23.569  5181  5181 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:06:24.686  5201  5201 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:06:24.809  5220  5220 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:06:26.034  5242  5242 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:06:53.260  5288  5288 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:06:53.433  5306  5306 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:07:04.296  5333  5378 E AndroidRuntime: FATAL EXCEPTION: BG Thread #3
+04-25 00:08:06.552  5467  5467 E AndroidRuntime: FATAL EXCEPTION: main
+===== PIF MODULE STATE =====
+total 56
+drwxr-xr-x. 2 root      root      4096 Apr 25 03:02 .
+drwxr-xr-x  4 pirate101 pirate101 4096 Apr 25 00:22 ..
+-rw-r--r--. 1 root      root       615 Apr 23 18:29 action.sh
+-rwxr-xr-x. 1 root      root      1521 Apr 23 18:29 autopif_ota.sh
+-rwxr-xr-x. 1 root      root      5304 Apr 23 18:29 autopif.sh
+-rw-r--r--. 1 root      root      1542 Apr 23 18:29 common_func.sh
+-rw-r--r--. 1 root      root       293 Apr 23 18:29 module.prop
+-rw-r--r--  1 root      root       609 Apr 23 20:40 pif.json
+-rw-r--r--. 1 root      root       279 Apr 23 18:29 pif.prop
+-rw-r--r--. 1 root      root      3104 Apr 23 18:29 post-fs-data.sh
+-rw-r--r--. 1 root      root      2538 Apr 23 18:29 security_patch.sh
+-rw-r--r--. 1 root      root      1348 Apr 23 18:29 service.sh
+-rw-r--r--. 1 root      root       343 Apr 23 18:29 uninstall.sh
+===== PIF FINGERPRINT IN USE =====
+/home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/pif.json
+{
+  "FINGERPRINT": "samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys",
+  "PRODUCT": "e3qxxx",
+  "DEVICE": "e3q",
+  "MANUFACTURER": "Samsung",
+  "BRAND": "samsung",
+  "MODEL": "SM-S928B",
+  "SECURITY_PATCH": "2024-02-01",
+  "FIRST_API_LEVEL": "34",
+  "BUILD_ID": "UP1A.231005.007",
+  "KERNEL": "Linux version 5.15.123-android13-8-g9923f8e17019-ab12234567 (nobody@android-build) (Android (7284624, based on r416183b) clang version 12.0.5) #1 SMP PREEMPT Thu Feb 29 20:45:01 UTC 2024",
+  "FORCE_BASIC_ATTESTATION": true,
+  "spoofBuild": true,
+  "spoofProps": true,
+  "spoofProvider": true
+}
+===== PIF VERSION =====
+id=playintegrityfix
+name=Play Integrity Fix [INJECT]
+version=v4.5-inject-s
+versionCode=45
+author=chiteroman, KOWX712
+description=Universal modular fix for Play Integrity on devices running Android 8-16
+updateJson=https://raw.githubusercontent.com/KOWX712/PlayIntegrityFix/inject_s/update.json
+===== ZYGISK STATUS =====
+true
+===== GMS VERSION =====
+package:/system/app/MicroGGSFProxy/MicroGGSFProxy.apk=com.google.android.gsf
+package:/data/app/~~jDwX1xQrU0XG3dMjDp89wQ==/com.android.vending-Jwh9z8vNVqGf5Rlm2PJCbg==/base.apk=com.android.vending
+package:/system/product/overlay/GmsOverlay.apk=com.mtg.gmsoverlay
+package:/system/product/overlay/GmsSettingsProviderOverlay.apk=com.mtg.gmssettingsprovideroverlay
+package:/data/app/~~1kkhPxjIWpxt4On4oFNxZA==/com.google.android.gms-PmAL_6ssDk_5DbDHuUgeeQ==/base.apk=com.google.android.gms
+pirate101@DEBIAN13:~$ sudo waydroid shell -- pm clear com.google.android.gms && \
+sudo waydroid shell -- pm clear com.google.android.gsf && \
+sudo waydroid shell -- pm clear com.android.vending && \
+sudo waydroid shell -- am force-stop com.google.android.gms && \
+echo "GMS data cleared. Open Play Store and re-sign in."
+Success
+Success
+Success
+GMS data cleared. Open Play Store and re-sign in.
+pirate101@DEBIAN13:~$ sudo curl -L -o /tmp/pif.json "https://raw.githubusercontent.com/chiteroman/PlayIntegrityFix/main/module/pif.json" && \
+sudo cp /tmp/pif.json /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/pif.json && \
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/pif.json
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    14  100    14    0     0     19      0 --:--:-- --:--:-- --:--:--    19
+404: Not Foundpirate10sudo waydroid shell -- sh -c 'cat /cache/magisk.log 2>&1 | strings | grep -aiE "zygisk|playintegrity|pif|gms" | tail -20's" | tail -20'
+04-25 00:02:54.099    77    77 I : post-fs-data.d: exec [00_zygisk_enforce.sh]
+04-25 00:02:54.112    83    83 I : playintegrityfix: exec [post-fs-data.sh]
+04-25 00:02:56.046    72    74 I : playintegrityfix: exec [service.sh]
+04-25 00:02:57.373   141   141 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-25 00:02:57.373   141   141 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 00:02:57.373   141   141 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+pirate101@DEBIAN13:~$ 
