@@ -1,0 +1,140 @@
+pirate101@DEBIAN13:~$ cat > /tmp/wm.sh << 'WMEOF'
+#!/bin/bash
+set -u
+WD=/home/pirate101/.local/share/waydroid/data
+LSP_ZIP=/home/pirate101/Downloads/LSPosed-v1.11.0-7209-zygisk-release.zip
+
+step() { echo ""; echo "===== $1 ====="; }
+fail() { echo "[FATAL] $1"; exit 1; }
+
+step "0/8 PRE-FLIGHT"
+test -f "$LSP_ZIP" || fail "LSPosed zip missing at $LSP_ZIP"
+echo "[OK] zip $(ls -lh $LSP_ZIP | awk '{print $5}')"
+
+step "1/8 FORCE-STOP Waydroid (recover from broken boot)"
+waydroid session stop 2>/dev/null || true
+sleep 3
+sudo systemctl stop waydroid-container 2>/dev/null || true
+sleep 8
+sudo pkill -9 -f waydroid 2>/dev/null || true
+sleep 2
+echo "[waydroid stopped]"
+
+step "2/8 NEUTRALIZE fake_proc completely (disable + rename scripts + skip mount)"
+FP=$WD/adb/modules/fake_proc
+if sudo test -d "$FP"; then
+  sudo touch "$FP/disable"
+  sudo touch "$FP/skip_mount"
+  for s in service post-fs-data; do
+    if sudo test -f "$FP/$s.sh"; then
+      sudo mv "$FP/$s.sh" "$FP/$s.sh.OFF"
+      echo "  renamed $s.sh -> .OFF"
+    fi
+  done
+  echo "[fake_proc fully neutralized]"
+  sudo ls "$FP/" | grep -E '(disable|skip_mount|\.OFF$|\.sh$|system\.prop)' || true
+chmod +x /tmp/wm.sh && bash /tmp/wm.shplash now)"nager"fs per-app later)"10ed' || echo " 
+
+===== 0/8 PRE-FLIGHT =====
+[OK] zip 6.5M
+
+===== 1/8 FORCE-STOP Waydroid (recover from broken boot) =====
+[sudo] password for pirate101: 
+/tmp/wm.sh: line 18: 436229 Killed                  sudo pkill -9 -f waydroid 2> /dev/null
+ [waydroid stopped]
+
+                   ===== 2/8 NEUTRALIZE fake_proc completely (disable + rename scripts + skip mount) =====
+                 [fake_proc fully neutralized]
+                                              disable
+                                                     post-fs-data.sh.OFF
+                                                                        service.sh.OFF
+                                                                                      skip_mount
+       system.prop
+
+                  ===== 3/8 START Waydroid =====
+                                                [waiting 90s for boot...]
+
+                                                                         ===== 4/8 VERIFY boot recovered =====
+                     boot=1 | model=WayDroid x86_64 Device
+                                                          [BOOT OK — proceeding to install]
+
+  ===== 5/8 Apply denylist =====
+                                ----- denylist apps -----
+
+                                                         ===== 6/8 Stage LSPosed zip into /sdcard/Download =====
+                       -rw-r--r-- 1 system system 6785684 2026-04-25 13:10 /sdcard/Download/lsposed.zip
+
+===== 7/8 Flash LSPosed via Magisk CLI =====
+                                            *******************
+                                                                Powered by Magisk 
+                                                                                  *******************
+            - LSPosed version v1.11.0 (7209)
+                                            - Extracting verify.sh
+                                                                  - Verified META-INF/com/google/android/update-binary
+                             - Verified customize.sh
+                                                    - Verified verify.sh
+                                                                        - Verified util_functions.sh
+           - Android SDK version: 33
+                                    - Magisk version: 26301
+                                                           - Installing from Magisk app
+                                                                                       - Device platform: x64
+                    - Extracting module files
+                                             - Verified module.prop
+                                                                   - Verified action.sh
+                                                                                       - Verified service.sh
+                   - Verified uninstall.sh
+                                          - Verified sepolicy.rule
+                                                                  - Verified framework/lspd.dex
+      - Verified daemon.apk
+                           - Verified daemon
+                                            - Verified manager.apk
+                                                                  - Verified lib/x86/liblspd.so
+      - Verified lib/x86_64/liblspd.so
+                                      - Extracting dex2oat binaries
+                                                                   - Verified bin/x86/dex2oat
+    - Verified bin/x86/liboat_hook.so
+                                     - Verified bin/x86_64/dex2oat
+                                                                  - Verified bin/x86_64/liboat_hook.so
+             - Patching binaries
+                                - Welcome to LSPosed!
+                                                     - Installing custom sepolicy rules, early-mount files
+                 - Unable to find preinit dir
+                                             - Done
+                                                   [FLASH OK]
+
+                                                             ===== 8/8 Cold restart to activate LSPosed =====
+                    [waiting 90s for boot...]
+
+                                             ===== FINAL VERIFY =====
+                                                                     boot=1 | model=WayDroid x86_64 Device | brand=waydroid
+----- module states -----
+                           fake_proc: DISABLED
+  playintegrityfix: enabled
+  zygisk_lsposed: enabled
+----- magisk.log [lsposed + pif] -----
+                                      04-25 13:10:52.800    72    74 I : Upgrade / New module: zygisk_lsposed
+04-25 13:10:52.801    72    74 I : zygisk_lsposed: applying [sepolicy.rule]
+04-25 13:10:52.805    72    74 W : zygisk_lsposed: failed to apply [sepolicy.rule]
+04-25 13:10:52.805    72    74 I : zygisk_lsposed: refresh [sepolicy.rule]
+04-25 13:10:52.807    84    84 I : playintegrityfix: exec [post-fs-data.sh]
+04-25 13:10:54.363    72    74 I : playintegrityfix: exec [service.sh]
+04-25 13:10:54.369    72    74 I : zygisk_lsposed: exec [service.sh]
+----- LSPosed Manager package -----
+                                   package:org.lsposed.manager
+                                                              ----- denylist -----
+
+                                                                                  ==========================================
+                                    EXPECTED:
+                                               boot=1
+                                                       model=WayDroid x86_64 Device  (raw - Faker spoofs per-app later)
+                                fake_proc: DISABLED
+                                                     playintegrityfix: enabled
+                                                                                lsposed_zygisk: enabled
+                magisk.log: lsposed loaded
+                                            LSPosed Manager package present
+                                                                           ==========================================
+
+                             NEXT: waydroid show-full-ui &
+                                                             - Long-press LSPosed notification for Manager
+                    - Test ChatGPT (should pass splash now)
+                                                           pirate101@DEBIAN13:~$ 
