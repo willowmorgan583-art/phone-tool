@@ -1,0 +1,124 @@
+pirate101@DEBIAN13:~$ cat > /tmp/path_b.sh << 'PBEOF'
+#!/bin/bash
+set -u
+WD=/home/pirate101/.local/share/waydroid/data
+FP=$WD/adb/modules/fake_proc
+DF=$WD/adb/modules/device_faker
+
+step() { echo ""; echo "===== $1 ====="; }
+fail() { echo "[FATAL] $1"; exit 1; }
+
+step "1/7 STOP Waydroid"
+waydroid session stop 2>/dev/null || true
+sleep 3
+sudo systemctl stop waydroid-container 2>/dev/null || true
+sleep 8
+
+step "2/7 Remove dead device_faker (arm64-only, never loaded)"
+if sudo test -d "$DF"; then
+  sudo touch "$DF/remove"
+  echo "[device_faker scheduled for removal on next boot]"
+else
+  echo "[device_faker not found — already gone]"
+fi
+
+step "3/7 RESURRECT cleaned fake_proc (system.prop only, no broken overlays)"
+if sudo test -d "$FP"; then
+  echo "----- before cleanup -----"
+  sudo ls "$FP/" | sed 's/^/  /'
+  
+  # 3a) DELETE the 0-byte Lineage framework overlay folder entirely
+  sudo rm -rf "$FP/system"
+  echo "[deleted system/ overlay (was corrupting Lineage framework)]"
+  
+  # 3b) DELETE the empty/ folder (bind-mount targets, no longer needed)
+  sudo rm -rf "$FP/empty"
+bash /tmp/path_b.sh============================="ould still pass via PIF"k it)"ve"aiE "pl
+
+===== 1/7 STOP Waydroid =====
+
+===== 2/7 Remove dead device_faker (arm64-only, never loaded) =====
+[device_faker scheduled for removal on next boot]
+
+===== 3/7 RESURRECT cleaned fake_proc (system.prop only, no broken overlays) =====
+----- before cleanup -----
+  disable
+  empty
+  empty_init.rc
+  empty_waydroid.prop
+  fake_cpuinfo
+  fake_version
+  module.prop
+  overlay
+  post-fs-data.sh.OFF
+  service.sh.OFF
+  skip_mount
+  system
+  system.prop
+  vendor
+[deleted system/ overlay (was corrupting Lineage framework)]
+[deleted empty/ folder]
+[deleted overlay/ folder if present]
+[scripts stay as .OFF — bind mounts were broken]
+[removed disable flag — module will load]
+[removed skip_mount — let Magisk process system.prop normally]
+/tmp/path_b.sh: line 52: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop: Permission denied
+[system.prop OK —  lines, will set Samsung Build.* system-wide]
+----- after cleanup -----
+  empty_init.rc
+  empty_waydroid.prop
+  fake_cpuinfo
+  fake_version
+  module.prop
+  post-fs-data.sh.OFF
+  service.sh.OFF
+  system.prop
+  vendor
+
+===== 4/7 START Waydroid =====
+[waiting 90s for boot...]
+
+===== 5/7 VERIFY boot + Build.* now Samsung =====
+boot=1
+----- Build identity (should be Samsung S24 Ultra) -----
+  ro.product.model        = SM-S928B
+  ro.product.brand        = samsung
+  ro.product.manufacturer = Samsung
+  ro.product.device       = e3q
+  ro.build.fingerprint    = samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+  ro.build.id             = UP1A.231005.007
+  ro.serialno             = R3CW80E4XAB
+
+===== 6/7 VERIFY module states =====
+  fake_proc: enabled
+  playintegrityfix: enabled
+  zygisk_lsposed: enabled
+
+===== 7/7 Confirm PIF still loads + GMS spoof intact =====
+04-25 19:18:21.741    72    74 I : zygisk_lsposed: applying [sepolicy.rule]
+04-25 19:18:21.745    72    74 W : zygisk_lsposed: failed to apply [sepolicy.rule]
+04-25 19:18:21.745    72    74 I : zygisk_lsposed: refresh [sepolicy.rule]
+04-25 19:18:21.745    72    74 I : device_faker: remove
+04-25 19:18:21.753    86    86 I : playintegrityfix: exec [post-fs-data.sh]
+04-25 19:18:21.937    72    74 I : fake_proc: loading [system.prop]
+04-25 19:18:23.070    72    74 I : playintegrityfix: exec [service.sh]
+04-25 19:18:23.072    72    74 I : zygisk_lsposed: exec [service.sh]
+
+==========================================
+ EXPECTED RESULTS:
+   boot=1
+   ro.product.model = SM-S928B          <- Samsung system-wide
+   ro.product.brand = samsung
+   ro.build.fingerprint = samsung/e3qxxx/...
+
+   fake_proc: enabled                   <- cleaned, only system.prop active
+   playintegrityfix: enabled            <- still spoofs GMS to Pixel
+   zygisk_lsposed: enabled              <- still loaded
+   device_faker: REMOVE_PENDING         <- will be gone after this boot
+
+ WHAT TO TEST:
+   - Open ChatGPT (should still load — system.prop alone won't break it)
+   - Open DevCheck app — should report Samsung SM-S928B
+   - Open Play Integrity Checker — BASIC should still pass via PIF
+==========================================
+pirate101@DEBIAN13:~$ 
