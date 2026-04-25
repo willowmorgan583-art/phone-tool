@@ -1,0 +1,77 @@
+pirate101@DEBIAN13:~$ cat > /tmp/fix.sh << 'EOF'
+#!/bin/bash
+FP=/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc
+
+echo "===== 1/8 Stop everything ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 5
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+echo ""
+echo "===== 2/8 Backup current state ====="
+sudo cp $FP/system.prop $FP/system.prop.bak.before_hwfix.$(date +%s)
+echo "  backed up system.prop"
+
+echo ""
+echo "===== 3/8 Remove TOXIC hardware/board lines from system.prop ====="
+sudo sed -i '/^ro\.hardware=/d;
+             /^ro\.boot\.hardware=/d;
+             /^ro\.hardware\.chipname=/d;
+             /^ro\.product\.board=/d;
+             /^ro\.board\.platform=/d' $FP/system.prop
+echo "  remaining hardware/board lines (should be EMPTY):"
+grep -E "^ro\.(hardware|board\.platform|product\.board)" $FP/system.prop | sed 's/^/    /' || echo "    (none — clean)"
+
+echo ""
+echo "===== 4/8 Delete EMPTY vendor init overlays (kill critical Android services) =====" 
+sudo rm -fv $FP/vendor/etc/init/*.rc 2>&1 | sed 's/^/  /'
+sudo rm -fv $FP/empty_init.rc $FP/empty_waydroid.prop 2>&1 | sed 's/^/  /'
+
+bash /tmp/fix.shoid show-full-ui 2>&1 | head -5uild.fingerprint)""dules/*/disable 2>&1' |
+===== 1/8 Stop everything =====
+
+===== 2/8 Backup current state =====
+  backed up system.prop
+
+===== 3/8 Remove TOXIC hardware/board lines from system.prop =====
+  remaining hardware/board lines (should be EMPTY):
+grep: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop: Permission denied
+
+===== 4/8 Delete EMPTY vendor init overlays (kill critical Android services) =====
+  removed '/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/empty_init.rc'
+  removed '/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/empty_waydroid.prop'
+
+===== 5/8 Re-enable fake_proc only (PIF + LSPosed stay disabled for now) =====
+  fake_proc disable removed:
+    /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+    /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed/disable
+
+===== 6/8 Cold start container + session =====
+  waiting 25s for LXC...
+  session started, waiting 60s for boot...
+
+===== 7/8 Verify boot state =====
+  boot_completed   = 1
+  surfaceflinger   = stopping
+  waydroidplatform = 
+  ro.hardware      = unknown
+  ro.product.model = SM-S928B
+  ro.product.brand = samsung
+  ro.build.fingerprint = samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+
+===== 8/8 Try UI =====
+pirate101@DEBIAN13:~$ # Step A: Re-enable Zygisk + MagiskHide
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db \
+  "UPDATE settings SET value=1 WHERE key IN ('zygisk','hide');"
+# restart, verify UI still works
+
+# Step B: Re-enable PIF
+sudo rm /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+# restart, verify UI still works, verify build.fingerprint is now Pixel 9 Pro XL
+
+# Step C: Re-enable LSPosed (only if you actually need module-based hooks)
+sudo rm /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed/disable
+# restart, verify UI still works
+pirate101@DEBIAN13:~$ 
