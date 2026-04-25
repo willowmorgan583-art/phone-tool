@@ -1,0 +1,124 @@
+pirate101@DEBIAN13:~$ cat > /tmp/fix_mode.sh << 'FMEOF'
+#!/bin/bash
+set -u
+DB=/home/pirate101/.local/share/waydroid/data/adb/magisk.db
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/6 STOP Waydroid container (release magisk.db lock)"
+waydroid session stop 2>/dev/null || true
+sleep 3
+sudo systemctl stop waydroid-container
+sleep 5
+echo "  container stopped"
+
+step "2/6 Show current settings (the smoking gun)"
+echo "  Before fix:"
+sudo sqlite3 $DB "SELECT * FROM settings;" | sed 's/^/    /'
+
+step "3/6 Backup + flip mode: SuList OFF, DenyList ON"
+sudo cp $DB ${DB}.bak.modefix.$(date +%s)
+sudo sqlite3 $DB << 'SQL'
+UPDATE settings SET value=0 WHERE key='sulist';
+UPDATE settings SET value=1 WHERE key='denylist';
+UPDATE settings SET value=1 WHERE key='zygisk';
+UPDATE settings SET value=1 WHERE key='hide';
+INSERT OR IGNORE INTO settings (key,value) VALUES ('sulist', 0);
+INSERT OR IGNORE INTO settings (key,value) VALUES ('denylist', 1);
+SQL
+echo "  flipped"
+
+step "4/6 Verify settings + denylist contents intact"
+echo "  Settings after fix (sulist must be 0, denylist must be 1):"
+sudo sqlite3 $DB "SELECT * FROM settings;" | sed 's/^/    /'
+echo ""
+echo "  Denylist entries (should still have GMS/GSF/Vending/WebView):"
+bash /tmp/fix_mode.sh============================="60s"=enabled; [ -f $m/disable ] && s=D
+
+===== 1/6 STOP Waydroid container (release magisk.db lock) =====
+  container stopped
+
+===== 2/6 Show current settings (the smoking gun) =====
+  Before fix:
+    zygisk|1
+    sulist|1
+    denylist|0
+    hide|1
+
+===== 3/6 Backup + flip mode: SuList OFF, DenyList ON =====
+  flipped
+
+===== 4/6 Verify settings + denylist contents intact =====
+  Settings after fix (sulist must be 0, denylist must be 1):
+    zygisk|1
+    sulist|0
+    denylist|1
+    hide|1
+
+  Denylist entries (should still have GMS/GSF/Vending/WebView):
+    com.google.android.gms|com.google.android.gms
+    com.android.vending|com.android.vending
+    com.google.android.gsf|com.google.android.gsf
+    com.google.android.gsf|com.google.process.gapps
+    com.google.android.gsf|com.google.android.gsf:search
+    com.android.webview|com.android.webview
+
+===== 5/6 START Waydroid container with corrected mode =====
+
+===== 6/6 Confirm Magisk now reports DenyList (not SuList) and entries loaded =====
+  boot              = 1
+  ro.product.model  = SM-S928B
+  ro.bootloader     = S928BXXU1AXBA
+  /proc/version     : Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678...
+
+  --- Magisk DenyList state ---
+
+  --- Magisk SuList state (should be disabled) ---
+    Magisk - Multi-purpose Utility
+    
+    Usage: magisk [applet [arguments]...]
+       or: magisk [options]...
+    
+    Options:
+       -c                        print current binary version
+       -v                        print running daemon version
+       -V                        print running daemon version code
+       --list                    list all available applets
+       --remove-modules [-n]     remove all modules, reboot if -n is not provided
+       --install-module ZIP      install a module zip file
+       --install [PATH]          install applets into PATH
+    
+    Advanced Options (Internal APIs):
+       --daemon                  manually start magisk daemon
+       --stop                    remove all magisk changes and stop daemon
+       --[init trigger]          callback on init triggers. Valid triggers:
+                                 post-fs-data, service, boot-complete, zygote-restart
+       --unlock-blocks           set BLKROSET flag to OFF for all block devices
+       --restorecon              restore selinux context on Magisk files
+       --clone-attr SRC DEST     clone permission, owner, and selinux context
+       --clone SRC DEST          clone SRC to DEST
+       --sqlite SQL              exec SQL commands to Magisk database
+       --path                    print Magisk tmpfs mount path
+       --preinit-device          resolve a device to store preinit files
+       --hide ARGS               MagiskHide config CLI
+    
+    Available applets:
+        su, resetprop, magiskhide
+    
+
+  Modules:
+    fake_proc: enabled
+    playintegrityfix: enabled
+    zygisk_lsposed: enabled
+
+============================================
+ ROOT CAUSE FIXED:
+ - SuList was ON (granting root to GMS)
+ - Now DenyList is ON (hiding root from GMS)
+
+ THIS IS WHY PI WAS FAILING ALL ALONG.
+
+ NOW DO IN WAYDROID:
+ 1. Open Play Store -> sign in fresh -> wait 60s
+ 2. PI Checker -> CHECK -> paste verdict
+============================================
+pirate101@DEBIAN13:~$ 
