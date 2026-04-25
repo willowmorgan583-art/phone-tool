@@ -1,0 +1,56 @@
+pirate101@DEBIAN13:~$ cat > /tmp/wp.sh << 'EOF'
+#!/bin/bash
+
+echo "===== 1/6 Full reset ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 5
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+echo ""
+echo "===== 2/6 Verify waydroidplatform binary exists in container ====="
+sudo systemctl start waydroid-container
+sleep 15
+sudo lxc-attach -P /var/lib/waydroid/lxc -n waydroid -- /system/bin/sh -c '
+  ls -la /system/bin/waydroidplatform 2>&1
+  ls -la /system/etc/init/*aydroid* 2>&1
+  cat /system/etc/init/waydroid.rc 2>&1 | head -30
+' | sed 's/^/    /'
+
+echo ""
+echo "===== 3/6 Start session in FOREGROUND with full output capture ====="
+echo "  Session running for 90s — watching for errors..."
+timeout 90 waydroid session start 2>&1 | tee /tmp/session_full.log | sed 's/^/    /' &
+SESS_PID=$!
+sleep 95
+
+echo ""
+echo "===== 4/6 Wayland socket inside container NOW? ====="
+sudo lxc-attach -P /var/lib/waydroid/lxc -n waydroid -- ls -la /run/user/0/ 2>&1 | sed 's/^/    /'
+
+echo ""
+bash /tmp/wp.shroid show-full-ui 2>&1 | head -10roid.active_apps)"orm)"
+===== 1/6 Full reset =====
+[sudo] password for pirate101: 
+
+===== 2/6 Verify waydroidplatform binary exists in container =====
+lxc-attach: waydroid: ../src/lxc/attach.c: get_attach_context: 406 Connection refused - Failed to get init pid
+lxc-attach: waydroid: ../src/lxc/attach.c: lxc_attach: 1470 Connection refused - Failed to get attach context
+
+===== 3/6 Start session in FOREGROUND with full output capture =====
+  Session running for 90s — watching for errors...
+    [01:44:48] Android with user 0 is ready
+    [gbinder] Service manager /dev/anbox-binder has appeared
+
+===== 4/6 Wayland socket inside container NOW? =====
+    lxc-attach: waydroid: ../src/lxc/attach.c: get_attach_context: 406 Connection refused - Failed to get init pid
+    lxc-attach: waydroid: ../src/lxc/attach.c: lxc_attach: 1470 Connection refused - Failed to get attach context
+
+===== 5/6 Final service state =====
+[01:46:05] WayDroid container is STOPPED
+
+===== 6/6 Try show-full-ui (15s) =====
+[01:46:05] Starting waydroid session
+[gbinder] Service manager /dev/anbox-binder has appeared
+pirate101@DEBIAN13:~$ 
