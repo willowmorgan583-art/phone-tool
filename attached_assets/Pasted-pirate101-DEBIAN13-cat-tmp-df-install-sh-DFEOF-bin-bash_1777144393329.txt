@@ -1,0 +1,455 @@
+pirate101@DEBIAN13:~$ cat > /tmp/df_install.sh << 'DFEOF'
+#!/bin/bash
+set -u
+WD=/home/pirate101/.local/share/waydroid/data
+ZIP_HOST=$WD/media/0/Download/device_faker_v1.3.5.zip
+ZIP_DROID=/sdcard/Download/device_faker_v1.3.5.zip
+INSPECT=/tmp/df_inspect
+
+step() { echo ""; echo "===== $1 ====="; }
+fail() { echo "[FATAL] $1"; exit 1; }
+
+step "0/6 PRE-FLIGHT"
+sudo test -f "$ZIP_HOST" || fail "zip missing at $ZIP_HOST"
+echo "[OK] $(sudo ls -lh $ZIP_HOST | awk '{print $5}')"
+
+step "1/6 INSPECT zip contents (need config.toml schema)"
+rm -rf $INSPECT && mkdir -p $INSPECT
+sudo unzip -o "$ZIP_HOST" -d $INSPECT > /dev/null
+echo "----- top-level -----"
+ls -la $INSPECT/
+echo ""
+echo "----- module.prop -----"
+cat $INSPECT/module.prop 2>&1
+echo ""
+echo "----- customize.sh (install logic) -----"
+cat $INSPECT/customize.sh 2>&1
+echo ""
+echo "----- config.toml DEFAULT (full file — small enough) -----"
+cat $INSPECT/config.toml 2>&1
+echo ""
+echo "----- zygisk/ binaries -----"
+ls -la $INSPECT/zygisk/ 2>&1
+echo ""
+echo "----- bin/ -----"
+ls -la $INSPECT/bin/ 2>&1
+bash /tmp/df_install.sh=========================" exclusions."l | strings | grep -aiE "de
+
+===== 0/6 PRE-FLIGHT =====
+[sudo] password for pirate101: 
+[OK] 815K
+
+===== 1/6 INSPECT zip contents (need config.toml schema) =====
+----- top-level -----
+total 20
+drwxrwxr-x  6 pirate101 pirate101  200 Apr 25 22:10 .
+drwxrwxrwt 21 root      root       560 Apr 25 22:10 ..
+drwxr-xr-x  2 root      root        60 Mar 19 16:06 bin
+-rw-r--r--  1 root      root      7655 Mar 19 16:06 config.toml
+-rw-r--r--  1 root      root      2012 Mar 19 16:06 customize.sh
+drwxr-xr-x  3 root      root        60 Mar 19 16:06 META-INF
+-rw-r--r--  1 root      root       245 Mar 20 12:43 module.prop
+-rw-r--r--  1 root      root        48 Mar 19 16:06 uninstall.sh
+drwxr-xr-x  3 root      root        80 Mar 19 16:06 webroot
+drwxr-xr-x  2 root      root        60 Mar 19 16:06 zygisk
+
+----- module.prop -----
+id=device_faker
+name=Device Faker
+version=v1.3.5
+versionCode=20260320
+author=酷安@瓦力喀/GitHub@Seyud
+description=使用Zygisk实现自定义配置对应用伪装机型
+updateJson=https://gitee.com/Seyud/device_faker/raw/master/Update.json
+
+----- customize.sh (install logic) -----
+#!/system/bin/sh
+
+CONFIG_DIR="/data/adb/device_faker/config"
+CONFIG_FILE="$CONFIG_DIR/config.toml"
+
+chooseport() {
+    local timeout=10
+    local count=0
+    while [ $count -lt $timeout ]; do
+        local key_event=$(timeout 1 getevent -lc 1 2>&1 | grep VOLUME | grep " DOWN")
+        if [ -n "$key_event" ]; then
+            echo "$key_event" | grep VOLUMEUP > /dev/null && return 0 || return 1
+        fi
+        count=$((count + 1))
+    done
+    return 0
+}
+
+ui_print "- 安装 Device Faker 模块"
+mkdir -p "$CONFIG_DIR"
+chmod 755 "$CONFIG_DIR"
+
+SHOULD_COPY_CONFIG=true
+
+if [ -f "$CONFIG_FILE" ]; then
+    ui_print "- 检测到已有配置文件"
+    ui_print "- 请选择配置文件处理方式："
+    ui_print "  [音量+] 使用模块默认配置（备份原有配置）"
+    ui_print "  [音量-] 使用现有配置"
+    ui_print "- 10秒内未选择将使用模块默认配置"
+
+    if chooseport; then
+        ui_print "- 已选择：使用模块默认配置"
+        ui_print "- 备份旧配置到: $CONFIG_FILE.$(date +%Y%m%d_%H%M%S).bak"
+        cp -f "$CONFIG_FILE" "$CONFIG_FILE.$(date +%Y%m%d_%H%M%S).bak"
+        chmod 644 "$CONFIG_FILE"*
+        chcon u:object_r:system_file:s0 "$CONFIG_FILE"* 2>/dev/null || true
+    else
+        ui_print "- 已选择：使用现有配置"
+        SHOULD_COPY_CONFIG=false
+    fi
+fi
+
+if [ "$SHOULD_COPY_CONFIG" = true ]; then
+    cp -f "$MODPATH/config.toml" "$CONFIG_FILE"
+    chmod 644 "$CONFIG_FILE"
+    chcon u:object_r:system_file:s0 "$CONFIG_FILE" 2>/dev/null || true
+fi
+
+chcon u:object_r:system_file:s0 "$CONFIG_DIR" 2>/dev/null || true
+
+rm -f "$MODPATH/config.toml"
+
+ui_print "- 配置文件位置: $CONFIG_FILE"
+ui_print "- 编辑配置文件添加需要伪装的应用"
+ui_print "- 修改配置后无需重启，仅需重启对应应用"
+
+set_perm_recursive "$MODPATH" 0 0 0755 0644
+set_perm_recursive "$MODPATH/zygisk" 0 0 0755 0644
+set_perm $MODPATH/bin/device_faker_cli 0 0 0755
+
+ui_print "- 安装完成！"
+ui_print "- 重启设备后生效"
+
+----- config.toml DEFAULT (full file — small enough) -----
+# 机型伪装配置文件
+# 为不同的应用配置不同的伪装机型
+
+# ============================================================
+# 全局配置
+# ============================================================
+
+# 全局默认模式（推荐使用 lite 以增强隐蔽性）
+# - "lite": 轻量模式，只修改 Build 类，完成后卸载内存（不易被检测）⭐ 推荐
+# - "full": 完整模式，伪装 Build + SystemProperties（功能完整，但可能被检测）
+# - "resetprop": 使用 resetprop 工具修改属性（持续伪装）
+default_mode = "lite"
+
+# 调试模式（默认关闭以提高隐蔽性）
+# 设置为 true 可以在 logcat 中看到详细日志，方便排查问题
+# 正常使用时建议设置为 false 或删除此行
+# debug = false
+
+# ============================================================
+# 机型模板定义
+# ============================================================
+# 定义常用机型模板，可以直接在模板中指定包名列表
+
+[templates.redmagic_9_pro]
+packages = [
+    "com.mobilelegends.mi",
+    "com.supercell.brawlstars",
+    "com.blizzard.diablo.immortal",
+    "com.netease.newspike",
+    "com.activision.callofduty.warzone",
+]
+manufacturer = "ZTE"
+brand = "nubia"
+model = "NX769J"
+device = "REDMAGIC 9 Pro"
+product = "NX769J"
+fingerprint = "nubia/NX769J/NX769J:14/UKQ1.230917.001/20240813.173312:user/release-keys"
+
+[templates]
+[templates."一加15"]
+manufacturer = "OnePlus"
+brand = "OnePlus"
+model = "PLK110"
+device = "PLK110"
+product = "PLK110"
+fingerprint = ""
+packages = [ "com.tencent.tmgp.pubgmhd", "com.tencent.tmgp.supercell.clashofclans", "com.tencent.tmgp.speedmobile" ]
+
+[templates.IQOO15]
+manufacturer = "VIVO"
+brand = "VIVO"
+model = "V2505A"
+device = "V2505A"
+product = "V2505A"
+fingerprint = ""
+packages = [ "com.tencent.tmgp.sgame", "com.tencent.tmgp.codev" ]
+
+[templates."红魔平板3"]
+manufacturer = "NUBIA"
+brand = "NUBIA"
+model = "NP05J"
+device = "NP05J"
+product = "NP05J"
+fingerprint = ""
+packages = [ "com.tencent.tmgp.cf" ]
+
+# ============================================================
+# 应用配置
+# ============================================================
+
+# 方式一：使用模板的包名列表
+# 直接在上面的模板中添加包名到 packages 列表即可
+# 不需要在这里单独配置
+
+# 方式二：直接配置
+# 不使用模板，直接指定设备信息
+
+# QQ 平板模式配置
+#[[apps]]
+#package = "com.tencent.mobileqq"
+#mode = "full"
+#characteristics = "tablet"
+#manufacturer = "Xiaomi"
+#brand = "Xiaomi"
+#model = "23046RP50C"
+
+# 微信平板模式配置
+# [[apps]]
+# package = "com.tencent.mm"
+# manufacturer = "samsung"
+# brand = "samsung"
+# model = "SM-F9560"
+# mode = "lite"  # 默认为 lite，按需可改 full/resetprop
+# force_denylist_unmount = true
+
+[[apps]]
+package = "com.coolapk.market"
+manufacturer = "Nothing"
+brand = "Nothing"
+marketname = "Nothing Phone (3)"
+model = "A024"
+
+[[apps]]
+package = "com.tencent.tmgp.pubgmhd"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.tencent.tmgp.sgame"
+model = "V2505A"
+manufacturer = "VIVO"
+brand = "vivo"
+
+[[apps]]
+package = "com.rekoo.pubgm"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.tencent.tmgp.cf"
+model = "NP05J"
+brand = "NUBIA"
+manufacturer = "NUBIA"
+
+[[apps]]
+package = "com.tencent.lolm"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.vng.pubgmobile"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.tencent.tmgp.dfm"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.tencent.mf.uam"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.tencent.tmgp.cod"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.tencent.jkchess"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.tencent.tmgp.speedmobile"
+model = "PLK110"
+manufacturer = "OnePlus"
+brand = "OnePlus"
+
+[[apps]]
+package = "com.tencent.tmgp.supercell.clashofclans"
+model = "PLK110"
+brand = "OnePlus"
+manufacturer = "OnePlus"
+
+[[apps]]
+package = "com.tencent.tmgp.codev"
+model = "V2505A"
+brand = "VIVO"
+manufacturer = "vivo"
+
+[[apps]]
+package = "flar2.devcheck"
+model = "V2505A"
+brand = "VIVO"
+manufacturer = "vivo"
+
+# ============================================================
+# 配置说明
+# ============================================================
+#
+# 【配置方式】
+# 1. 模板包名列表 - 在模板的 packages 中直接添加包名
+# 2. 直接配置 - 使用 [[apps]] 直接指定设备信息
+#
+# 【优先级】
+# 字段优先级：[[apps]] 直接配置 > 模板 packages 列表
+# 模式优先级：[[apps]].mode > [templates].mode > 全局 default_mode
+#
+# 【模板可以设置模式】⭐
+# 模板支持设置 mode 字段：
+#   [templates.xxx]
+#   packages = ["com.app1", "com.app2"]
+#   mode = "full"  # 这个模板的所有应用都使用 full 模式
+#
+# 如果不设置，使用全局 default_mode
+# 如果需要覆盖，在 [[apps]] 中单独设置
+#
+# 【字段生效范围】⚠
+# lite 模式（默认）：
+#   ✅ manufacturer, brand, model, device, product, fingerprint
+#   ❌ name, marketname, characteristics（仅 full 模式生效）
+#
+# full 模式：
+#   ✅ 所有字段都生效
+#   ⭐ name 字段会同时伪装 ro.product.name 和 ro.product.device
+#   ⭐ characteristics 在 native 层伪装
+# 
+# 【模式说明】
+# 
+# ┌──────────┬────────────┬──────────────┬────────────┬──────────────┐
+# │   模式   │  Build类   │ Properties   │  可卸载    │   隐蔽性     │
+# ├──────────┼────────────┼──────────────┼────────────┼──────────────┤
+# │  lite ⭐ │     ✅     │      ❌      │     ✅     │  ⭐⭐⭐⭐⭐  │
+# │  full    │     ✅     │      ✅      │     ❌     │  ⭐⭐⭐⭐      │
+# │ resetprop│     ✅     │      ✅      │     ❌     │  ⭐⭐⭐        │
+# └──────────┴────────────┴──────────────┴────────────┴──────────────┘
+# 
+# 【lite 模式】（默认，推荐）⭐
+# - 只修改 android.os.Build 类的静态字段
+# - 完成后立即卸载模块，模块不驻留内存
+# - ✅ 优点：隐蔽性极高，不易被检测
+# - ✅ 优点：对 95% 的应用来说，伪装 Build 类已经足够
+# - ⚠ 缺点：无法伪装 SystemProperties（极少数应用会检查）
+# - 适用场景：默认选择，适合大多数应用
+# 
+# 【full 模式】（按需使用）
+# - 修改 Build 类 + 伪装 SystemProperties.native_get
+# - 模块保持加载状态，驻留内存
+# - ✅ 优点：完整伪装，拦截所有属性查询（包括 native 层）
+# - ⚠ 缺点：模块驻留内存，可能被某些应用检测到
+# - 适用场景：需要完全伪装 SystemProperties 的特殊应用
+#
+# 【resetprop 模式】
+# - 使用 resetprop 工具修改系统属性
+# - ✅ 优点：可以修改只读属性
+# 
+# 推荐策略：
+# 1. 默认所有应用使用 lite 模式（不设置 mode 字段）
+# 2. 只有当某个应用在 lite 模式下仍能检测到真实机型时，才为其单独设置 mode = "full"
+# 3. 需要伪装 characteristics 的应用使用 full 模式
+----- zygisk/ binaries -----
+total 748
+drwxr-xr-x 2 root      root          60 Mar 19 16:06 .
+drwxrwxr-x 6 pirate101 pirate101    200 Apr 25 22:10 ..
+-rw-r--r-- 1 root      root      763488 Mar 19 16:06 arm64-v8a.so
+
+----- bin/ -----
+total 276
+drwxr-xr-x 2 root      root          60 Mar 19 16:06 .
+drwxrwxr-x 6 pirate101 pirate101    200 Apr 25 22:10 ..
+-rw-r--r-- 1 root      root      280448 Mar 20 12:43 device_faker_cli
+
+----- webroot/ files (WebUI may be available) -----
+assets
+index.html
+
+===== 2/6 Flash device_faker via Magisk CLI =====
+**********************************
+ Device Faker 
+ by 酷安@瓦力喀/GitHub@Seyud 
+**********************************
+*******************
+ Powered by Magisk 
+*******************
+- Extracting module files
+- 安装 Device Faker 模块
+- 配置文件位置: /data/adb/device_faker/config/config.toml
+- 编辑配置文件添加需要伪装的应用
+- 修改配置后无需重启，仅需重启对应应用
+- 安装完成！
+- 重启设备后生效
+- Done
+[FLASH OK]
+
+===== 3/6 Cold restart Waydroid =====
+[waiting 90s for boot...]
+
+===== 4/6 VERIFY install =====
+boot=1 | model=WayDroid x86_64 Device
+----- module states -----
+  device_faker: enabled
+  fake_proc: DISABLED
+  playintegrityfix: enabled
+  zygisk_lsposed: enabled
+----- device_faker installed dir -----
+total 28
+drwxr-xr-x. 5 root      root      4096 Apr 25 22:10 .
+drwxr-xr-x  6 pirate101 pirate101 4096 Apr 25 22:11 ..
+drwxr-xr-x. 2 root      root      4096 Apr 25 22:10 bin
+-rw-r--r--. 1 root      root       245 Apr 25 22:10 module.prop
+-rw-r--r--. 1 root      root        48 Apr 25 22:10 uninstall.sh
+drwxr-xr-x. 3 root      root      4096 Apr 25 22:10 webroot
+drwxr-xr-x. 2 root      root      4096 Apr 25 22:11 zygisk
+
+===== 5/6 SHOW POST-INSTALL config.toml (live one we will customize) =====
+cat: /home/pirate101/.local/share/waydroid/data/adb/modules/device_faker/config.toml: No such file or directory
+
+===== 6/6 CHECK module loaded in magisk.log =====
+04-25 19:11:18.222    76    76 I : post-fs-data.d: exec [00_zygisk_enforce.sh]
+04-25 19:11:18.244    71    73 I : Upgrade / New module: device_faker
+04-25 19:11:18.244    71    73 I : zygisk_lsposed: applying [sepolicy.rule]
+04-25 19:11:18.248    71    73 W : zygisk_lsposed: failed to apply [sepolicy.rule]
+04-25 19:11:18.248    71    73 I : zygisk_lsposed: refresh [sepolicy.rule]
+04-25 19:11:19.752    71    73 I : zygisk_lsposed: exec [service.sh]
+04-25 19:11:21.390   141   141 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-25 19:11:21.390   141   141 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 19:11:21.390   141   141 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+
+==========================================
+ NEXT: Paste back PHASE 1 (config.toml DEFAULT)
+ and PHASE 5 (live config.toml) outputs.
+ I will write the Samsung S24 Ultra config
+ with proper [[apps]] entries + GMS/Vending exclusions.
+==========================================
+pirate101@DEBIAN13:~$ 
