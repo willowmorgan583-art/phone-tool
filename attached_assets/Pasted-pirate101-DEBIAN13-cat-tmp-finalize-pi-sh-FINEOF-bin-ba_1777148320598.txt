@@ -1,0 +1,125 @@
+pirate101@DEBIAN13:~$ cat > /tmp/finalize_pi.sh << 'FINEOF'
+#!/bin/bash
+set -u
+WD=/home/pirate101/.local/share/waydroid/data
+FP=$WD/adb/modules/fake_proc
+
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/7 INSPECT current fake_proc dir state"
+sudo ls -la $FP/ | sed 's/^/  /'
+echo ""
+echo "----- service.sh size + first 5 lines -----"
+sudo wc -l $FP/service.sh 2>&1 | sed 's/^/  /'
+sudo head -5 $FP/service.sh 2>&1 | sed 's/^/  /'
+
+step "2/7 FORCE-REWRITE service.sh via 'sudo bash -c' (bypass tee permission quirk)"
+sudo rm -f $FP/service.sh
+sudo bash -c "cat > $FP/service.sh" << 'SVCEOF'
+#!/system/bin/sh
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+mount -o bind /data/adb/modules/fake_proc/fake_cpuinfo /proc/cpuinfo 2>/dev/null
+resetprop -n ro.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.verifiedbootstate green
+resetprop -n ro.boot.veritymode enforcing
+resetprop -n ro.boot.flash.locked 1
+resetprop -n ro.boot.warranty_bit 0
+resetprop -n ro.warranty_bit 0
+resetprop -n ro.bootmode unknown
+resetprop -n ro.boot.vbmeta.device_state locked
+resetprop -n ro.kernel.qemu 0
+resetprop -n ro.boot.qemu 0
+for p in ro.lineage.device ro.lineage.version ro.lineage.display.version \
+         ro.modversion ro.lineage.releasetype ro.lineage.build.version \
+         ro.lineage.build.version.plat.rev ro.lineage.build.version.plat.sdk \
+bash /tmp/finalize_pi.sh========================"K"tation)""led; [ -f $m/disable ] && s=D
+
+===== 1/7 INSPECT current fake_proc dir state =====
+  total 56
+  drwxr-xr-x 3 root      root      4096 Apr 25 23:06 .
+  drwxr-xr-x 5 pirate101 pirate101 4096 Apr 25 22:18 ..
+  -rw-rw-rw- 1 root      root         0 Apr 24 13:49 empty_init.rc
+  -rw-r--r-- 1 root      root         0 Apr 24 13:49 empty_waydroid.prop
+  -rw-r--r-- 1 root      root      3157 Apr 24 19:54 fake_cpuinfo
+  -rw-r--r-- 1 root      root       298 Apr 24 02:50 .fake_version
+  -rw-r--r-- 1 root      root       299 Apr 24 19:54 fake_version
+  -rw-r--r-- 1 root      root       173 Apr 24 02:50 module.prop
+  -rwxr-xr-x 1 root      root       296 Apr 25 23:06 post-fs-data.sh
+  -rw-r--r-- 1 root      root       156 Apr 24 19:57 post-fs-data.sh.OFF
+  -rw-r--r-- 1 root      root       156 Apr 25 23:06 post-fs-data.sh.OFF.bak
+  -rwxr-xr-x 1 root      root      1395 Apr 25 23:06 service.sh
+  -rw-r--r-- 1 root      root       963 Apr 24 20:16 service.sh.OFF
+  -rw-r--r-- 1 root      root       963 Apr 25 23:06 service.sh.OFF.bak
+  -rw-r--r-- 1 root      root      1991 Apr 25 22:32 system.prop
+  drwxr-xr-x 4 root      root      4096 Apr 24 15:43 vendor
+
+----- service.sh size + first 5 lines -----
+  33 /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh
+  #!/system/bin/sh
+  # fake_proc clean v2 - safe operations only
+  # - binds /proc/version + /proc/cpuinfo (hides Linux/Intel)
+  # - resets bootloader/verified-boot/warranty props (Samsung S24U)
+  # - REMOVED: waydroid.* bulk deletion (was breaking HALs)
+
+===== 2/7 FORCE-REWRITE service.sh via 'sudo bash -c' (bypass tee permission quirk) =====
+/tmp/finalize_pi.sh: line 40: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh: Permission denied
+[service.sh now:  lines]
+  #!/system/bin/sh
+  mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+  mount -o bind /data/adb/modules/fake_proc/fake_cpuinfo /proc/cpuinfo 2>/dev/null
+
+===== 3/7 Confirm DenyList state (will likely fail via CLI — GUI is truth) =====
+
+===== 4/7 WIPE GMS family data (force fresh DroidGuard re-attestation) =====
+[clearing com.google.android.gms]
+    Success
+[clearing com.google.android.gsf]
+    Success
+[clearing com.android.vending]
+    Success
+[clearing com.google.android.gms.unstable]
+    Failed
+[clearing com.google.android.gsf.login]
+    Failed
+[clearing gr.nikolasspyr.integritycheck]
+    Success
+[clearing com.openai.chatgpt]
+    Failed
+
+===== 5/7 Wipe Advertising ID + GMS internal caches =====
+  caches wiped
+
+===== 6/7 COLD REBOOT for clean re-attestation =====
+
+===== 7/7 POST-REBOOT verify everything still in place =====
+  boot                       = 1
+  ro.product.model           = SM-S928B
+  ro.bootloader              = S928BXXU1AXBA
+  ro.boot.verifiedbootstate  = green
+  ro.boot.flash.locked       = 1
+  ro.kernel.qemu             = 0
+
+  /proc/version              : Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678 (build@an...
+  /proc/cpuinfo line 4       : CPU implementer  : 0x41
+
+  Active modules:
+    fake_proc: enabled
+    playintegrityfix: enabled
+    zygisk_lsposed: enabled
+
+==========================================
+ ⚠  CRITICAL MANUAL STEPS IN WAYDROID:
+
+ 1. Open Waydroid -> Settings -> Passwords & accounts
+    Tap your Google account -> Remove account
+    (the old account carried the burned attestation)
+
+ 2. Open Play Store
+    Sign in with Google account FRESH
+    Wait 30 seconds for first-time setup
+
+ 3. Open Play Integrity API Checker -> CHECK
+    Paste the verdict (all 3 lines)
+==========================================
+pirate101@DEBIAN13:~$ 
