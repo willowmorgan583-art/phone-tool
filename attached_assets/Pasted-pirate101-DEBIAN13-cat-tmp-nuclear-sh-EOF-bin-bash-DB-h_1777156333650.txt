@@ -1,0 +1,115 @@
+pirate101@DEBIAN13:~$ cat > /tmp/nuclear.sh << 'EOF'
+#!/bin/bash
+DB=/home/pirate101/.local/share/waydroid/data/adb/magisk.db
+MODS=/home/pirate101/.local/share/waydroid/data/adb/modules
+
+echo "===== 1/7 FULL stop ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 5
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+echo ""
+echo "===== 2/7 Container service status (why won't it stay up?) ====="
+sudo systemctl status waydroid-container --no-pager -l 2>&1 | head -15
+echo ""
+echo "  --- last 30 journal lines ---"
+sudo journalctl -u waydroid-container -n 30 --no-pager 2>&1 | tail -30
+
+echo ""
+echo "===== 3/7 Turn OFF Magisk hide + zygisk in DB ====="
+echo "  before:"
+sudo sqlite3 $DB "SELECT * FROM settings;" | sed 's/^/    /'
+sudo sqlite3 $DB "UPDATE settings SET value=0 WHERE key IN ('zygisk','hide','sulist','denylist');"
+echo "  after:"
+sudo sqlite3 $DB "SELECT * FROM settings;" | sed 's/^/    /'
+
+echo ""
+echo "===== 4/7 Disable all 3 modules (touch /disable marker) ====="
+sudo ls $MODS/ 2>&1 | sed 's/^/    /'
+for d in $MODS/*/; do
+  if [ -d "$d" ]; then
+bash /tmp/nuclear.shshow-full-ui 2>&1 | head -5====="-E "zygote|surfaceflinger|system_ser
+===== 1/7 FULL stop =====
+
+===== 2/7 Container service status (why won't it stay up?) =====
+○ waydroid-container.service - Waydroid Container
+     Loaded: loaded (/usr/lib/systemd/system/waydroid-container.service; enabled; preset: enabled)
+     Active: inactive (dead) since Sun 2026-04-26 01:30:03 EAT; 7s ago
+   Duration: 7min 46.858s
+ Invocation: 669c673c1b8b4e3fa7914da8b14ad445
+    Process: 644078 ExecStart=/usr/bin/waydroid container start (code=exited, status=0/SUCCESS)
+   Main PID: 644078 (code=exited, status=0/SUCCESS)
+   Mem peak: 28M
+        CPU: 873ms
+
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: using nameserver 41.89.1.4#53
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: using nameserver 41.204.164.3#53
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: read /etc/hosts - 8 names
+Apr 26 01:23:52 DEBIAN13 waydroid[644078]: [01:23:52] waiting 10 seconds for container to start...
+Apr 26 01:30:02 DEBIAN13 waydroid[644078]: [01:30:02] Stopping container
+
+  --- last 30 journal lines ---
+Apr 26 01:22:10 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+Apr 26 01:22:10 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+Apr 26 01:22:16 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+Apr 26 01:22:16 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+Apr 26 01:23:16 DEBIAN13 waydroid[644078]: [01:23:16] Starting up container for a new session
+Apr 26 01:23:16 DEBIAN13 dnsmasq[645883]: started, version 2.91 cachesize 150
+Apr 26 01:23:16 DEBIAN13 dnsmasq[645883]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+Apr 26 01:23:16 DEBIAN13 dnsmasq-dhcp[645883]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+Apr 26 01:23:16 DEBIAN13 dnsmasq-dhcp[645883]: DHCP, sockets bound exclusively to interface waydroid0
+Apr 26 01:23:16 DEBIAN13 dnsmasq[645883]: reading /etc/resolv.conf
+Apr 26 01:23:16 DEBIAN13 dnsmasq[645883]: using nameserver 41.89.1.4#53
+Apr 26 01:23:16 DEBIAN13 dnsmasq[645883]: using nameserver 41.204.164.3#53
+Apr 26 01:23:16 DEBIAN13 dnsmasq[645883]: read /etc/hosts - 8 names
+Apr 26 01:23:31 DEBIAN13 waydroid[644078]: [01:23:31] Stopping container
+Apr 26 01:23:51 DEBIAN13 waydroid[644078]: [01:23:51] Starting up container for a new session
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: started, version 2.91 cachesize 150
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+Apr 26 01:23:51 DEBIAN13 dnsmasq-dhcp[647705]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+Apr 26 01:23:51 DEBIAN13 dnsmasq-dhcp[647705]: DHCP, sockets bound exclusively to interface waydroid0
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: reading /etc/resolv.conf
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: using nameserver 41.89.1.4#53
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: using nameserver 41.204.164.3#53
+Apr 26 01:23:51 DEBIAN13 dnsmasq[647705]: read /etc/hosts - 8 names
+Apr 26 01:23:52 DEBIAN13 waydroid[644078]: [01:23:52] waiting 10 seconds for container to start...
+Apr 26 01:30:02 DEBIAN13 waydroid[644078]: [01:30:02] Stopping container
+Apr 26 01:30:03 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+Apr 26 01:30:03 DEBIAN13 waydroid[644078]: [01:30:03] Stopping container
+Apr 26 01:30:03 DEBIAN13 waydroid[644078]: [gbinder] Service manager /dev/anbox-binder has appeared
+Apr 26 01:30:03 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+Apr 26 01:30:03 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+
+===== 3/7 Turn OFF Magisk hide + zygisk in DB =====
+  before:
+    zygisk|1
+    sulist|0
+    denylist|0
+    hide|1
+  after:
+    zygisk|0
+    sulist|0
+    denylist|0
+    hide|0
+
+===== 4/7 Disable all 3 modules (touch /disable marker) =====
+    fake_proc
+    playintegrityfix
+    zygisk_lsposed
+
+===== 5/7 Cold-start container =====
+  waiting 90s for full Android boot...
+  systemctl is-active waydroid-container = active
+
+  --- shell test (5s timeout) ---
+[01:31:41] WayDroid container is STOPPED
+
+===== 6/7 Check what's actually running in container =====
+[01:31:41] WayDroid container is STOPPED
+
+===== 7/7 Try show-full-ui (20s timeout) =====
+[01:31:41] Starting waydroid session
+[gbinder] Service manager /dev/anbox-binder has appeared
+pirate101@DEBIAN13:~$ 
