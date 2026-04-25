@@ -1,0 +1,42 @@
+pirate101@DEBIAN13:~$ echo "===== STEP 1: ENABLE 3-BUTTON NAV (instant) =====" && \                     echo "===== STEP 1: ENABLE 3-BUTTON NAV (instant) =====" && \udo waydroid shell -- settings put secure navigation_mode 0 2>&1 && \
+sudo waydroid shell -- settings put secure navigation_mode 0 2>&1 && \i.navbar.thrsudo waydroid shell -- cmd overlay enable com.android.internal.systemui.navbar.threebutton 2>&1 && \: GET WAYDROID_SCRIPT =====" && \
+echo "===== STEP 2: GET WAYDROID_SCRIPT =====" && \
+cd ~ && \aydroid_script ] && git clone https://github.com/casualsnek/waydroid_scri([ ! -d waydroid_script ] && git clone https://github.com/casualsnek/waydroid_script || echo "already cloned, pulling latest") && \& \
+cd ~/waydroid_script && git pull 2>&1 | tail -3 && \packages 2>&1 | tail -5 && \
+sudo pip install -r requirements.txt --break-system-packages 2>&1 | tail -5 && \
+echo "===== STEP 3: STOP WAYDROID FOR SYSTEM MODIFICATION =====" && \
+waydroid session stop 2>/dev/null; \er && sleep 5 && \
+sudo systemctl stop waydroid-container && sleep 5 && \ \
+echo "===== STEP 4: REMOVE MICROG COMPLETELY =====" && \ \
+sudo python3 main.py uninstall microg 2>&1 | tail -15 && \MS + Vending) =====" && echo "===== STEP 5: INSTALL REAL GOOGLE APPS (real GSF + GMS + Vending) =====" && \udo python3 main.py install gapps 2>&1 | tail -30 && \
+sudo python3 main.py install gapps 2>&1 | tail -30 && \
+echo "===== STEP 6: COLD RESTART =====" && \leep 30 && \
+sudo systemctl start waydroid-container && sleep 30 && \
+(waydroid session start &) && sleep 120 && \
+echo "===== STEP 7: VERIFY =====" && \ot=$(getprop sys.boot_completed) | system_sesudo waydroid shell -- sh -c 'echo "boot=$(getprop sys.boot_completed) | system_server=$(getprop init.svc.system_server) | model=$(getprop ro.product.model)"' && \
+echo "----- Packages (should NOT see microg/mtg) -----" && \g|mtg|gsf|gms|vending|sudo waydroid shell -- pm list packages -f | grep -iE "microg|mtg|gsf|gms|vending|finsky" && \Crash check (should be quiet now) -----" && \
+echo "----- Crash check (should be quiet now) -----" && \ "FATAL|gsf.gservices" | sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aE "FATAL|gsf.gservices" | tail -10 && \IF still loaded? -----" && \
+echo "----- PIF still loaded? -----" && \es/playintegrityfix/ && \
+sudo waydroid shell -- ls /data/adb/modules/playintegrityfix/ && \ | grep -aiE "plsudo waydroid shell -- sh -c 'cat /cache/magisk.log 2>&1 | strings | grep -aiE "playintegrity|boot-complete" | tail -5' && \
+echo "===== DONE ====="
+===== STEP 1: ENABLE 3-BUTTON NAV (instant) =====
+===== STEP 2: GET WAYDROID_SCRIPT =====
+already cloned, pulling latest
+Already up to date.
+Requirement already satisfied: certifi>=2017.4.17 in /usr/lib/python3/dist-packages (from requests->-r requirements.txt (line 2)) (2025.1.31)
+Requirement already satisfied: pfzy<0.4.0,>=0.3.1 in /usr/local/lib/python3.13/dist-packages (from InquirerPy->-r requirements.txt (line 3)) (0.3.4)
+Requirement already satisfied: prompt-toolkit<4.0.0,>=3.0.1 in /usr/local/lib/python3.13/dist-packages (from InquirerPy->-r requirements.txt (line 3)) (3.0.52)
+Requirement already satisfied: wcwidth in /usr/local/lib/python3.13/dist-packages (from prompt-toolkit<4.0.0,>=3.0.1->InquirerPy->-r requirements.txt (line 3)) (0.6.0)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+===== STEP 3: STOP WAYDROID FOR SYSTEM MODIFICATION =====
+===== STEP 4: REMOVE MICROG COMPLETELY =====
+INFO: Uninstallation finished
+===== STEP 5: INSTALL REAL GOOGLE APPS (real GSF + GMS + Vending) =====
+INFO: Downloading gapps.zip now to /home/pirate101/.cache/waydroid-script/downloads/gapps.zip .....
+INFO: Extracting /home/pirate101/.cache/waydroid-script/downloads/gapps.zip to /tmp/gapps/extract
+INFO: MindTheGapps installation finished
+===== STEP 6: COLD RESTART =====
+[03:22:36] Skipping notification manager service because we could not connect to the notifications server: org.freedesktop.systemd1.UnitMasked: Unit swaync.service is masked.
+[gbinder] Service manager /dev/anbox-binder has appeared
+[03:23:10] Android with user 0 is ready
+
