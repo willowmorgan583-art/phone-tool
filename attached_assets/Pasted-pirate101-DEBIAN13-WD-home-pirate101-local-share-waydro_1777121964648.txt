@@ -1,0 +1,121 @@
+pirate101@DEBIAN13:~$ WD=/home/pirate101/.local/share/waydroid/data ; \
+LSP_ZIP=/home/pirate101/Downloads/LSPosed-v1.11.0-7209-zygisk-release.zip ; \
+echo "==========================================" ; \
+echo " WAYDROID MASTER FIX" ; \
+echo "  1) DISABLE broken fake_proc (kills ChatGPT)" ; \
+echo "  2) Enforce denylist + add GMS/Vending (PI fix)" ; \
+echo "  3) Install LSPosed v1.11 Zygisk" ; \
+echo "==========================================" ; \
+echo "" ; \
+echo "=====[ 0/6: PRE-FLIGHT ]=====" ; \
+test -f "$LSP_ZIP" && echo "[OK] LSPosed zip: $(ls -lh $LSP_ZIP | awk '{print $5}')" || { echo "[FATAL] zip missing at $LSP_ZIP"; exit 1; } ; \
+sudo waydroid shell -- sh -c 'echo "boot=$(getprop sys.boot_completed) | model=$(getprop ro.product.model)"' ; \
+echo "" ; \
+echo "=====[ 1/6: DISABLE fake_proc ]=====" ; \
+if sudo test -d "$WD/adb/modules/fake_proc"; then \
+  sudo touch "$WD/adb/modules/fake_proc/disable" ; \
+  echo "[fake_proc DISABLED — won't load next boot]" ; \
+  sudo ls "$WD/adb/modules/fake_proc/" | grep -E "^(disable|remove|update)$" || true ; \
+else \
+  echo "[fake_proc not present — skip]" ; \
+fi ; \
+echo "" ; \
+echo "=====[ 2/6: Enforce denylist + add GMS/Vending ]=====" ; \
+sudo waydroid shell -- sh -c 'su -c "magisk --denylist enforce"' 2>&1 ; \
+sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gms com.google.android.gms.unstable"' 2>&1 ; \
+sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gms com.google.android.gms.gservices"' 2>&1 ; \
+sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gms com.google.android.gms.persistent"' 2>&1 ; \
+sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gms com.google.andrecho "==========================================" ;d to install Android Faker" ; \ ; \ "  (LSPose
+bash: !: event not found
+bash: syntax error near unexpected token `elif'
+  echo "[WD=/home/pirate101/.local/share/waydroid/data ; LSP_ZIP=/home/pirate101/Downloads/LSPosed-v1.11.0-7209-zygisk-release.zip ; echo "==========================================" ; echo " WAYDROID MASTER FIX" ; echo "  1) DISABLE broken fake_proc (kills ChatGPT)" ; echo "  2) Enforce denylist + add GMS/Vending (PI fix)" ; echo "  3) Install LSPosed v1.11 Zygisk" ; echo "==========================================" ; echo "" ; echo "=====[ 0/6: PRE-FLIGHT ]=====" ; test -f "$LSP_ZIP" && echo "[OK] LSPosed zip: $(ls -lh $LSP_ZIP | awk '{print $5}')" || { echo "[FATAL] zip missing at $LSP_ZIP"; exit 1; } ; sudo waydroid shell -- sh -c 'echo "boot=$(getprop sys.boot_completed) | model=$(getprop ro.product.model)"' ; echo "" ; echo "=====[ 1/6: DISABLE fake_proc ]=====" ; if sudo test -d "$WD/adb/modules/fake_proc"; then   sudo touch "$WD/adb/modules/fake_proc/disable" ;   echo "[fake_proc DISABLED — won't load next boot]" ;   sudo ls "$WD/adb/modules/fake_proc/" | grep -E "^(disable|remove|update)$" || true ; else   echo "[fake_proc not present — skip]" ; fi ; echo "" ; echo "=====[ 2/6: Enforce denylist + add GMS/Vending ]=====" ; sudo waydroid shell -- sh -c 'su -c "magisk --denylist enforce"' 2>&1 ; sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gms com.google.android.gms.unstable"' 2>&1 ; sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gms com.google.android.gms.gservices"' 2>&1 ; sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gms com.google.android.gms.persistent"' 2>&1 ; sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gms com.google.android.gms.ui"' 2>&1 ; sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.android.vending"' 2>&1 ; sudo waydroid shell -- sh -c 'su -c "magisk --denylist add com.google.android.gsf"' 2>&1 ; echo "----- denylist now contains: -----" ; sudo waydroid shell -- sh -c 'su -c "magisk --denylist ls"' 2>&1 ; echo "" ; echo "=====[ 3/6: Stage LSPosed zip into /sdcard/Download ]=====" ; sudo cp "$LSP_ZIP" "$WD/media/0/Download/lsposed.zip" ; sudo chown 1000:1000 "$WD/media/0/Download/lsposed.zip" ; sudo chmod 644 "$WD/media/0/Download/lsposed.zip" ; sudo waydroid shell -- ls -la /sdcard/Download/lsposed.zip 2>&1 ; echo "" ; echo "=====[ 4/6: Flash LSPosed via Magisk CLI ]=====" ; FLASH=$(sudo waydroid shell -- sh -c 'su -c "magisk --install-module /sdcard/Download/lsposed.zip"' 2>&1) ; echo "$FLASH" | tail -30 ;   echo "[FLASH OK]" ; elif echo "$FLASH" | grep -qiE "permission|denied|not permitted|operation not"; then \! CLI FLASH BLOCKED — su socket namespace issue !!!]" ; \
+bash: syntax error near unexpected token `)'
+bash: syntax error near unexpected token `fi'
+
+=====[ 5/6: Cold restart Waydroid container ]=====
+[sudo] password for pirate101: 
+[waiting 90s for full boot...]
+
+=====[ 6/6: VERIFY ALL ]=====
+boot= | model=SM-S928B
+----- module states -----
+  fake_proc: enabled
+  playintegrityfix: enabled
+----- magisk.log (zygisk + module loading) -----
+04-25 12:56:10.417   608   608 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 12:56:10.417   608   608 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-25 12:56:15.437   627   627 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-25 12:56:15.437   627   627 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 12:56:15.437   627   627 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-25 12:56:20.423   646   646 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-25 12:56:20.423   646   646 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 12:56:20.423   646   646 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-25 12:56:25.392   665   665 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-25 12:56:25.392   665   665 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 12:56:25.392   665   665 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-25 12:56:30.417   684   684 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-25 12:56:30.417   684   684 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 12:56:30.417   684   684 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-25 12:56:35.404   703   703 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-25 12:56:35.404   703   703 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 12:56:35.404   703   703 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-25 12:56:40.417   722   722 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-25 12:56:40.417   722   722 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-25 12:56:40.417   722   722 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+----- LSPosed manager package present? -----
+  (LSPosed Manager not installed — use GUI fallback)
+----- denylist status -----
+----- denylist apps -----
+
+==========================================
+ EXPECTED:
+   boot=1
+   fake_proc: DISABLED   <- ChatGPT should now load
+   playintegrityfix: enabled
+   lsposed_zygisk (or _lsposed_*): enabled   <- new
+   magisk.log: 'zygisk: loaded module lsposed'
+   denylist: Enforcing + contains gms/vending/gsf
+
+ NEXT STEPS:
+   1) Open Waydroid UI:   waydroid show-full-ui &
+   2) Look for 'LSPosed is activated' notification (long-press for Manager)
+   3) Test ChatGPT app — should pass splash now
+   4) Test Play Integrity Checker — BASIC should now show OK
+   5) Reply with PHASE 6 output and we proceed to install Android Faker
+==========================================
+pirate101@DEBIAN13:~$ waydroid show-full-ui &
+[1] 413961
+pirate101@DEBIAN13:~$ [15:58:05] Failed to get service waydroidplatform, trying again...
+[15:58:06] Failed to get service waydroidplatform, trying again...
+[15:58:07] Failed to get service waydroidplatform, trying again...
+[15:58:08] Failed to get service waydroidplatform, trying again...
+[15:58:09] Failed to get service waydroidplatform, trying again...
+[15:58:10] Failed to get service waydroidplatform, trying again...
+[15:58:11] Failed to get service waydroidplatform, trying again...
+[15:58:12] Failed to get service waydroidplatform, trying again...
+[15:58:13] Failed to get service waydroidplatform, trying again...
+[15:58:14] Failed to get service waydroidplatform, trying again...
+[15:58:15] Failed to get service waydroidplatform, trying again...
+[15:58:16] Failed to get service waydroidplatform, trying again...
+[15:58:17] Failed to get service waydroidplatform, trying again...
+[15:58:18] Failed to get service waydroidplatform, trying again...
+[15:58:19] Failed to get service waydroidplatform, trying again...
+[15:58:20] Failed to get service waydroidplatform, trying again...
+[15:58:21] Failed to get service waydroidplatform, trying again...
+[15:58:22] Failed to get service waydroidplatform, trying again...
+[15:58:23] Failed to get service waydroidplatform, trying again...
+[15:58:24] Failed to get service waydroidplatform, trying again...
+[15:58:25] Failed to get service waydroidplatform, trying again...
+[15:58:26] Failed to get service waydroidplatform, trying again...
+[15:58:27] Failed to get service waydroidplatform, trying again...
+[15:58:28] Failed to get service waydroidplatform, trying again...
+[15:58:29] Failed to get service waydroidplatform, trying again...
+[15:58:30] Failed to get service waydroidplatform, trying again...
+[15:58:31] Failed to get service waydroidplatform, trying again...
+^C
+pirate101@DEBIAN13:~$ [15:58:32] Failed to get service waydroidplatform, trying again...
+[15:58:33] Failed to get service waydroidplatform, trying again...
+[15:58:34] Failed to get service waydroidplatform, trying again...
+[15:58:35] Failed to get service waydroidplatform, trying again...
+^C
+pi
