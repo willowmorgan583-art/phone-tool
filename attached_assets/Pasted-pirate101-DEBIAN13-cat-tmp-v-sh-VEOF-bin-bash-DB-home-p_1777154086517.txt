@@ -1,0 +1,75 @@
+pirate101@DEBIAN13:~$ cat > /tmp/v.sh << 'VEOF'
+#!/bin/bash
+DB=/home/pirate101/.local/share/waydroid/data/adb/magisk.db
+echo "=== GMS family in HIDELIST (must show 4+ rows) ==="
+sudo sqlite3 $DB "SELECT * FROM hidelist WHERE package_name IN ('com.google.android.gms','com.google.android.gsf','com.android.vending','com.android.webview');"
+echo ""
+echo "=== Magisk settings flags ==="
+sudo sqlite3 $DB "SELECT * FROM settings;"
+echo ""
+echo "=== Container live state ==="
+sudo waydroid shell -- sh -c '
+  echo "  --- Identity ---"
+  echo "  model            = $(getprop ro.product.model)"
+  echo "  bootloader       = $(getprop ro.bootloader)"
+  echo ""
+  echo "  --- ABI (must be arm64-v8a first) ---"
+  echo "  cpu.abi          = $(getprop ro.product.cpu.abi)"
+  echo "  cpu.abilist      = $(getprop ro.product.cpu.abilist)"
+  echo ""
+  echo "  --- SELinux (must be enforcing) ---"
+  echo "  ro.boot.selinux  = $(getprop ro.boot.selinux)"
+  echo "  ro.build.selinux = $(getprop ro.build.selinux)"
+  echo "  getenforce       = $(getenforce 2>&1)"
+  echo ""
+  echo "  --- Magisk hide engine ---"
+  su -c "magiskhide status" 2>&1 | sed "s/^/  /"
+  echo ""
+  echo "  --- GMS family in active hidelist (live) ---"
+  su -c "magiskhide ls" 2>&1 | grep -E "gms|gsf|vending|webview" | sed "s/^/  /" || echo "  (none found — magiskhide may not be enabled)"
+'
+VEOF
+bash /tmp/v.sh
+=== GMS family in HIDELIST (must show 4+ rows) ===
+com.android.vending|com.android.vending
+com.android.webview|com.android.webview
+com.google.android.gms|com.google.android.gms
+com.google.android.gms|com.google.android.gms.persistent
+com.google.android.gms|com.google.android.gms.unstable
+com.google.android.gsf|com.google.android.gsf
+com.google.android.gsf|com.google.android.gsf:search
+com.google.android.gsf|com.google.process.gapps
+
+=== Magisk settings flags ===
+zygisk|1
+sulist|0
+denylist|0
+hide|1
+
+=== Container live state ===
+  --- Identity ---
+  model            = SM-S928B
+  bootloader       = S928BXXU1AXBA
+
+  --- ABI (must be arm64-v8a first) ---
+  cpu.abi          = arm64-v8a
+  cpu.abilist      = arm64-v8a,armeabi-v7a,armeabi
+
+  --- SELinux (must be enforcing) ---
+  ro.boot.selinux  = enforcing
+  ro.build.selinux = 1
+  getenforce       = Disabled
+
+  --- Magisk hide engine ---
+  MagiskHide is enabled
+
+  --- GMS family in active hidelist (live) ---
+  com.android.vending|com.android.vending
+  com.android.webview|com.android.webview
+  com.google.android.gms|com.google.android.gms
+  com.google.android.gms|com.google.android.gms.persistent
+  com.google.android.gms|com.google.android.gms.unstable
+  com.google.android.gsf|com.google.android.gsf
+  com.google.android.gsf|com.google.android.gsf:search
+  com.google.android.gsf|com.google.process.gapps
+pirate101@DEBIAN13:~$ 
