@@ -1,0 +1,47 @@
+pirate101@DEBIAN13:~/waydroid_script$ cd ..
+pirate101@DEBIAN13:~$ echo "===== REMOVE LINGERING MICROG NLP BACKENDS =====" ; \
+sudo waydroid shell -- pm uninstall --user 0 org.microg.nlp.backend.apple 2>&1 ; \ 
+sudo waydroid shell -- pm uninstall --user 0 org.microg.nlp.backend.ichnaea 2>&1 ; \
+echo "===== BOOT/SYSTEM STATE =====" ; \
+sudo waydroid shell -- sh -c 'echo "boot=$(getprop sys.boot_completed) | system_server=$(getprop init.svc.system_server) | zygote=$(getprop init.svc.zygote)"' ; \
+echo "===== PACKAGES (microg/mtg should be GONE) =====" ; \
+sudo waydroid shell -- pm list packages | grep -iE "microg|mtg" ; \
+echo "(empty above = full microg removal achieved)" ; \
+echo "===== CRASH LOG SINCE BOOT =====" ; \
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aE "FATAL|gsf.gservices|SecurityException" | tail -20 ; \
+echo "(empty above = no more crashes)" ; \
+echo "===== ARM64 + NAV MODE =====" ; \
+sudo waydroid shell -- sh -c 'echo "abilist64=$(getprop ro.product.cpu.abilist64) | bridge=$(getprop ro.dalvik.vm.native.bridge) | nav_mode=$(settings get secure navigation_mode)"' ; \
+echo "===== ALL GOOGLE COMPONENTS NOW =====" ; \
+sudo waydroid shell -- pm list packages -f | grep -E "com.google.android|com.android.vending" ; \
+echo "===== DONE ====="
+===== REMOVE LINGERING MICROG NLP BACKENDS =====
+Success
+Success
+===== BOOT/SYSTEM STATE =====
+boot=1 | system_server= | zygote=running
+===== PACKAGES (microg/mtg should be GONE) =====
+package:com.mtg.gmsoverlay
+package:com.mtg.gmssettingsprovideroverlay
+(empty above = full microg removal achieved)
+===== CRASH LOG SINCE BOOT =====
+(empty above = no more crashes)
+===== ARM64 + NAV MODE =====
+abilist64=x86_64,arm64-v8a | bridge=libhoudini.so | nav_mode=0
+===== ALL GOOGLE COMPONENTS NOW =====
+package:/system/product/priv-app/AndroidAutoStub/AndroidAutoStub.apk=com.google.android.projection.gearhead
+package:/data/app/~~lBIIDs-tUn_0AggTNY5Lhw==/com.google.android.apps.adm-l-HPf2bIh6BXRm3SZUmzXg==/base.apk=com.google.android.apps.adm
+package:/system/product/priv-app/GoogleRestore/GoogleRestore.apk=com.google.android.apps.restore
+package:/system/system_ext/priv-app/SetupWizard/SetupWizard.apk=com.google.android.setupwizard
+package:/system/system_ext/priv-app/GoogleFeedback/GoogleFeedback.apk=com.google.android.feedback
+package:/data/app/~~jDwX1xQrU0XG3dMjDp89wQ==/com.android.vending-Jwh9z8vNVqGf5Rlm2PJCbg==/base.apk=com.android.vending
+package:/system/product/app/ApertureLensLauncher/ApertureLensLauncher.apk=com.google.android.apps.googlecamera.fishfood
+package:/system/product/priv-app/GooglePartnerSetup/GooglePartnerSetup.apk=com.google.android.partnersetup
+package:/system/product/app/PrebuiltExchange3Google/PrebuiltExchange3Google.apk=com.google.android.gm.exchange
+package:/system/system_ext/priv-app/GoogleServicesFramework/GoogleServicesFramework.apk=com.google.android.gsf
+package:/data/app/~~j14vAeOMPNMJ59e9MPrETA==/com.google.android.safetycore-oFI8upKX2nMa_B1Kc7dFXQ==/base.apk=com.google.android.safetycore
+package:/system/product/priv-app/Velvet/Velvet.apk=com.google.android.googlequicksearchbox
+package:/data/app/~~c9_QaULimHSOPR5IcdBAGQ==/com.google.android.contactkeys-OltFlvjCCDWp6N59Zo8pQA==/base.apk=com.google.android.contactkeys
+package:/data/app/~~1kkhPxjIWpxt4On4oFNxZA==/com.google.android.gms-PmAL_6ssDk_5DbDHuUgeeQ==/base.apk=com.google.android.gms
+===== DONE =====
+pirate101@DEBIAN13:~$ 
