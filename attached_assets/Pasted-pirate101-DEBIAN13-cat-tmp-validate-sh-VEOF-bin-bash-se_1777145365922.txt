@@ -1,0 +1,103 @@
+pirate101@DEBIAN13:~$ cat > /tmp/validate.sh << 'VEOF'
+#!/bin/bash
+set -u
+WD=/home/pirate101/.local/share/waydroid/data
+
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/5 Final reboot to purge device_faker remove-pending"
+waydroid session stop 2>/dev/null || true
+sleep 3
+sudo systemctl restart waydroid-container
+sleep 30
+(waydroid session start >/dev/null 2>&1 &)
+sleep 90
+
+step "2/5 Confirm device_faker is gone"
+sudo ls $WD/adb/modules/ 2>&1 | sed 's/^/  /'
+
+step "3/5 Re-verify Build identity persisted across reboot"
+sudo waydroid shell -- sh -c '
+  echo "  boot                    = $(getprop sys.boot_completed)"
+  echo "  ro.product.model        = $(getprop ro.product.model)"
+  echo "  ro.product.brand        = $(getprop ro.product.brand)"
+  echo "  ro.product.manufacturer = $(getprop ro.product.manufacturer)"
+  echo "  ro.product.device       = $(getprop ro.product.device)"
+  echo "  ro.product.name         = $(getprop ro.product.name)"
+  echo "  ro.product.board        = $(getprop ro.product.board)"
+  echo "  ro.hardware             = $(getprop ro.hardware)"
+  echo "  ro.build.fingerprint    = $(getprop ro.build.fingerprint)"
+  echo "  ro.build.id             = $(getprop ro.build.id)"
+  echo "  ro.build.version.release= $(getprop ro.build.version.release)"
+  echo "  ro.build.version.sdk    = $(getprop ro.build.version.sdk)"
+  echo "  ro.serialno             = $(getprop ro.serialno)"
+' 2>&1
+
+bash /tmp/validate.sh==========================="lues now spoofed for that app only"e" $s
+
+===== 1/5 Final reboot to purge device_faker remove-pending =====
+
+===== 2/5 Confirm device_faker is gone =====
+  fake_proc
+  playintegrityfix
+  zygisk_lsposed
+
+===== 3/5 Re-verify Build identity persisted across reboot =====
+  boot                    = 1
+  ro.product.model        = SM-S928B
+  ro.product.brand        = samsung
+  ro.product.manufacturer = Samsung
+  ro.product.device       = e3q
+  ro.product.name         = e3qxxx
+  ro.product.board        = e3q
+  ro.hardware             = unknown
+  ro.build.fingerprint    = samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+  ro.build.id             = UP1A.231005.007
+  ro.build.version.release= 13
+  ro.build.version.sdk    = 33
+  ro.serialno             = R3CW80E4XAB
+
+===== 4/5 Confirm GMS process still sees Pixel (PIF spoof intact) =====
+  GMS pid 1118
+  GMS pid 1283
+  GMS pid 2344
+
+  PIF target check (from pif.json/prop):
+
+===== 5/5 Module final state =====
+  fake_proc: enabled
+  playintegrityfix: enabled
+  zygisk_lsposed: enabled
+
+==========================================
+ NOW TEST INSIDE WAYDROID (manual GUI):
+
+ A) DEVICE IDENTITY:
+    Open DevCheck (or any device-info app)
+    Should report: Samsung Galaxy S24 Ultra (SM-S928B)
+
+ B) PLAY INTEGRITY:
+    Open 'Play Integrity API Checker' app
+    Tap CHECK -> wait for results
+    Expected:  MEETS_BASIC_INTEGRITY  = PASS
+               MEETS_DEVICE_INTEGRITY = PASS  <- via PIF Pixel spoof
+               MEETS_STRONG_INTEGRITY = FAIL  <- expected, requires hw keystore
+
+ C) APP THAT WAS BROKEN:
+    Open ChatGPT -> should load past splash now (no more 0-byte Lineage)
+
+ D) ANDROID FAKER per-app device IDs:
+    Open Android Faker -> Apps tab
+    Add ChatGPT (or any target app) -> Device ID tab
+    Set the FREE values from the table I gave you earlier:
+      IMEI               = 357499130124581
+      Android ID         = a1b2c3d4e5f60718
+      Hardware Serial    = R3CW80E4XAB
+      WiFi MAC           = 28:11:A5:7B:42:9E
+      Bluetooth MAC      = 28:11:A5:7B:42:A0
+      SIM Subscriber ID  = 311480123456789
+      SIM Serial         = 89014103211118510720
+      SIM Country        = us
+    Force-stop the target app, reopen -> values now spoofed for that app only
+==========================================
+pirate101@DEBIAN13:~$ 
