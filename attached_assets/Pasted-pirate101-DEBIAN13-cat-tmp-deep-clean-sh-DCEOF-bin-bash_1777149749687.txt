@@ -1,0 +1,94 @@
+pirate101@DEBIAN13:~$ cat > /tmp/deep_clean.sh << 'DCEOF'
+#!/bin/bash
+set -u
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/6 Verify Google account is actually gone"
+sudo waydroid shell -- sh -c '
+  echo "  Accounts on device:"
+  cmd account list 2>&1 | sed "s/^/    /" | head -20
+  echo "  accounts*.db files:"
+  ls -la /data/system_de/0/accounts*.db 2>/dev/null | sed "s/^/    /"
+'
+
+step "2/6 Wipe Chrome browser data (history, cookies, cache, autofill, sync)"
+for pkg in com.android.chrome com.google.android.webview com.android.webview; do
+  echo "[clear $pkg]"
+  sudo waydroid shell -- sh -c "am force-stop $pkg 2>&1; pm clear $pkg 2>&1" | sed 's/^/    /'
+done
+
+step "3/6 Aggressive GMS / GSF / Play deep clean"
+sudo waydroid shell -- sh -c '
+  am force-stop com.google.android.gms 2>/dev/null
+  am force-stop com.google.android.gsf 2>/dev/null
+  am force-stop com.android.vending 2>/dev/null
+  sleep 2
+  # GMS - DroidGuard, Phenotype experiments, Chimera modules, all DBs, prefs, caches
+  rm -rf /data/data/com.google.android.gms/app_dg_cache 2>/dev/null
+  rm -rf /data/data/com.google.android.gms/app_chimera 2>/dev/null
+  rm -rf /data/data/com.google.android.gms/files/experimentstorage 2>/dev/null
+  rm -rf /data/data/com.google.android.gms/files/phenotype 2>/dev/null
+  rm -rf /data/data/com.google.android.gms/files/adid 2>/dev/null
+  rm -rf /data/data/com.google.android.gms/databases 2>/dev/null
+  rm -rf /data/data/com.google.android.gms/shared_prefs 2>/dev/null
+  rm -rf /data/data/com.google.android.gms/cache 2>/dev/null
+bash /tmp/deep_clean.sh==========================="econds"be checked" $m/disable ] && s=D
+
+===== 1/6 Verify Google account is actually gone =====
+[sudo] password for pirate101: 
+  Accounts on device:
+  accounts*.db files:
+    -rw-rw---- 1 system radio 65536 2026-04-25 20:19 /data/system_de/0/accounts_de.db
+
+===== 2/6 Wipe Chrome browser data (history, cookies, cache, autofill, sync) =====
+[clear com.android.chrome]
+    Success
+[clear com.google.android.webview]
+    Failed
+[clear com.android.webview]
+    Success
+
+===== 3/6 Aggressive GMS / GSF / Play deep clean =====
+  GMS / GSF / Vending / accounts DBs: wiped
+
+===== 4/6 Final pm clear pass to recreate clean app dirs =====
+[clear com.google.android.gms]
+    Success
+[clear com.google.android.gsf]
+    Success
+[clear com.android.vending]
+    Success
+[clear com.android.chrome]
+    Success
+[clear com.google.android.webview]
+    Failed
+[clear com.android.webview]
+    Success
+[clear gr.nikolasspyr.integritycheck]
+    Success
+
+===== 5/6 Cold reboot =====
+
+===== 6/6 Verify post-reboot state =====
+  boot                       = 1
+  ro.product.model           = SM-S928B
+  ro.bootloader              = S928BXXU1AXBA
+  ro.boot.verifiedbootstate  = green
+  /proc/version              : Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678...
+  /proc/cpuinfo line 4       : CPU implementer  : 0x41
+  Modules:
+    fake_proc: enabled
+    playintegrityfix: enabled
+    zygisk_lsposed: enabled
+
+  Accounts present (should be EMPTY now):
+
+============================================
+ READY FOR FRESH LOGIN — checklist:
+ 1. Magisk DenyList: Google Services Framework MUST be checked
+ 2. Magisk Settings: Unmount modules MUST be ON
+ 3. (optional) Add com.android.webview to DenyList
+ 4. Open Play Store, sign in fresh, wait 60 seconds
+ 5. PI Checker -> CHECK -> paste verdict
+============================================
+pirate101@DEBIAN13:~$ 
