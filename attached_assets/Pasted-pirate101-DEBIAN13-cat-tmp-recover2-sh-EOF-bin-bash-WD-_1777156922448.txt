@@ -1,0 +1,140 @@
+pirate101@DEBIAN13:~$ cat > /tmp/recover2.sh << 'EOF'
+#!/bin/bash
+WD=/home/pirate101/.local/share/waydroid/data/adb
+
+echo "===== 1/6 Stop everything ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 5
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+echo ""
+echo "===== 2/6 Disable modules (sudo bash so glob works) ====="
+sudo bash -c 'for d in /home/pirate101/.local/share/waydroid/data/adb/modules/*/; do
+  if [ -d "$d" ]; then
+    touch "$d/disable" && echo "  disabled: $(basename $d)" || echo "  FAILED: $(basename $d)"
+  fi
+done'
+echo "  verify markers exist:"
+sudo bash -c 'ls /home/pirate101/.local/share/waydroid/data/adb/modules/*/disable 2>&1' | sed 's/^/    /'
+
+echo ""
+echo "===== 3/6 Start container ====="
+sudo systemctl start waydroid-container
+echo "  waiting 30s for LXC..."
+sleep 30
+echo "  systemctl is-active = $(systemctl is-active waydroid-container)"
+
+echo ""
+echo "===== 4/6 Start SESSION explicitly (this is the missing piece) ====="
+nohup waydroid session start > /tmp/session.log 2>&1 &
+bash /tmp/recover2.shhow-full-ui 2>&1 | head -10t.model)"latform)"dplatform..."
+===== 1/6 Stop everything =====
+
+===== 2/6 Disable modules (sudo bash so glob works) =====
+  disabled: fake_proc
+  disabled: playintegrityfix
+  disabled: zygisk_lsposed
+  verify markers exist:
+    /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/disable
+    /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+    /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed/disable
+
+===== 3/6 Start container =====
+  waiting 30s for LXC...
+  systemctl is-active = active
+
+===== 4/6 Start SESSION explicitly (this is the missing piece) =====
+  session PID = 679296
+  waiting 60s for Android boot + session to register waydroidplatform...
+  --- session log ---
+    [01:35:42] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+    [01:35:42] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+    [01:35:43] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+    [01:35:43] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+    [01:35:43] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+    [01:35:47] Android with user 0 is ready
+
+===== 5/6 Check Android boot status =====
+  boot_completed   = 1
+  surfaceflinger   = stopping
+  waydroidplatform = 
+  model            = WayDroid x86_64 Device
+
+===== 6/6 NOW try show-full-ui =====
+pirate101@DEBIAN13:~$ cat > /tmp/sf.sh << 'EOF'
+#!/bin/bash
+
+echo "===== 1/5 Host display environment ====="
+echo "  WAYLAND_DISPLAY = ${WAYLAND_DISPLAY:-NOT SET}"
+echo "  XDG_RUNTIME_DIR = ${XDG_RUNTIME_DIR:-NOT SET}"
+ls -la /run/user/$(id -u)/wayland-* 2>&1 | sed 's/^/    /'
+echo "  GPU devices on host:"
+ls -la /dev/dri/ 2>&1 | sed 's/^/    /'
+echo "  user groups: $(groups)"
+
+echo ""
+echo "===== 2/5 Wayland socket inside container? ====="
+sudo lxc-attach -P /var/lib/waydroid/lxc -n waydroid -- ls -la /run/user/0/ 2>&1 | sed 's/^/    /'
+sudo lxc-attach -P /var/lib/waydroid/lxc -n waydroid -- ls -la /dev/dri/ 2>&1 | sed 's/^/    /'
+
+echo ""
+echo "===== 3/5 SurfaceFlinger crash reason from logcat ====="
+sudo lxc-attach -P /var/lib/waydroid/lxc -n waydroid -- /system/bin/logcat -d -s SurfaceFlinger:* libEGL:* hwcomposer:* gralloc:* WaylandWindow:* 2>&1 | tail -60
+
+echo ""
+echo "===== 4/5 Init service state (which services are crashlooping?) ====="
+timeout 8 sudo waydroid shell -- sh -c '
+  for s in surfaceflinger zygote zygote_secondary servicemanager hwservicemanager waydroidplatform; do
+    echo "  $s = $(getprop init.svc.$s)"
+  done
+' 2>&1
+
+echo ""
+bash /tmp/sf.shroid show-full-ui 2>&1 | head -5.waydroidplatform)"tion..."
+===== 1/5 Host display environment =====
+  WAYLAND_DISPLAY = wayland-0
+  XDG_RUNTIME_DIR = /run/user/1000
+    srwxrwxr-x 1 pirate101 pirate101 0 Apr 25 21:26 /run/user/1000/wayland-0
+    -rw-rw---- 1 pirate101 pirate101 0 Apr 25 21:26 /run/user/1000/wayland-0.lock
+  GPU devices on host:
+    total 0
+    drwxr-xr-x   3 root root        100 Apr 25 21:25 .
+    drwxr-xr-x  20 root root       3660 Apr 25 21:38 ..
+    drwxr-xr-x   2 root root         80 Apr 25 21:25 by-path
+    crw-rw----+  1 root video  226,   0 Apr 25 21:25 card0
+    crwxrwxrwx+  1 root render 226, 128 Apr 25 21:25 renderD128
+  user groups: pirate101 cdrom floppy sudo audio dip video plugdev netdev scanner bluetooth lpadmin input autologin waydroid
+
+===== 2/5 Wayland socket inside container? =====
+    ls: /run/user/0/: Invalid argument
+    total 0
+    drwxr-xr-x  2 root root       60 2026-04-25 22:35 .
+    drwxrwxrwt 21 root root      880 2026-04-25 22:35 ..
+    crwxrwxrwx  1 root 992  226, 128 2026-04-25 18:25 renderD128
+
+===== 3/5 SurfaceFlinger crash reason from logcat =====
+--------- beginning of main
+04-25 22:36:40.560   113   113 W SurfaceFlinger: couldn't log to binary event log: overflow.
+04-25 22:37:56.901   113   113 W SurfaceFlinger: couldn't log to binary event log: overflow.
+
+===== 4/5 Init service state (which services are crashlooping?) =====
+  surfaceflinger = stopping
+  zygote = running
+  zygote_secondary = running
+  servicemanager = running
+  hwservicemanager = running
+  waydroidplatform = 
+
+===== 5/5 Full container restart with session timing =====
+  container restarted, waiting 20s...
+  session started, waiting 40s for waydroidplatform registration...
+  --- session log ---
+    [01:41:24] Android with user 0 is ready
+  --- post-restart status ---
+  surfaceflinger   = running
+  waydroidplatform = 
+
+  trying show-full-ui (10s timeout)...
+pirate101@DEBIAN13:~$
