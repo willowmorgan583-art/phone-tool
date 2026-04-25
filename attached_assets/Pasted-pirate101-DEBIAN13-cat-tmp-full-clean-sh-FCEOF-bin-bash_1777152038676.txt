@@ -1,0 +1,122 @@
+pirate101@DEBIAN13:~$ cat > /tmp/full_clean.sh << 'FCEOF'
+#!/bin/bash
+set -u
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/8 Verify accounts are empty before we begin"
+sudo waydroid shell -- sh -c '
+  echo "  Active accounts:"
+  cmd account list 2>&1 | sed "s/^/    /" | head -10
+'
+
+step "2/8 Force-stop the entire Google stack so we can wipe cleanly"
+sudo waydroid shell -- sh -c '
+  for pkg in com.google.android.gms com.google.android.gsf com.android.vending \
+             com.google.android.gms.unstable com.google.android.gsf.login \
+             com.google.android.googlequicksearchbox com.google.android.partnersetup \
+             com.google.android.syncadapters.calendar com.google.android.syncadapters.contacts \
+             com.google.android.feedback com.google.ar.core \
+             com.google.android.contactkeys com.google.android.safetycore \
+             com.android.chrome com.android.webview com.google.android.webview \
+             gr.nikolasspyr.integritycheck; do
+    am force-stop $pkg 2>/dev/null
+  done
+  echo "  all google stack processes stopped"
+'
+
+step "3/8 pm clear EVERY google-tagged app (round 1)"
+PKGS="com.google.android.gms com.google.android.gsf com.android.vending \
+com.google.android.googlequicksearchbox com.google.android.partnersetup \
+com.google.android.syncadapters.calendar com.google.android.syncadapters.contacts \
+com.google.android.feedback com.google.ar.core \
+com.google.android.contactkeys com.google.android.safetycore \
+com.google.android.gm com.google.android.youtube com.google.android.apps.maps \
+com.google.android.apps.docs com.google.android.gms.location.history \
+bash /tmp/full_clean.sh==========================="/^/  /'','zygisk','hide'); \e ] && s=D
+
+===== 1/8 Verify accounts are empty before we begin =====
+  Active accounts:
+
+===== 2/8 Force-stop the entire Google stack so we can wipe cleanly =====
+  all google stack processes stopped
+
+===== 3/8 pm clear EVERY google-tagged app (round 1) =====
+  com.google.android.gms                                  Success
+  com.google.android.gsf                                  Success
+  com.android.vending                                     Success
+  com.google.android.googlequicksearchbox                 Success
+  com.google.android.partnersetup                         Success
+  com.google.android.syncadapters.calendar                Success
+  com.google.android.syncadapters.contacts                Success
+  com.google.android.feedback                             Success
+  com.google.ar.core                                      Success
+  com.google.android.contactkeys                          Success
+  com.google.android.safetycore                           Success
+  com.google.android.gm                                   Failed
+  com.google.android.youtube                              Failed
+  com.google.android.apps.maps                            Failed
+  com.google.android.apps.docs                            Failed
+  com.google.android.gms.location.history                 Failed
+  com.android.chrome                                      Success
+  com.android.webview                                     Success
+  com.google.android.webview                              Failed
+  gr.nikolasspyr.integritycheck                           Success
+
+===== 4/8 Nuke residual data dirs (DroidGuard, Phenotype, Chimera, instance IDs) =====
+  deep dirs wiped
+
+===== 5/8 Wipe Magisk attestation/repackaging state if any =====
+  magisk state caches cleared
+
+===== 6/8 pm clear pass round 2 (recreate clean dirs after rm) =====
+  com.google.android.gms                             Success
+  com.google.android.gsf                             Success
+  com.android.vending                                Success
+  com.android.chrome                                 Success
+  com.android.webview                                Success
+  gr.nikolasspyr.integritycheck                      Success
+
+===== 7/8 Cold reboot for a virgin first-boot state =====
+
+===== 8/8 Final verify — spoofs alive, accounts empty, denylist mode correct =====
+  --- Identity spoof ---
+  ro.product.model           = SM-S928B
+  ro.product.brand           = samsung
+  ro.product.manufacturer    = Samsung
+  ro.bootloader              = S928BXXU1AXBA
+  ro.boot.verifiedbootstate  = green
+  ro.boot.flash.locked       = 1
+  ro.kernel.qemu             = 0
+
+  --- /proc binds ---
+  /proc/version line 1       : Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678 (build@android-buil...
+  /proc/cpuinfo CPU impl     : CPU implementer  : 0x41
+
+  --- Modules ---
+    fake_proc: enabled
+    playintegrityfix: enabled
+    zygisk_lsposed: enabled
+
+  --- Accounts (must be empty) ---
+
+  --- DenyList state from host DB (authoritative) ---
+  denylist|0
+  hide|1
+  sulist|0
+  zygisk|1
+  ----
+  com.google.android.gms|com.google.android.gms
+  com.android.vending|com.android.vending
+  com.google.android.gsf|com.google.android.gsf
+  com.google.android.gsf|com.google.process.gapps
+  com.google.android.gsf|com.google.android.gsf:search
+  com.android.webview|com.android.webview
+
+============================================
+ VIRGIN STATE READY. Now in Waydroid:
+ 1. Open Play Store -> sign in fresh
+ 2. WAIT FULL 60 SECONDS for first sync
+ 3. Open Play Integrity API Checker -> CHECK
+ 4. Paste all three verdict lines back
+============================================
+pirate101@DEBIAN13:~$ 
