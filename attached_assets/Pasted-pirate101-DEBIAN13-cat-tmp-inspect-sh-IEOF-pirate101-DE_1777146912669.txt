@@ -1,0 +1,125 @@
+pirate101@DEBIAN13:~$ cat > /tmp/inspect.sh << 'IEOF'
+pirate101@DEBIAN13:~$ cat > /tmp/inspect.sh << 'IEOF'
+#!/bin/bashrate101/.local/share/waydroid/data
+WD=/home/pirate101/.local/share/waydroid/data
+FP=$WD/adb/modules/fake_proc
+step() { echo ""; echo "===== $1 ====="; }
+step() { echo ""; echo "===== $1 ====="; }
+step "1/6 service.sh.OFF (need to extract safe /proc binds)"
+step "1/6 service.sh.OFF (need to extract safe /proc binds)"
+sudo cat $FP/service.sh.OFF 2>&1 | sed 's/^/  /'
+step "2/6 post-fs-data.sh.OFF (early bind candidates)"
+step "2/6 post-fs-data.sh.OFF (early bind candidates)"
+sudo cat $FP/post-fs-data.sh.OFF 2>&1 | sed 's/^/  /'
+step "3/6 fake_version content (will be bound over /proc/version)"
+step "3/6 fake_version content (will be bound over /proc/version)"
+sudo cat $FP/fake_version 2>&1 | sed 's/^/  /'
+step "4/6 fake_cpuinfo (first 30 lines — bound over /proc/cpuinfo)"
+step "4/6 fake_cpuinfo (first 30 lines — bound over /proc/cpuinfo)"
+sudo head -30 $FP/fake_cpuinfo 2>&1 | sed 's/^/  /'
+step "5/6 What apps see right now in /proc (the leak)"
+step "5/6 What apps see right now in /proc (the leak)"
+sudo waydroid shell -- sh -c 'he LINUX leak) -----"
+  echo "----- /proc/version (the LINUX leak) -----"
+  cat /proc/version
+  echo ""---- /proc/cpuinfo (first 8 lines, the x86 leak) -----"
+  echo "----- /proc/cpuinfo (first 8 lines, the x86 leak) -----"
+  head -8 /proc/cpuinfo
+  echo ""---- mount | grep magisk (root visibility leak) -----"
+  echo "----- mount | grep magisk (root visibility leak) -----"
+  mount 2>/dev/null | grep -iE "magisk|adb/modules" | head -5
+' 2>&1
+step "6/6 Magisk DenyList state from CLI (may fail — GUI is authoritative)"
+step "6/6 Magisk DenyList state from CLI (may fail — GUI is authoritative)"gisk --denylissudo waydroid shell -- sh -c 'su -c "magisk --denylist status; echo ---; magisk --denylist ls"' 2>&1 | head -20
+IEOF /tmp/inspect.sh
+bash /tmp/inspect.sh
+
+===== 1/6 service.sh.OFF (need to extract safe /proc binds) =====
+[sudo] password for pirate101: 
+  #!/system/bin/sh
+  mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+  resetprop -n ro.bootloader S928BXXU1AXBA
+  resetprop -n ro.boot.bootloader S928BXXU1AXBA
+  resetprop -n ro.boot.verifiedbootstate green
+  resetprop -n ro.boot.veritymode enforcing
+  resetprop -n ro.boot.flash.locked 1
+  resetprop -n ro.boot.warranty_bit 0
+  resetprop -n ro.warranty_bit 0
+  resetprop -n ro.bootmode unknown
+  resetprop -n ro.serialno R3CW80XXXXX
+  resetprop -n ro.boot.serialno R3CW80XXXXX
+  for p in ro.lineage.device ro.lineage.version ro.lineage.display.version ro.modversion ro.lineage.releasetype ro.lineage.build.version ro.lineage.build.version.plat.rev ro.lineage.build.version.plat.sdk ro.lineagelegal.url; do
+      resetprop --delete "$p" 2>/dev/null
+      resetprop -n "$p" "" 2>/dev/null
+  done
+  for p in $(getprop | grep -iE "^\[waydroid\." | cut -d"[" -f2 | cut -d"]" -f1); do
+      resetprop "$p" ""
+  done
+  wm size 1440x3120 2>/dev/null
+  wm density 560 2>/dev/null
+
+===== 2/6 post-fs-data.sh.OFF (early bind candidates) =====
+  #!/system/bin/sh
+  mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+  resetprop -n ro.kernel.qemu 0
+  resetprop -n ro.boot.qemu 0
+
+===== 3/6 fake_version content (will be bound over /proc/version) =====
+  Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678 (build@android-build) (Android (10552028, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362), LLD 17.0.2) #1 SMP PREEMPT Thu Feb 29 20:45:01 UTC 2024
+
+===== 4/6 fake_cpuinfo (first 30 lines — bound over /proc/cpuinfo) =====
+  processor     : 0
+  BogoMIPS      : 38.40
+  Features      : fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm ssbs sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint
+  CPU implementer       : 0x41
+  CPU architecture: 8
+  CPU variant   : 0x4
+  CPU part      : 0xd44
+  CPU revision  : 0
+  
+  processor     : 1
+  BogoMIPS      : 38.40
+  Features      : fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm ssbs sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint
+  CPU implementer       : 0x41
+  CPU architecture: 8
+  CPU variant   : 0x4
+  CPU part      : 0xd44
+  CPU revision  : 0
+  
+  processor     : 2
+  BogoMIPS      : 38.40
+  Features      : fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm ssbs sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint
+  CPU implementer       : 0x41
+  CPU architecture: 8
+  CPU variant   : 0x4
+  CPU part      : 0xd4d
+  CPU revision  : 0
+  
+  processor     : 3
+  BogoMIPS      : 38.40
+  Features      : fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm ssbs sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint
+
+===== 5/6 What apps see right now in /proc (the leak) =====
+----- /proc/version (the LINUX leak) -----
+Linux version 6.12.74+deb13+1-amd64 (debian-kernel@lists.debian.org) (x86_64-linux-gnu-gcc-14 (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 SMP PREEMPT_DYNAMIC Debian 6.12.74-2 (2026-03-08)
+
+----- /proc/cpuinfo (first 8 lines, the x86 leak) -----
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 69
+model name      : Intel(R) Core(TM) i5-4300U CPU @ 1.90GHz
+stepping        : 1
+microcode       : 0x26
+cpu MHz         : 2594.175
+
+----- mount | grep magisk (root visibility leak) -----
+magisk on /dev/magisk_iqeoVo2mDrO type tmpfs (rw,relatime,mode=755,inode64)
+devpts on /dev/magisk_iqeoVo2mDrO/.magisk/pts type devpts (rw,nosuid,noexec,relatime,mode=600,ptmxmode=000)
+/dev/sda2 on /dev/magisk_iqeoVo2mDrO/.magisk/modules type ext4 (ro,relatime)
+worker on /dev/magisk_iqeoVo2mDrO/.magisk/worker type tmpfs (rw,relatime,mode=755,inode64)
+overlay on /dev/magisk_iqeoVo2mDrO/.magisk/mirror/system type overlay (ro,nodev,relatime,lowerdir=/var/lib/waydroid/overlay:/var/lib/waydroid/rootfs,upperdir=/var/lib/waydroid/overlay_rw/system,workdir=/var/lib/waydroid/overlay_work/system)
+
+===== 6/6 Magisk DenyList state from CLI (may fail — GUI is authoritative) =====
+---
+pirate101@DEBIAN13:~$ 
