@@ -1,0 +1,40 @@
+pirate101@DEBIAN13:~$ echo "===== STEP 1: REMOVE CORRUPTED pif.json =====" ; \
+sudo rm -v /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/pif.json 2>&1 ; \
+echo "===== STEP 2: SHOW ACTUAL FRESH FINGERPRINT (pif.prop) =====" ; \
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/pif.prop 2>&1 ; \
+echo "===== STEP 3: COLD RESTART =====" ; \
+waydroid session stop 2>/dev/null ; \
+sudo systemctl stop waydroid-container && sleep 5 ; \
+sudo systemctl start waydroid-container && sleep 30 ; \
+(waydroid session start &) && sleep 90 ; \
+echo "===== STEP 4: BOOT + WAYDROID PROPS (system-wide) =====" ; \
+sudo waydroid shell -- sh -c 'echo "boot=$(getprop sys.boot_completed) | model=$(getprop ro.product.model) | brand=$(getprop ro.product.brand)"' ; \
+echo "===== STEP 5: PIF MODULE STATE + LOG =====" ; \
+sudo ls /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/ ; \
+sudo waydroid shell -- sh -c 'cat /cache/magisk.log 2>&1 | strings | grep -aiE "playintegrity|pif|inject|spoof" | tail -15' ; \
+echo "===== STEP 6: DENYLIST STATUS =====" ; \
+sudo waydroid shell -- su -c 'magisk --denylist ls' 2>&1 ; \
+sudo waydroid shell -- su -c 'magisk --denylist enforce' 2>&1 ; \
+echo "===== STEP 7: GSF ANDROID ID (need this for cert registration) =====" ; \
+sudo waydroid shell -- su -c 'sqlite3 /data/data/com.google.android.gsf/databases/gservices.db "select * from main where name=\"android_id\""' 2>&1 ; \
+sudo waydroid shell -- su -c 'cat /data/data/com.google.android.gsf/databases/gservices.db' 2>&1 | strings | grep -aE "^android_id" -A 1 | head -5 ; \
+echo "===== DONE ====="
+===== STEP 1: REMOVE CORRUPTED pif.json =====
+removed '/home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/pif.json'
+===== STEP 2: SHOW ACTUAL FRESH FINGERPRINT (pif.prop) =====
+FINGERPRINT=google/komodo_beta/komodo:CANARY/ZP11.260320.007/15154667:user/release-keys
+MANUFACTURER=Google
+MODEL=Pixel 9 Pro XL
+SECURITY_PATCH=2026-04-05
+spoofBuild=true
+spoofProps=false
+spoofProvider=false
+spoofSignature=false
+spoofVendingBuild=true
+spoofVendingSdk=false
+DEBUG=false
+===== STEP 3: COLD RESTART =====
+[03:42:59] Skipping notification manager service because we could not connect to the notifications server: org.freedesktop.systemd1.UnitMasked: Unit swaync.service is masked.
+[gbinder] Service manager /dev/anbox-binder has appeared
+[03:43:23] Android with user 0 is ready
+
