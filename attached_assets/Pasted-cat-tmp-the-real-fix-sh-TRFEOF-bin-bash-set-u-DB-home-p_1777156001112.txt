@@ -1,0 +1,142 @@
+cat > /tmp/the_real_fix.sh << 'TRFEOF'
+#!/bin/bash
+set -u
+DB=/home/pirate101/.local/share/waydroid/data/adb/magisk.db
+FP=/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/8 Inspect hidelist schema (the table Magisk Delta actually reads)"
+sudo sqlite3 $DB ".schema hidelist" | sed 's/^/  /'
+echo "  Current hidelist (almost certainly empty):"
+sudo sqlite3 $DB "SELECT * FROM hidelist;" | sed 's/^/    /'
+
+step "2/8 STOP container"
+waydroid session stop 2>/dev/null || true
+sudo systemctl stop waydroid-container
+sleep 5
+
+step "3/8 Populate hidelist with same entries as denylist"
+sudo cp $DB ${DB}.bak.realfix.$(date +%s)
+sudo sqlite3 $DB << 'SQL'
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gms','com.google.android.gms');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gms','com.google.android.gms.unstable');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gms','com.google.android.gms.persistent');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gsf','com.google.android.gsf');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gsf','com.google.process.gapps');
+INSERT OR IGNORE INTO hidelist VALUES ('com.google.android.gsf','com.google.android.gsf:search');
+INSERT OR IGNORE INTO hidelist VALUES ('com.android.vending','com.android.vending');
+INSERT OR IGNORE INTO hidelist VALUES ('com.android.webview','com.android.webview');
+INSERT OR IGNORE INTO hidelist VALUES ('gr.nikolasspyr.integritycheck','gr.nikolasspyr.integritycheck');
+INSERT OR IGNORE INTO hidelist VALUES ('com.kblack.demo_play_integrity_api','com.kblack.demo_play_integrity_api');
+SQL
+echo "  hidelist now:"
+sudo sqlite3 $DB "SELECT * FROM hidelist;" | sed 's/^/    /'
+
+step "4/8 Append ABI + SELinux fix to system.prop"
+sudo bash -c "cat >> $FP/system.prop" << 'PROPEOF'
+
+# === CRITICAL ABI LIST FIX (was x86_64 first - PI killer) ===
+ro.product.cpu.abi=arm64-v8a
+ro.product.cpu.abi2=armeabi-v7a
+ro.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+ro.product.cpu.abilist32=armeabi-v7a,armeabi
+ro.product.cpu.abilist64=arm64-v8a
+ro.system.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+ro.system.product.cpu.abilist64=arm64-v8a
+ro.vendor.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+ro.vendor.product.cpu.abilist64=arm64-v8a
+ro.dalvik.vm.native.bridge=0
+
+# === SELINUX SPOOF ===
+ro.boot.selinux=enforcing
+ro.build.selinux=1
+
+# === Board final ===
+ro.product.board=e3q
+ro.board.platform=s5e9945
+PROPEOF
+echo "  system.prop appended"
+
+step "5/8 Update service.sh with ABI/SELinux runtime spoof"
+sudo bash -c "cat > $FP/service.sh" << 'SVCEOF'
+#!/system/bin/sh
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+mount -o bind /data/adb/modules/fake_proc/fake_cpuinfo /proc/cpuinfo 2>/dev/null
+
+# Bootloader
+resetprop -n ro.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.verifiedbootstate green
+resetprop -n ro.boot.veritymode enforcing
+resetprop -n ro.boot.flash.locked 1
+resetprop -n ro.boot.warranty_bit 0
+resetprop -n ro.warranty_bit 0
+resetprop -n ro.boot.vbmeta.device_state locked
+resetprop -n ro.kernel.qemu 0
+resetprop -n ro.boot.qemu 0
+
+# ABI runtime spoof
+resetprop -n ro.product.cpu.abi arm64-v8a
+resetprop -n ro.product.cpu.abi2 armeabi-v7a
+resetprop -n ro.product.cpu.abilist arm64-v8a,armeabi-v7a,armeabi
+resetprop -n ro.product.cpu.abilist32 armeabi-v7a,armeabi
+resetprop -n ro.product.cpu.abilist64 arm64-v8a
+
+# SELinux runtime spoof
+resetprop -n ro.boot.selinux enforcing
+resetprop -n ro.build.selinux 1
+
+# Strip Lineage residue
+for p in ro.lineage.device ro.lineage.version ro.modversion \
+         ro.lineage.releasetype ro.cm.device ro.cm.version; do
+    resetprop -n "$p" "" 2>/dev/null
+done
+SVCEOF
+sudo chmod 755 $FP/service.sh 2>/dev/null
+echo "  service.sh: $(sudo wc -l < $FP/service.sh) lines"
+
+step "6/8 START container"
+sudo systemctl start waydroid-container
+sleep 30
+(waydroid session start >/dev/null 2>&1 &)
+sleep 90
+
+step "7/8 Activate magiskhide via CLI (the applet that actually works)"
+sudo waydroid shell -- sh -c '
+  echo "  --- magisk applets available ---"
+  su -c "magisk --list" 2>&1 | sed "s/^/    /"
+  echo ""
+  echo "  --- magiskhide enable ---"
+  su -c "magiskhide enable" 2>&1 | sed "s/^/    /"
+  echo ""
+  echo "  --- add packages via CLI as belt-and-suspenders ---"
+  for pkg in com.google.android.gms com.google.android.gsf com.android.vending \
+             com.android.webview com.kblack.demo_play_integrity_api \
+             gr.nikolasspyr.integritycheck; do
+    su -c "magiskhide add $pkg" 2>&1 | sed "s/^/    [$pkg] /"
+  done
+  echo ""
+  echo "  --- final magiskhide status + ls ---"
+  su -c "magiskhide status" 2>&1 | sed "s/^/    /"
+  su -c "magiskhide ls" 2>&1 | sed "s/^/    /"
+'
+
+step "8/8 Verify ABI + SELinux + identity all align"
+sudo waydroid shell -- sh -c '
+  echo "  --- ABI (must be arm64-v8a first now) ---"
+  echo "    cpu.abi       = $(getprop ro.product.cpu.abi)"
+  echo "    cpu.abilist   = $(getprop ro.product.cpu.abilist)"
+  echo "    cpu.abilist64 = $(getprop ro.product.cpu.abilist64)"
+  echo ""
+  echo "  --- SELinux ---"
+  echo "    ro.boot.selinux  = $(getprop ro.boot.selinux)"
+  echo "    ro.build.selinux = $(getprop ro.build.selinux)"
+  echo "    getenforce       = $(getenforce 2>&1)"
+  echo ""
+  echo "  --- Identity ---"
+  echo "    model         = $(getprop ro.product.model)"
+  echo "    bootloader    = $(getprop ro.bootloader)"
+  echo "    fingerprint   = $(getprop ro.build.fingerprint)"
+'
+TRFEOF
+bash /tmp/the_real_fix.sh

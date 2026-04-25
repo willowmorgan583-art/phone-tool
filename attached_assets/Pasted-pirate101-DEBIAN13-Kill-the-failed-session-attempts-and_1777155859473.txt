@@ -1,0 +1,95 @@
+pirate101@DEBIAN13:~$ # Kill the failed session attempts and any zombies
+kill %1 2>/dev/null
+pkill -9 -f "waydroid session" 2>/dev/null
+pkill -9 -f "waydroid show" 2>/dev/null
+sleep 2
+
+# Restart the container cleanly
+sudo systemctl restart waydroid-container
+echo "Waiting 60s for Android to boot inside container..."
+sleep 60
+
+# Show UI (this starts the session itself, no separate start needed)
+waydroid show-full-ui
+[sudo] password for pirate101: 
+Waiting 60s for Android to boot inside container...
+[01:10:34] Starting waydroid session
+[gbinder] Service manager /dev/anbox-binder has appeared
+pirate101@DEBIAN13:~$ cat > /tmp/safemode.sh << 'EOF'
+#!/bin/bash
+MODS=/home/pirate101/.local/share/waydroid/data/adb/modules
+
+echo "===== 1/5 Show host display environment (may explain UI failure) ====="
+echo "  WAYLAND_DISPLAY = ${WAYLAND_DISPLAY:-NOT SET}"
+echo "  DISPLAY         = ${DISPLAY:-NOT SET}"
+echo "  XDG_SESSION_TYPE= ${XDG_SESSION_TYPE:-NOT SET}"
+echo "  XDG_RUNTIME_DIR = ${XDG_RUNTIME_DIR:-NOT SET}"
+echo "  Wayland socket  : $(ls -la $XDG_RUNTIME_DIR/wayland-* 2>&1 | head -3)"
+
+echo ""
+echo "===== 2/5 Show current service.sh content (the file we can't edit) ====="
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh 2>&1 | sed 's/^/  /'
+
+echo ""
+echo "===== 3/5 Stop everything + disable ALL Magisk modules (safe mode) ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 4
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+for d in $MODS/*/; do
+  name=$(basename "$d")
+  if [ -d "$d" ]; then
+    sudo touch "$d/disable" 2>&1
+    echo "  disabled: $name"
+  fi
+done
+
+echo ""
+bash /tmp/safemode.shhow-full-ui 2>&1 | head -10===="duct.model)"xit)")"
+===== 1/5 Show host display environment (may explain UI failure) =====
+  WAYLAND_DISPLAY = wayland-0
+  DISPLAY         = :1
+  XDG_SESSION_TYPE= wayland
+  XDG_RUNTIME_DIR = /run/user/1000
+  Wayland socket  : srwxrwxr-x 1 pirate101 pirate101 0 Apr 25 21:26 /run/user/1000/wayland-0
+-rw-rw---- 1 pirate101 pirate101 0 Apr 25 21:26 /run/user/1000/wayland-0.lock
+
+===== 2/5 Show current service.sh content (the file we can't edit) =====
+  #!/system/bin/sh
+  mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+  mount -o bind /data/adb/modules/fake_proc/fake_cpuinfo /proc/cpuinfo 2>/dev/null
+  
+  # Bootloader
+  resetprop -n ro.bootloader S928BXXU1AXBA
+  resetprop -n ro.boot.bootloader S928BXXU1AXBA
+  resetprop -n ro.boot.verifiedbootstate green
+  resetprop -n ro.boot.veritymode enforcing
+  resetprop -n ro.boot.flash.locked 1
+  resetprop -n ro.boot.warranty_bit 0
+  resetprop -n ro.warranty_bit 0
+  resetprop -n ro.boot.vbmeta.device_state locked
+  resetprop -n ro.kernel.qemu 0
+  resetprop -n ro.boot.qemu 0
+  
+  # SELinux runtime spoof
+  resetprop -n ro.boot.selinux enforcing
+  resetprop -n ro.build.selinux 1
+  
+  # Strip Lineage residue
+  for p in ro.lineage.device ro.lineage.version ro.modversion \
+           ro.lineage.releasetype ro.cm.device ro.cm.version; do
+      resetprop -n "$p" "" 2>/dev/null
+  done
+
+===== 3/5 Stop everything + disable ALL Magisk modules (safe mode) =====
+
+===== 4/5 Start container + wait 60s =====
+  --- boot status from inside ---
+[01:23:16] WayDroid container is STOPPED
+
+===== 5/5 Try show-full-ui (15s timeout) =====
+[01:23:16] Starting waydroid session
+[gbinder] Service manager /dev/anbox-binder has appeared
+pirate101@DEBIAN13:~$
