@@ -1,0 +1,163 @@
+pirate101@DEBIAN13:~$ echo "===== FULL STACK TRACES =====" && \
+sudo waydroid shell -- logcat -d -b crash 2>&1 | grep -aA 25 "FATAL EXCEPTION" | head -120 && \
+echo "===== WHICH PACKAGES ARE CRASHING =====" && \
+sudo waydroid shell -- logcat -d 2>&1 | grep -aE "am_crash|ActivityManager.*died|Process.*has died" | tail -20 && \
+echo "===== MAGISK DAEMON ACCESS TEST =====" && \
+sudo waydroid shell -- su -c 'magisk -v' 2>&1 && \
+sudo waydroid shell -- su -c 'magisk --denylist ls' 2>&1 && \
+echo "===== PIF AUTO-FETCH FRESH FINGERPRINT =====" && \
+sudo waydroid shell -- sh /data/adb/modules/playintegrityfix/autopif.sh 2>&1 | tail -20 && \
+echo "===== CURRENT PIF.JSON AFTER AUTOFETCH =====" && \
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/pif.json
+===== FULL STACK TRACES =====
+04-25 00:03:30.692  1365  1365 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:03:30.692  1365  1365 E AndroidRuntime: Process: com.google.android.syncadapters.calendar, PID: 1365
+04-25 00:03:30.692  1365  1365 E AndroidRuntime: java.lang.RuntimeException: Unable to create service com.google.android.syncadapters.calendar.CalendarSyncAdapterService: java.lang.SecurityException: Failed to find provider com.google.android.gsf.gservices for user 0; expected to find a valid ContentProvider for this authority
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.app.ActivityThread.handleCreateService(ActivityThread.java:4499)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.app.ActivityThread.-$$Nest$mhandleCreateService(Unknown Source:0)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2161)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:106)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.os.Looper.loopOnce(Looper.java:201)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.os.Looper.loop(Looper.java:288)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7924)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:937)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime: Caused by: java.lang.SecurityException: Failed to find provider com.google.android.gsf.gservices for user 0; expected to find a valid ContentProvider for this authority
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.os.Parcel.createExceptionOrNull(Parcel.java:3033)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.os.Parcel.createException(Parcel.java:3017)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.os.Parcel.readException(Parcel.java:3000)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.os.Parcel.readException(Parcel.java:2942)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.content.IContentService$Stub$Proxy.registerContentObserver(IContentService.java:1032)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.content.ContentResolver.registerContentObserver(ContentResolver.java:2712)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at android.content.ContentResolver.registerContentObserver(ContentResolver.java:2660)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at com.google.android.gsf.Gservices.ensureCacheInitializedLocked(Gservices.java:3)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at com.google.android.gsf.Gservices.getString(Gservices.java:1)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at com.google.android.syncadapters.calendar.CalendarSyncAdapterApiary.<init>(CalendarSyncAdapterApiary.java:41)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at com.google.android.syncadapters.calendar.DaggerCalendarSyncAdapterApplication_ApplicationComponent.calendarSyncAdapterApiary(DaggerCalendarSyncAdapterApplication_ApplicationComponent.java:1)
+04-25 00:03:30.692  1365  1365 E AndroidRuntime:        at com.google.android.syncadapters.calendar.DaggerCalendarSyncAdapterApplication_ApplicationComponent$SwitchingProvider.get(DaggerCalendarSyncAdapterApplication_ApplicationComponent.java:9)
+--
+04-25 00:03:35.570  2116  2116 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:03:35.570  2116  2116 E AndroidRuntime: Process: com.android.vending, PID: 2116
+04-25 00:03:35.570  2116  2116 E AndroidRuntime: java.lang.RuntimeException: Unable to create application com.google.android.finsky.application.classic.ClassicApplication: java.lang.RuntimeException: Failed to load configurations for FinskyApp
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6816)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2133)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:106)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.os.Looper.loopOnce(Looper.java:201)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.os.Looper.loop(Looper.java:288)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7924)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:937)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime: Caused by: java.lang.RuntimeException: Failed to load configurations for FinskyApp
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at pfg.k(PG:1247)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at pfg.onCreate(PG:23)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1277)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6811)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        ... 9 more
+04-25 00:03:35.570  2116  2116 E AndroidRuntime: Caused by: java.util.concurrent.ExecutionException: java.lang.SecurityException: Failed to find provider com.google.android.gsf.gservices for user 0; expected to find a valid ContentProvider for this authority
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at blzm.h(PG:21)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at blzu.r(PG:73)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at blzm.get(PG:1)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at wm.s(PG:2)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        at pfg.k(PG:808)
+04-25 00:03:35.570  2116  2116 E AndroidRuntime:        ... 12 more
+--
+04-25 00:03:35.819  2183  2183 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:03:35.819  2183  2183 E AndroidRuntime: Process: com.android.vending:recovery_mode, PID: 2183
+04-25 00:03:35.819  2183  2183 E AndroidRuntime: java.lang.RuntimeException: Unable to create application com.google.android.finsky.application.classic.ClassicApplication: java.lang.SecurityException: Failed to find provider com.google.android.gsf.gservices for user 0; expected to find a valid ContentProvider for this authority
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6816)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2133)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:106)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.os.Looper.loopOnce(Looper.java:201)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.os.Looper.loop(Looper.java:288)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7924)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:937)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime: Caused by: java.lang.SecurityException: Failed to find provider com.google.android.gsf.gservices for user 0; expected to find a valid ContentProvider for this authority
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.os.Parcel.createExceptionOrNull(Parcel.java:3033)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.os.Parcel.createException(Parcel.java:3017)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.os.Parcel.readException(Parcel.java:3000)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.os.Parcel.readException(Parcel.java:2942)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.content.IContentService$Stub$Proxy.registerContentObserver(IContentService.java:1032)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.content.ContentResolver.registerContentObserver(ContentResolver.java:2712)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at android.content.ContentResolver.registerContentObserver(ContentResolver.java:2660)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at besi.k(PG:41)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at besi.i(PG:25)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at besb.e(PG:7)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at bjgr.<init>(PG:12)
+04-25 00:03:35.819  2183  2183 E AndroidRuntime:        at rpa.a(PG:18)
+--
+04-25 00:03:37.374  2337  2337 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:03:37.374  2337  2337 E AndroidRuntime: Process: com.android.vending:recovery_mode, PID: 2337
+04-25 00:03:37.374  2337  2337 E AndroidRuntime: java.lang.RuntimeException: Unable to create application com.google.android.finsky.application.classic.ClassicApplication: java.lang.SecurityException: Failed to find provider com.google.android.gsf.gservices for user 0; expected to find a valid ContentProvider for this authority
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6816)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2133)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:106)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.os.Looper.loopOnce(Looper.java:201)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.os.Looper.loop(Looper.java:288)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7924)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:937)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime: Caused by: java.lang.SecurityException: Failed to find provider com.google.android.gsf.gservices for user 0; expected to find a valid ContentProvider for this authority
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.os.Parcel.createExceptionOrNull(Parcel.java:3033)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.os.Parcel.createException(Parcel.java:3017)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.os.Parcel.readException(Parcel.java:3000)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.os.Parcel.readException(Parcel.java:2942)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.content.IContentService$Stub$Proxy.registerContentObserver(IContentService.java:1032)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.content.ContentResolver.registerContentObserver(ContentResolver.java:2712)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at android.content.ContentResolver.registerContentObserver(ContentResolver.java:2660)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at besi.k(PG:41)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at besi.i(PG:25)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at besb.e(PG:7)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at bjgr.<init>(PG:12)
+04-25 00:03:37.374  2337  2337 E AndroidRuntime:        at rpa.a(PG:18)
+--
+04-25 00:03:38.732  2433  2433 E AndroidRuntime: FATAL EXCEPTION: main
+04-25 00:03:38.732  2433  2433 E AndroidRuntime: Process: com.android.vending, PID: 2433
+04-25 00:03:38.732  2433  2433 E AndroidRuntime: java.lang.RuntimeException: Unable to create application com.google.android.finsky.application.classic.ClassicApplication: java.lang.RuntimeException: Failed to load configurations for FinskyApp
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6816)
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2133)
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:106)
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at android.os.Looper.loopOnce(Looper.java:201)
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at android.os.Looper.loop(Looper.java:288)
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7924)
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+04-25 00:03:38.732  2433  2433 E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+===== WHICH PACKAGES ARE CRASHING =====
+04-25 00:05:25.827   350   795 I ActivityManager: Process com.android.vending:recovery_mode (pid 4759) has died: prcp FGS 
+04-25 00:05:38.223   350   795 I ActivityManager: Process com.google.android.googlequicksearchbox:search (pid 4780) has died: fg  BFGS
+04-25 00:05:41.688   350   804 I ActivityManager: Process com.google.android.googlequicksearchbox:search (pid 4845) has died: vis BFGS
+04-25 00:05:53.299   350  3792 I ActivityManager: Process com.android.vending (pid 4953) has died: fg  SVC 
+04-25 00:05:53.382   350  3792 I ActivityManager: Process com.android.vending:recovery_mode (pid 4972) has died: prcp FGS 
+04-25 00:05:54.534   350  3696 I ActivityManager: Process com.android.vending (pid 4996) has died: fg  SVC 
+04-25 00:05:54.641   350  3696 I ActivityManager: Process com.android.vending:recovery_mode (pid 5014) has died: prcp FGS 
+04-25 00:05:55.895   350  4758 I ActivityManager: Process com.android.vending:recovery_mode (pid 5037) has died: prcp FGS 
+04-25 00:06:12.028   350  4281 I ActivityManager: Process com.google.android.googlequicksearchbox:search (pid 5055) has died: vis BFGS
+04-25 00:06:23.480   350  4758 I ActivityManager: Process com.android.vending (pid 5160) has died: fg  TRNB
+04-25 00:06:23.583   350  4758 I ActivityManager: Process com.android.vending:recovery_mode (pid 5181) has died: prcp FGS 
+04-25 00:06:24.715   350  4375 I ActivityManager: Process com.android.vending (pid 5201) has died: fg  TRNB
+04-25 00:06:24.831   350  4375 I ActivityManager: Process com.android.vending:recovery_mode (pid 5220) has died: prcp FGS 
+04-25 00:06:26.051   350  4758 I ActivityManager: Process com.android.vending:recovery_mode (pid 5242) has died: prcp FGS 
+04-25 00:08:06.439   350  4844 I ActivityManager: Process com.google.android.googlequicksearchbox:search (pid 5333) has died: vis BFGS
+04-25 00:08:06.578   350   823 I ActivityManager: Process com.google.android.partnersetup (pid 5467) has died: prcl TRNB
+04-25 00:11:14.940   350   367 I ActivityManager: Process com.google.android.gms.persistent (pid 5673) has died: fg  BFGS
+04-25 00:11:16.090   350   956 I ActivityManager: Process com.google.android.googlequicksearchbox:search (pid 5551) has died: vis BFGS
+04-25 00:11:27.809   350   956 I ActivityManager: Process com.android.vending (pid 6265) has died: fg  BFGS
+04-25 00:12:24.500   350   956 I ActivityManager: Process com.google.android.partnersetup (pid 6372) has died: cch+5 CEM 
+===== MAGISK DAEMON ACCESS TEST =====
+0fe46c5a-delta:MAGISK:R
+===== PIF AUTO-FETCH FRESH FINGERPRINT =====
+[+] PlayIntegrityFix v4.5-inject-s
+[+] autopif.sh
+
+
+[!] Unable to connect to developer.android.com, please check your internet connection and try again
+===== CURRENT PIF.JSON AFTER AUTOFETCH =====
+404: Not Foundpirate101@DEBIAN13:~$ 
