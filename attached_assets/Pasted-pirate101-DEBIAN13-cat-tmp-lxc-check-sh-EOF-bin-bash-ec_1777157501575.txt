@@ -1,0 +1,167 @@
+pirate101@DEBIAN13:~$ cat > /tmp/lxc_check.sh << 'EOF'
+#!/bin/bash
+
+echo "===== 1/6 Stop everything ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 5
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+echo ""
+echo "===== 2/6 LXC actual state ====="
+sudo lxc-ls -P /var/lib/waydroid/lxc -f 2>&1 | sed 's/^/  /'
+echo ""
+sudo lxc-info -P /var/lib/waydroid/lxc -n waydroid 2>&1 | sed 's/^/  /'
+
+echo ""
+echo "===== 3/6 LXC config sanity ====="
+sudo head -60 /var/lib/waydroid/lxc/waydroid/config 2>&1 | sed 's/^/  /'
+
+echo ""
+echo "===== 4/6 Waydroid config (where wayland passthrough is set) ====="
+sudo cat /var/lib/waydroid/waydroid.cfg 2>&1 | sed 's/^/  /'
+
+echo ""
+echo "===== 5/6 Start container + capture console.log immediately ====="
+sudo systemctl start waydroid-container
+sleep 20
+echo "  --- LXC info after start ---"
+sudo lxc-info -P /var/lib/waydroid/lxc -n waydroid 2>&1 | sed 's/^/    /'
+echo ""
+echo "  --- console.log (Android's actual init output) ---"
+bash /tmp/lxc_check.shdroid-container -n 40 --no-pager 2>&1 | tail -40 | sed 's/^/    /'
+===== 1/6 Stop everything =====
+
+===== 2/6 LXC actual state =====
+  NAME     STATE   AUTOSTART GROUPS IPV4 IPV6 UNPRIVILEGED 
+  waydroid STOPPED 0         -      -    -    false        
+
+  Name:           waydroid
+  State:          STOPPED
+
+===== 3/6 LXC config sanity =====
+  # Waydroid LXC Config
+  
+  lxc.rootfs.path = /var/lib/waydroid/rootfs
+  lxc.arch = x86_64
+  lxc.autodev = 0
+  # lxc.autodev.tmpfs.size = 25000000
+  
+  lxc.cap.keep = audit_control sys_nice wake_alarm setpcap setgid setuid sys_ptrace sys_admin wake_alarm block_suspend sys_time net_admin net_raw net_bind_service kill dac_override dac_read_search fsetid mknod syslog chown sys_resource fowner ipc_lock sys_chroot
+  
+  lxc.mount.auto = cgroup:ro sys:ro proc
+  
+  lxc.console.path = none
+  
+  lxc.include = /var/lib/waydroid/lxc/waydroid/config_nodes
+  lxc.include = /var/lib/waydroid/lxc/waydroid/config_session
+  
+  lxc.hook.post-stop = /dev/null
+  
+  lxc.uts.name = waydroid
+  
+  lxc.apparmor.profile = lxc-waydroid
+  lxc.seccomp.profile = /var/lib/waydroid/lxc/waydroid/waydroid.seccomp
+  
+  lxc.no_new_privs = 1
+  
+  lxc.init.cmd = /init
+  
+  lxc.net.0.type = veth
+  lxc.net.0.flags = up
+  lxc.net.0.link = waydroid0
+  lxc.net.0.name = eth0
+  lxc.net.0.hwaddr = 00:16:3e:f9:d3:03
+  lxc.net.0.mtu = 1500
+  
+  lxc.pty.max = 10
+  lxc.seccomp.allow_nesting = 1
+  
+
+===== 4/6 Waydroid config (where wayland passthrough is set) =====
+  [waydroid]
+  arch = x86_64
+  vendor_type = MAINLINE
+  system_datetime = 1775215493
+  vendor_datetime = 1775220807
+  suspend_action = freeze
+  mount_overlays = True
+  auto_adb = False
+  images_path = /var/lib/waydroid/images
+  binder = anbox-binder
+  vndbinder = anbox-vndbinder
+  hwbinder = anbox-hwbinder
+  system_ota = https://ota.waydro.id/system/lineage/waydroid_x86_64/VANILLA.json
+  vendor_ota = https://ota.waydro.id/vendor/waydroid_x86_64/MAINLINE.json
+  binder_protocol = aidl3
+  service_manager_protocol = aidl3
+  
+  [properties]
+  ro.product.cpu.abilist = x86_64,x86,arm64-v8a,armeabi-v7a,armeabi
+  ro.product.cpu.abilist32 = x86,armeabi-v7a,armeabi
+  ro.product.cpu.abilist64 = x86_64,arm64-v8a
+  ro.dalvik.vm.native.bridge = libhoudini.so
+  ro.enable.native.bridge.exec = 1
+  ro.vendor.enable.native.bridge.exec = 1
+  ro.vendor.enable.native.bridge.exec64 = 1
+  ro.ndk_translation.version = 0.2.3
+  ro.dalvik.vm.isa.arm = x86
+  ro.dalvik.vm.isa.arm64 = x86_64
+  qemu.hw.mainkeys = 0
+  
+
+===== 5/6 Start container + capture console.log immediately =====
+  --- LXC info after start ---
+    Name:           waydroid
+    State:          STOPPED
+
+  --- console.log (Android's actual init output) ---
+    tail: cannot open '/var/lib/waydroid/lxc/waydroid/console.log' for reading: No such file or directory
+
+===== 6/6 waydroid status + journal for crash =====
+  Session:      STOPPED
+  Vendor type:  MAINLINE
+
+  --- journal last 40 lines ---
+    Apr 26 01:44:15 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+    Apr 26 01:44:15 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+    Apr 26 01:44:30 DEBIAN13 waydroid[702751]: [01:44:30] Starting up container for a new session
+    Apr 26 01:44:30 DEBIAN13 dnsmasq[703806]: started, version 2.91 cachesize 150
+    Apr 26 01:44:30 DEBIAN13 dnsmasq[703806]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+    Apr 26 01:44:30 DEBIAN13 dnsmasq-dhcp[703806]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+    Apr 26 01:44:30 DEBIAN13 dnsmasq-dhcp[703806]: DHCP, sockets bound exclusively to interface waydroid0
+    Apr 26 01:44:30 DEBIAN13 dnsmasq[703806]: reading /etc/resolv.conf
+    Apr 26 01:44:30 DEBIAN13 dnsmasq[703806]: using nameserver 41.89.1.4#53
+    Apr 26 01:44:30 DEBIAN13 dnsmasq[703806]: using nameserver 41.204.164.3#53
+    Apr 26 01:44:30 DEBIAN13 dnsmasq[703806]: read /etc/hosts - 8 names
+    Apr 26 01:44:41 DEBIAN13 dnsmasq-dhcp[703806]: DHCPDISCOVER(waydroid0) 00:16:3e:f9:d3:03
+    Apr 26 01:44:41 DEBIAN13 dnsmasq-dhcp[703806]: DHCPOFFER(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+    Apr 26 01:44:41 DEBIAN13 dnsmasq-dhcp[703806]: DHCPREQUEST(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+    Apr 26 01:44:41 DEBIAN13 dnsmasq-dhcp[703806]: DHCPACK(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03 SM-S928B
+    Apr 26 01:46:00 DEBIAN13 waydroid[702751]: [01:46:00] Stopping container
+    Apr 26 01:46:05 DEBIAN13 waydroid[702751]: [01:46:05] Starting up container for a new session
+    Apr 26 01:46:06 DEBIAN13 dnsmasq[709614]: started, version 2.91 cachesize 150
+    Apr 26 01:46:06 DEBIAN13 dnsmasq[709614]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+    Apr 26 01:46:06 DEBIAN13 dnsmasq-dhcp[709614]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+    Apr 26 01:46:06 DEBIAN13 dnsmasq-dhcp[709614]: DHCP, sockets bound exclusively to interface waydroid0
+    Apr 26 01:46:06 DEBIAN13 dnsmasq[709614]: reading /etc/resolv.conf
+    Apr 26 01:46:06 DEBIAN13 dnsmasq[709614]: using nameserver 41.89.1.4#53
+    Apr 26 01:46:06 DEBIAN13 dnsmasq[709614]: using nameserver 41.204.164.3#53
+    Apr 26 01:46:06 DEBIAN13 dnsmasq[709614]: read /etc/hosts - 8 names
+    Apr 26 01:46:16 DEBIAN13 dnsmasq-dhcp[709614]: DHCPDISCOVER(waydroid0) 00:16:3e:f9:d3:03
+    Apr 26 01:46:16 DEBIAN13 dnsmasq-dhcp[709614]: DHCPOFFER(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+    Apr 26 01:46:16 DEBIAN13 dnsmasq-dhcp[709614]: DHCPREQUEST(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+    Apr 26 01:46:16 DEBIAN13 dnsmasq-dhcp[709614]: DHCPACK(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03 SM-S928B
+    Apr 26 01:46:20 DEBIAN13 waydroid[702751]: [01:46:20] Stopping container
+    Apr 26 01:49:31 DEBIAN13 waydroid[702751]: [01:49:31] Stopping container
+    Apr 26 01:49:31 DEBIAN13 waydroid[702751]: [01:49:31] Stopping container
+    Apr 26 01:49:31 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+    Apr 26 01:49:31 DEBIAN13 waydroid[702751]: [gbinder] Service manager /dev/anbox-binder has appeared
+    Apr 26 01:49:31 DEBIAN13 waydroid[702751]: [gbinder] Service manager /dev/anbox-binder has appeared
+    Apr 26 01:49:32 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+    Apr 26 01:49:32 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+    Apr 26 01:49:32 DEBIAN13 systemd[1]: waydroid-container.service: Consumed 1.008s CPU time, 33.9M memory peak.
+    Apr 26 01:49:39 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+    Apr 26 01:49:39 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+pirate101@DEBIAN13:~$ 
