@@ -1,0 +1,72 @@
+pirate101@DEBIAN13:~$ cat > /tmp/clean_proc.sh << 'CPEOF'
+#!/bin/bash
+set -u
+WD=/home/pirate101/.local/share/waydroid/data
+FP=$WD/adb/modules/fake_proc
+
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/5 Backup the .OFF originals one more time"
+sudo cp -f $FP/service.sh.OFF $FP/service.sh.OFF.bak 2>/dev/null
+sudo cp -f $FP/post-fs-data.sh.OFF $FP/post-fs-data.sh.OFF.bak 2>/dev/null
+echo "[backups in place]"
+
+step "2/5 Write CLEAN service.sh (binds + safe resetprops only)"
+sudo tee $FP/service.sh > /dev/null << 'SVCEOF'
+#!/system/bin/sh
+# fake_proc clean v2 - safe operations only
+# - binds /proc/version + /proc/cpuinfo (hides Linux/Intel)
+# - resets bootloader/verified-boot/warranty props (Samsung S24U)
+# - REMOVED: waydroid.* bulk deletion (was breaking HALs)
+# - REMOVED: wm size/density (was breaking display)
+
+# Bind fake /proc files over real ones
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+mount -o bind /data/adb/modules/fake_proc/fake_cpuinfo /proc/cpuinfo 2>/dev/null
+
+# Bootloader + verified boot (Samsung locked-bootloader signals)
+resetprop -n ro.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.verifiedbootstate green
+resetprop -n ro.boot.veritymode enforcing
+resetprop -n ro.boot.flash.locked 1
+resetprop -n ro.boot.warranty_bit 0
+resetprop -n ro.warranty_bit 0
+resetprop -n ro.bootmode unknown
+bash /tmp/clean_proc.shu             = $(getprop ro.kernel.qemu)"de)")"ate)"null
+
+===== 1/5 Backup the .OFF originals one more time =====
+[backups in place]
+
+===== 2/5 Write CLEAN service.sh (binds + safe resetprops only) =====
+/tmp/clean_proc.sh: line 50: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh: Permission denied
+[service.sh installed:  lines]
+
+===== 3/5 Write CLEAN post-fs-data.sh (early-stage binds) =====
+[post-fs-data.sh installed]
+
+===== 4/5 Cold restart Waydroid =====
+
+===== 5/5 VERIFY /proc binds applied =====
+boot=1
+
+----- /proc/version (should now be FAKE Android kernel) -----
+Linux version 5.15.137-android14-11-g8a9b2c3d4e5f-ab12345678 (build@android-build) (Android (10552028, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362), LLD 17.0.2) #1 SMP PREEMPT Thu Feb 29 20:45:01 UTC 2024
+
+----- /proc/cpuinfo (should now be FAKE ARM Exynos) -----
+processor       : 0
+BogoMIPS        : 38.40
+Features        : fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm ssbs sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint
+CPU implementer : 0x41
+CPU architecture: 8
+CPU variant     : 0x4
+CPU part        : 0xd44
+CPU revision    : 0
+
+----- bootloader props (should be Samsung) -----
+  ro.bootloader              = S928BXXU1AXBA
+  ro.boot.verifiedbootstate  = green
+  ro.boot.flash.locked       = 1
+  ro.boot.veritymode         = enforcing
+  ro.kernel.qemu             = 0
+pirate101@DEBIAN13:~$ 
