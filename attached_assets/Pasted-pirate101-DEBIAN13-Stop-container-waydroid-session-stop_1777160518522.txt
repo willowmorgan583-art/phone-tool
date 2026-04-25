@@ -1,0 +1,81 @@
+pirate101@DEBIAN13:~$ # Stop container
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container; sleep 5
+
+# Enable zygisk + hide in Magisk DB
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db \
+  "UPDATE settings SET value=1 WHERE key IN ('zygisk','hide');"
+sudo sqlite3 /home/pirate101/.local/share/waydroid/data/adb/magisk.db \
+  "SELECT * FROM settings;"
+# Should show: zygisk|1  hide|1  sulist|0  denylist|0
+
+# Cold start
+sudo systemctl start waydroid-container; sleep 25
+nohup waydroid session start > /tmp/sess_A.log 2>&1 &
+sleep 60
+
+# Verify
+echo "=== After Step A ==="
+echo "container: $(sudo systemctl is-active waydroid-container)"
+timeout 8 sudo waydroid shell -- sh -c '
+  echo "  surfaceflinger: $(getprop init.svc.surfaceflinger)"
+  echo "  zygote:         $(getprop init.svc.zygote)"
+  echo "  boot_completed: $(getprop sys.boot_completed)"
+  echo "  zygisk loaded:  $(ls /data/adb/modules 2>&1 | wc -l) modules"
+'
+echo "Now check your screen — UI should still be working."
+zygisk|1
+sulist|0
+hide|1
+denylist|0
+[1] 836312
+=== After Step A ===
+container: active
+  surfaceflinger: running
+  zygote:         stopping
+  boot_completed: 1
+  zygisk loaded:  3 modules
+Now check your screen — UI should still be working.
+pirate101@DEBIAN13:~$ waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container; sleep 5
+
+sudo rm /home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/disable
+ls /home/pirate101/.local/share/waydroid/data/adb/modules/*/disable 2>&1
+
+sudo systemctl start waydroid-container; sleep 25
+nohup waydroid session start > /tmp/sess_B.log 2>&1 &
+sleep 60
+
+echo "=== After Step B ==="
+timeout 8 sudo waydroid shell -- sh -c '
+  echo "  surfaceflinger:    $(getprop init.svc.surfaceflinger)"
+  echo "  ro.product.model:  $(getprop ro.product.model)"
+  echo "  ro.product.brand:  $(getprop ro.product.brand)"
+  echo "  ro.build.fingerprint: $(getprop ro.build.fingerprint)"
+'
+[1]+  Done                    nohup waydroid session start > /tmp/sess_A.log 2>&1
+ls: cannot access '/home/pirate101/.local/share/waydroid/data/adb/modules/*/disable': Permission denied
+[1] 845075
+=== After Step B ===
+  surfaceflinger:    running
+  ro.product.model:  SM-S928B
+  ro.product.brand:  samsung
+  ro.build.fingerprint: samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+pirate101@DEBIAN13:~$ waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container; sleep 5
+
+sudo rm /home/pirate101/.local/share/waydroid/data/adb/modules/zygisk_lsposed/disable
+
+sudo systemctl start waydroid-container; sleep 25
+nohup waydroid session start > /tmp/sess_C.log 2>&1 &
+sleep 60
+
+echo "=== After Step C ==="
+echo "container: $(sudo systemctl is-active waydroid-container)"
+timeout 8 sudo waydroid shell -- getprop init.svc.surfaceflinger
+[1]+  Done                    nohup waydroid session start > /tmp/sess_B.log 2>&1
+[1] 853670
+=== After Step C ===
+container: active
+running
+pirate101@DEBIAN13:~$ 
