@@ -1,0 +1,128 @@
+N13:~$ cat > /tmp/un_mali.sh << 'EOF'
+#!/bin/bash
+set -u
+FP=/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc
+
+echo "===== 1/5 Stop everything ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 4
+pkill -9 -f waydroid 2>/dev/null
+
+echo ""
+echo "===== 2/5 Check immutable bit + clear it if set ====="
+sudo lsattr $FP/system.prop $FP/service.sh 2>&1
+sudo chattr -i $FP/system.prop $FP/service.sh 2>/dev/null
+echo "  immutable bit cleared (if it was set)"
+
+echo ""
+echo "===== 3/5 Backup + strip dangerous props from system.prop ====="
+sudo cp $FP/system.prop $FP/system.prop.bak.umali.$(date +%s)
+
+# Remove the GPU spoofs (mali libs don't exist = no composer = no UI)
+sudo sed -i '/ro.hardware.egl/d'    $FP/system.prop
+sudo sed -i '/ro.hardware.vulkan/d' $FP/system.prop
+sudo sed -i '/GPU SPOOF/d'          $FP/system.prop
+
+# Remove ABI overrides (declaring arm64-only on x86_64 host breaks libs)
+sudo sed -i '/ro.product.cpu.abi/d'         $FP/system.prop
+sudo sed -i '/ro.system.product.cpu.abi/d'  $FP/system.prop
+sudo sed -i '/ro.vendor.product.cpu.abi/d'  $FP/system.prop
+sudo sed -i '/ro.dalvik.vm.native.bridge/d' $FP/system.prop
+sudo sed -i '/CRITICAL ABI LIST FIX/d'      $FP/system.prop
+
+bash /tmp/un_mali.shirt >/dev/null 2>&1 &)"ervice.sh) lines"rvice.shs"
+===== 1/5 Stop everything =====
+[sudo] password for pirate101: 
+
+===== 2/5 Check immutable bit + clear it if set =====
+--------------e------- /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop
+--------------e------- /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh
+  immutable bit cleared (if it was set)
+
+===== 3/5 Backup + strip dangerous props from system.prop =====
+/tmp/un_mali.sh: line 36: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop: Permission denied
+  cleaned system.prop now  lines
+  --- final contents ---
+    # Samsung S24 Ultra identity - apps query these via Build.* class
+    ro.product.model=SM-S928B
+    ro.product.brand=samsung
+    ro.product.manufacturer=Samsung
+    ro.product.device=e3q
+    ro.product.name=e3qxxx
+    ro.product.board=e3q
+    ro.build.product=e3q
+    ro.build.flavor=user
+    ro.build.tags=release-keys
+    ro.build.type=user
+    ro.build.id=UP1A.231005.007
+    ro.build.version.incremental=S928BXXU1AXBA
+    ro.build.characteristics=phone
+    ro.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+    ro.build.description=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+    ro.build.display.id=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+    ro.bootimage.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+    
+    # Per-partition identity - model/brand/manufacturer only (NO build.fingerprint)
+    ro.product.system.brand=samsung
+    ro.product.system.device=e3q
+    ro.product.system.manufacturer=Samsung
+    ro.product.system.model=SM-S928B
+    ro.product.system.name=e3qxxx
+    ro.product.vendor.brand=samsung
+    ro.product.vendor.device=e3q
+    ro.product.vendor.manufacturer=Samsung
+    ro.product.vendor.model=SM-S928B
+    ro.product.vendor.name=e3qxxx
+    ro.product.product.brand=samsung
+    ro.product.product.device=e3q
+    ro.product.product.manufacturer=Samsung
+    ro.product.product.model=SM-S928B
+    ro.product.product.name=e3qxxx
+    
+    # Carrier identity (Verizon)
+    ro.csc.country_code=USA
+    ro.csc.countryiso_code=US
+    ro.csc.sales_code=XAA
+    gsm.sim.operator.alpha=Verizon
+    gsm.sim.operator.numeric=311480
+    gsm.sim.operator.iso-country=us
+    gsm.operator.alpha=Verizon
+    gsm.operator.numeric=311480
+    gsm.operator.iso-country=us
+    
+    # Serial / IMEI
+    ro.serialno=R3CW80E4XAB
+    ro.boot.serialno=R3CW80E4XAB
+    ro.ril.imei=357499130124581
+    ro.ril.imei1=357499130124581
+    ro.ril.imei2=357499130124599
+    persist.radio.imei=357499130124581
+    persist.radio.imei1=357499130124581
+    persist.radio.imei2=357499130124599
+    
+    # ro.hardware patch (was leaking 'unknown')
+    ro.hardware=s5e9945
+    ro.boot.hardware=s5e9945
+    ro.hardware.chipname=s5e9945
+    
+    
+    ro.boot.selinux=enforcing
+    ro.build.selinux=1
+    
+    ro.product.board=e3q
+    ro.board.platform=s5e9945
+
+===== 4/5 Strip ABI resetprop block from service.sh too =====
+/tmp/un_mali.sh: line 46: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh: Permission denied
+  service.sh now  lines
+
+===== 5/5 Restart + show UI =====
+  waiting 60s for Android to boot...
+[01:18:59] Failed to get service waydroidplatform, trying again...
+[01:19:00] Failed to get service waydroidplatform, trying again...
+[01:19:01] Failed to get service waydroidplatform, trying again...
+[01:19:02] Failed to get service waydroidplatform, trying again...
+[01:19:03] Failed to get service waydroidplatform, trying again...
+[01:19:04] Failed to get service waydroidplatform, trying again...
+[01:19:05] Failed to get service w
