@@ -1,0 +1,127 @@
+pirate101@DEBIAN13:~$ cat > /tmp/finalize.sh << 'FEOF'
+#!/bin/bash
+set -u
+WD=/home/pirate101/.local/share/waydroid/data
+FP=$WD/adb/modules/fake_proc
+
+step() { echo ""; echo "===== $1 ====="; }
+
+step "1/4 SHOW current system.prop (host-side, can read fine)"
+sudo cat $FP/system.prop 2>&1 | grep -vE '^(#|$)' | sed 's/^/  /'
+
+step "2/4 PATCH ro.hardware leak (only if missing)"
+if sudo grep -q '^ro.hardware=' $FP/system.prop; then
+  echo "[ro.hardware already set — skipping]"
+  sudo grep '^ro.hardware' $FP/system.prop | sed 's/^/  current: /'
+else
+  echo "[adding ro.hardware=s5e9945 (Exynos S24U) + ro.boot.hardware]"
+  sudo tee -a $FP/system.prop > /dev/null << 'PROPEOF'
+
+# ro.hardware patch (was leaking 'unknown')
+ro.hardware=s5e9945
+ro.boot.hardware=s5e9945
+ro.hardware.chipname=s5e9945
+PROPEOF
+  echo "[done — will apply on next boot]"
+fi
+
+step "3/4 VERIFY PIF target (from host filesystem, no waydroid shell)"
+echo "----- pif.json -----"
+sudo cat $WD/adb/modules/playintegrityfix/pif.json 2>/dev/null | head -30 | sed 's/^/  /' 
+echo ""
+echo "----- pif.prop (if exists) -----"
+sudo cat $WD/adb/modules/playintegrityfix/pif.prop 2>/dev/null | head -30 | sed 's/^/  /' 
+bash /tmp/finalize.sh==========================="ve it."" should now be s5e9945"
+
+===== 1/4 SHOW current system.prop (host-side, can read fine) =====
+  ro.product.model=SM-S928B
+  ro.product.brand=samsung
+  ro.product.manufacturer=Samsung
+  ro.product.device=e3q
+  ro.product.name=e3qxxx
+  ro.product.board=e3q
+  ro.build.product=e3q
+  ro.build.flavor=user
+  ro.build.tags=release-keys
+  ro.build.type=user
+  ro.build.id=UP1A.231005.007
+  ro.build.version.incremental=S928BXXU1AXBA
+  ro.build.characteristics=phone
+  ro.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+  ro.build.description=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+  ro.build.display.id=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+  ro.bootimage.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+  ro.product.system.brand=samsung
+  ro.product.system.device=e3q
+  ro.product.system.manufacturer=Samsung
+  ro.product.system.model=SM-S928B
+  ro.product.system.name=e3qxxx
+  ro.product.vendor.brand=samsung
+  ro.product.vendor.device=e3q
+  ro.product.vendor.manufacturer=Samsung
+  ro.product.vendor.model=SM-S928B
+  ro.product.vendor.name=e3qxxx
+  ro.product.product.brand=samsung
+  ro.product.product.device=e3q
+  ro.product.product.manufacturer=Samsung
+  ro.product.product.model=SM-S928B
+  ro.product.product.name=e3qxxx
+  ro.csc.country_code=USA
+  ro.csc.countryiso_code=US
+  ro.csc.sales_code=XAA
+  gsm.sim.operator.alpha=Verizon
+  gsm.sim.operator.numeric=311480
+  gsm.sim.operator.iso-country=us
+  gsm.operator.alpha=Verizon
+  gsm.operator.numeric=311480
+  gsm.operator.iso-country=us
+  ro.serialno=R3CW80E4XAB
+  ro.boot.serialno=R3CW80E4XAB
+  ro.ril.imei=357499130124581
+  ro.ril.imei1=357499130124581
+  ro.ril.imei2=357499130124599
+  persist.radio.imei=357499130124581
+  persist.radio.imei1=357499130124581
+  persist.radio.imei2=357499130124599
+
+===== 2/4 PATCH ro.hardware leak (only if missing) =====
+[adding ro.hardware=s5e9945 (Exynos S24U) + ro.boot.hardware]
+[done — will apply on next boot]
+
+===== 3/4 VERIFY PIF target (from host filesystem, no waydroid shell) =====
+----- pif.json -----
+
+----- pif.prop (if exists) -----
+  FINGERPRINT=google/oriole_beta/oriole:CANARY/ZP11.260220.007/14993212:user/release-keys
+  MANUFACTURER=Google
+  MODEL=Pixel 6
+  SECURITY_PATCH=2026-03-05
+  spoofBuild=true
+  spoofProps=false
+  spoofProvider=false
+  spoofSignature=false
+  spoofVendingBuild=true
+  spoofVendingSdk=false
+  DEBUG=false
+
+----- module.prop -----
+  id=playintegrityfix
+  name=Play Integrity Fix [INJECT]
+  version=v4.5-inject-s
+  versionCode=45
+  author=chiteroman, KOWX712
+  description=Universal modular fix for Play Integrity on devices running Android 8-16
+  updateJson=https://raw.githubusercontent.com/KOWX712/PlayIntegrityFix/inject_s/update.json
+
+===== 4/4 Apply ro.hardware patch via cold restart =====
+  boot          = 1
+  ro.hardware   = s5e9945       <- should now be s5e9945
+  ro.product.model = SM-S928B
+
+==========================================
+ System-side is done. The remaining 4 tests
+ (DevCheck / PI Checker / ChatGPT / Faker)
+ are GUI-only inside Waydroid.
+ Paste back the PI Checker JSON when you have it.
+==========================================
+pirate101@DEBIAN13:~$ 
