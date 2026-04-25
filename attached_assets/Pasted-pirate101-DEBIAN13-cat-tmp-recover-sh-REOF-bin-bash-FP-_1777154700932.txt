@@ -1,0 +1,118 @@
+pirate101@DEBIAN13:~$ cat > /tmp/recover.sh << 'REOF'
+#!/bin/bash
+FP=/home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc
+
+echo "===== 1/5 Container service status ====="
+systemctl status waydroid-container --no-pager -l 2>&1 | head -30
+
+echo ""
+echo "===== 2/5 Last 50 lines of container log ====="
+sudo journalctl -u waydroid-container -n 50 --no-pager 2>&1 | tail -50
+
+echo ""
+echo "===== 3/5 Stop everything cleanly ====="
+waydroid session stop 2>/dev/null
+sudo systemctl stop waydroid-container
+sleep 5
+pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+echo ""
+echo "===== 4/5 Surgically remove ABI block from system.prop (likely culprit) ====="
+sudo cp $FP/system.prop $FP/system.prop.bak.$(date +%s)
+# Remove only the ABI block we added, keep SELinux/board/identity spoofs
+sudo sed -i '/=== CRITICAL ABI LIST FIX/,/ro.dalvik.vm.native.bridge=0/d' $FP/system.prop 
+echo "  system.prop now $(sudo wc -l < $FP/system.prop) lines"
+echo "  ABI lines remaining (should be 0):"
+sudo grep -c "ro.product.cpu.abi" $FP/system.prop || echo "  0"
+
+# Also remove ABI resetprop from service.sh
+sudo sed -i '/# ABI runtime spoof/,/^$/d' $FP/service.sh
+echo "  service.sh now $(sudo wc -l < $FP/service.sh) lines"
+
+echo ""
+echo "===== 5/5 Restart container + session ====="
+bash /tmp/recover.shuct.cpu.abi)"' 2>&1 | head -5etprop ro.product.model)"; echo "  abi  
+===== 1/5 Container service status =====
+● waydroid-container.service - Waydroid Container
+     Loaded: loaded (/usr/lib/systemd/system/waydroid-container.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-04-26 00:48:00 EAT; 14min ago
+ Invocation: 5f3833aeca804fca89365104c76f5d67
+   Main PID: 536511 (waydroid)
+      Tasks: 8 (limit: 8586)
+     Memory: 22.7M (peak: 26.2M)
+        CPU: 343ms
+     CGroup: /system.slice/waydroid-container.service
+             ├─536511 /usr/bin/python3 /usr/bin/waydroid container start
+             └─538103 dnsmasq --conf-file=/dev/null -u dnsmasq --strict-order --bind-interfaces --pid-file=/run/waydroid-lxc/dnsmasq.pid --listen-address 192.168.240.1 --dhcp-range 192.168.240.2,192.168.240.254 --dhcp-lease-max=253 --dhcp-no-override --except-interface=lo --interface=waydroid0 --dhcp-leasefile=/var/lib/misc/dnsmasq.waydroid0.leases --dhcp-authoritative
+
+===== 2/5 Last 50 lines of container log =====
+Apr 26 00:05:14 DEBIAN13 dnsmasq-dhcp[358035]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+Apr 26 00:05:14 DEBIAN13 dnsmasq-dhcp[358035]: DHCP, sockets bound exclusively to interface waydroid0
+Apr 26 00:05:14 DEBIAN13 dnsmasq[358035]: reading /etc/resolv.conf
+Apr 26 00:05:14 DEBIAN13 dnsmasq[358035]: using nameserver 41.89.1.4#53
+Apr 26 00:05:14 DEBIAN13 dnsmasq[358035]: using nameserver 41.204.164.3#53
+Apr 26 00:05:14 DEBIAN13 dnsmasq[358035]: read /etc/hosts - 8 names
+Apr 26 00:05:30 DEBIAN13 dnsmasq-dhcp[358035]: DHCPDISCOVER(waydroid0) 00:16:3e:f9:d3:03
+Apr 26 00:05:30 DEBIAN13 dnsmasq-dhcp[358035]: DHCPOFFER(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+Apr 26 00:05:30 DEBIAN13 dnsmasq-dhcp[358035]: DHCPREQUEST(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+Apr 26 00:05:30 DEBIAN13 dnsmasq-dhcp[358035]: DHCPACK(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03 SM-S928B
+Apr 26 00:11:25 DEBIAN13 waydroid[356529]: [00:11:25] Stopping container
+Apr 26 00:11:29 DEBIAN13 waydroid[356529]: [00:11:29] Stopping container
+Apr 26 00:11:29 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+Apr 26 00:11:29 DEBIAN13 waydroid[356529]: [gbinder] Service manager /dev/anbox-binder has appeared
+Apr 26 00:11:29 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+Apr 26 00:11:29 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+Apr 26 00:11:29 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+Apr 26 00:11:29 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+Apr 26 00:11:59 DEBIAN13 waydroid[375985]: [00:11:59] Starting up container for a new session
+Apr 26 00:11:59 DEBIAN13 dnsmasq[378004]: started, version 2.91 cachesize 150
+Apr 26 00:11:59 DEBIAN13 dnsmasq[378004]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+Apr 26 00:11:59 DEBIAN13 dnsmasq-dhcp[378004]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+Apr 26 00:11:59 DEBIAN13 dnsmasq-dhcp[378004]: DHCP, sockets bound exclusively to interface waydroid0
+Apr 26 00:11:59 DEBIAN13 dnsmasq[378004]: reading /etc/resolv.conf
+Apr 26 00:11:59 DEBIAN13 dnsmasq[378004]: using nameserver 41.89.1.4#53
+Apr 26 00:11:59 DEBIAN13 dnsmasq[378004]: using nameserver 41.204.164.3#53
+Apr 26 00:11:59 DEBIAN13 dnsmasq[378004]: read /etc/hosts - 8 names
+Apr 26 00:12:23 DEBIAN13 dnsmasq-dhcp[378004]: DHCPDISCOVER(waydroid0) 00:16:3e:f9:d3:03
+Apr 26 00:12:23 DEBIAN13 dnsmasq-dhcp[378004]: DHCPOFFER(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+Apr 26 00:12:23 DEBIAN13 dnsmasq-dhcp[378004]: DHCPREQUEST(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+Apr 26 00:12:23 DEBIAN13 dnsmasq-dhcp[378004]: DHCPACK(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03 SM-S928B
+Apr 26 00:42:23 DEBIAN13 dnsmasq-dhcp[378004]: DHCPREQUEST(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03
+Apr 26 00:42:23 DEBIAN13 dnsmasq-dhcp[378004]: DHCPACK(waydroid0) 192.168.240.112 00:16:3e:f9:d3:03 SM-S928B
+Apr 26 00:47:54 DEBIAN13 waydroid[375985]: [00:47:54] Stopping container
+Apr 26 00:47:55 DEBIAN13 waydroid[375985]: [00:47:55] Stopping container
+Apr 26 00:47:55 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+Apr 26 00:47:55 DEBIAN13 waydroid[375985]: [gbinder] Service manager /dev/anbox-binder has appeared
+Apr 26 00:47:55 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+Apr 26 00:47:55 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+Apr 26 00:48:00 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+Apr 26 00:48:00 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+Apr 26 00:48:31 DEBIAN13 waydroid[536511]: [00:48:31] Starting up container for a new session
+Apr 26 00:48:31 DEBIAN13 dnsmasq[538103]: started, version 2.91 cachesize 150
+Apr 26 00:48:31 DEBIAN13 dnsmasq[538103]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+Apr 26 00:48:31 DEBIAN13 dnsmasq-dhcp[538103]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+Apr 26 00:48:31 DEBIAN13 dnsmasq-dhcp[538103]: DHCP, sockets bound exclusively to interface waydroid0
+Apr 26 00:48:31 DEBIAN13 dnsmasq[538103]: reading /etc/resolv.conf
+Apr 26 00:48:31 DEBIAN13 dnsmasq[538103]: using nameserver 41.89.1.4#53
+Apr 26 00:48:31 DEBIAN13 dnsmasq[538103]: using nameserver 41.204.164.3#53
+Apr 26 00:48:31 DEBIAN13 dnsmasq[538103]: read /etc/hosts - 8 names
+
+===== 3/5 Stop everything cleanly =====
+
+===== 4/5 Surgically remove ABI block from system.prop (likely culprit) =====
+/tmp/recover.sh: line 24: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/system.prop: Permission denied
+  system.prop now  lines
+  ABI lines remaining (should be 0):
+0
+  0
+/tmp/recover.sh: line 30: /home/pirate101/.local/share/waydroid/data/adb/modules/fake_proc/service.sh: Permission denied
+  service.sh now  lines
+
+===== 5/5 Restart container + session =====
+  container status:
+active
+  session check:
+  model = SM-S928B
+  abi   = x86_64
+pirate101@DEBIAN13:~$ 
