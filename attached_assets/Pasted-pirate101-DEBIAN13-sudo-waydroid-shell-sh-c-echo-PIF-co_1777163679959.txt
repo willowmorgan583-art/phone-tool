@@ -1,0 +1,95 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+  echo "=== PIF complete file tree ==="
+  find /data/adb/modules/playintegrityfix/ -type f -o -type d
+  echo ""
+  echo "=== Looking for ANY .so file in PIF ==="
+  find /data/adb/modules/playintegrityfix/ -name "*.so" 2>/dev/null
+  echo ""
+  echo "=== Compare to LSPosed (working zygisk module) ==="
+  find /data/adb/modules/zygisk_lsposed/zygisk/ -type f 2>/dev/null
+  echo ""
+  echo "=== Zygisk runtime status ==="
+  ls -la /data/adb/modules_update/ 2>/dev/null
+  ls -la /sbin/.magisk/zygisk/ 2>/dev/null  
+  cat /data/adb/zygisk.log 2>/dev/null | tail -30
+'
+=== PIF complete file tree ===
+/data/adb/modules/playintegrityfix/
+/data/adb/modules/playintegrityfix/service.sh
+/data/adb/modules/playintegrityfix/autopif.sh
+/data/adb/modules/playintegrityfix/module.prop
+/data/adb/modules/playintegrityfix/uninstall.sh
+/data/adb/modules/playintegrityfix/autopif_ota.sh
+/data/adb/modules/playintegrityfix/common_func.sh
+/data/adb/modules/playintegrityfix/security_patch.sh
+/data/adb/modules/playintegrityfix/pif.prop
+/data/adb/modules/playintegrityfix/post-fs-data.sh
+/data/adb/modules/playintegrityfix/action.sh
+
+=== Looking for ANY .so file in PIF ===
+
+=== Compare to LSPosed (working zygisk module) ===
+/data/adb/modules/zygisk_lsposed/zygisk/x86_64.so
+/data/adb/modules/zygisk_lsposed/zygisk/x86.so
+
+=== Zygisk runtime status ===
+pirate101@DEBIAN13:~$ # Run on Debian host
+cd /tmp
+# Get the latest PIF release (you may need to adjust URL based on current github release) 
+wget -O PIF.zip \
+  https://github.com/KOWX712/PlayIntegrityFix/releases/download/v18/PlayIntegrityFix_v18.zip
+
+# Verify the zip contains zygisk/ binaries (sanity check)
+unzip -l PIF.zip | grep -E "zygisk/|\.so$"
+# You should see entries like:
+#   zygisk/arm64-v8a.so
+#   zygisk/x86_64.so
+
+# Push into Waydroid and install via Magisk CLI
+sudo cp PIF.zip /home/pirate101/.local/share/waydroid/data/local/tmp/
+sudo waydroid shell -- sh -c '
+  cp /data/local/tmp/PIF.zip /sdcard/Download/
+  magisk --install-module /data/local/tmp/PIF.zip
+'
+
+# Restart container so the new module loads
+waydroid session stop 2>/dev/null
+sudo systemctl restart waydroid-container; sleep 25
+nohup waydroid session start > /tmp/sess_pif_reinstall.log 2>&1 &
+sleep 60
+
+# Verify PIF now has zygisk/ subdir with .so files
+sudo waydroid shell -- sh -c '
+  ls -la /data/adb/modules/playintegrityfix/
+  ls -la /data/adb/modules/playintegrityfix/zygisk/
+  find /data/adb/modules/playintegrityfix/ -name "*.so"
+'
+--2026-04-26 03:32:42--  https://github.com/KOWX712/PlayIntegrityFix/releases/download/v18/PlayIntegrityFix_v18.zip
+Resolving github.com (github.com)... 20.87.245.0
+Connecting to github.com (github.com)|20.87.245.0|:443... connected.
+HTTP request sent, awaiting response... 404 Not Found
+2026-04-26 03:32:44 ERROR 404: Not Found.
+
+  End-of-central-directory signature not found.  Either this file is not
+  a zipfile, or it constitutes one disk of a multi-part archive.  In the
+  latter case the central directory and zipfile comment will be found on
+  the last disk(s) of this archive.
+unzip:  cannot find zipfile directory in one of PIF.zip or
+        PIF.zip.zip, and cannot find PIF.zip.ZIP, period.
+! Unable to extract zip file!
+[1] 966188
+total 52
+drwxr-xr-x 2 root   root  4096 2026-04-25 23:36 .
+drwxr-xr-x 5 system radio 4096 2026-04-25 19:18 ..
+-rw-r--r-- 1 root   root   615 2026-04-23 15:29 action.sh
+-rwxr-xr-x 1 root   root  5304 2026-04-23 15:29 autopif.sh
+-rwxr-xr-x 1 root   root  1521 2026-04-23 15:29 autopif_ota.sh
+-rw-r--r-- 1 root   root  1542 2026-04-23 15:29 common_func.sh
+-rw-r--r-- 1 root   root   293 2026-04-23 15:29 module.prop
+-rw-r--r-- 1 root   root   279 2026-04-23 15:29 pif.prop
+-rw-r--r-- 1 root   root  3104 2026-04-23 15:29 post-fs-data.sh
+-rw-r--r-- 1 root   root  2538 2026-04-23 15:29 security_patch.sh
+-rw-r--r-- 1 root   root  1348 2026-04-23 15:29 service.sh
+-rw-r--r-- 1 root   root   343 2026-04-23 15:29 uninstall.sh
+ls: /data/adb/modules/playintegrityfix/zygisk/: Invalid argument
+pirate101@DEBIAN13:/tmp$ 
