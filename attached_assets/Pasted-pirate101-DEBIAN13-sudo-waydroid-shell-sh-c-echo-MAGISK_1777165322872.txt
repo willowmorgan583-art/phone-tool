@@ -1,0 +1,428 @@
+pirate101@DEBIAN13:/$ sudo waydroid shell -- sh -c '
+  echo "=== MAGISK CORE STATE ==="
+  magisk -v
+  magisk -V
+  echo
+  echo "=== ZYGISK DB FLAG ==="
+  sqlite3 /data/adb/magisk.db "SELECT * FROM settings;" 2>&1
+  echo
+  echo "=== PIF MODULE STATE (disable / remove markers?) ==="
+  ls -la /data/adb/modules/playintegrityfix/
+  for f in disable remove update skip_mount; do
+    [ -f /data/adb/modules/playintegrityfix/$f ] && echo "  *** $f present ***"
+  done
+  echo
+  echo "=== Is x86_64.so executable + readable? ==="
+  ls -la /data/adb/modules/playintegrityfix/zygisk/x86_64.so
+  file /data/adb/modules/playintegrityfix/zygisk/x86_64.so 2>/dev/null
+  echo
+  echo "=== ZYGOTE PROCESS — is PIF .so loaded into it? ==="
+  for pid in $(pgrep -f zygote); do
+    echo "--- zygote pid $pid ---"
+    cat /proc/$pid/cmdline 2>/dev/null; echo
+    grep -E "playintegrity|zygisk" /proc/$pid/maps 2>/dev/null | head -10
+  done
+  echo
+  echo "=== MAGISK BOOT LOG ==="
+  for log in /cache/magisk.log /data/adb/magisk.log /data/cache/magisk.log; do
+    if [ -f "$log" ]; then
+      echo "--- $log (last 60 lines) ---"
+      tail -60 "$log"
+    fi
+  done
+  echo
+' 2>&1 | tee /tmp/zygisk_diag.txt--" && cat "$f"/zygisk.log /data/adb/zygisksu.log; do
+=== MAGISK CORE STATE ===
+0fe46c5a-delta:MAGISK:R
+26301
+
+=== ZYGISK DB FLAG ===
+zygisk|1
+sulist|0
+denylist|0
+hide|1
+
+=== PIF MODULE STATE (disable / remove markers?) ===
+total 100
+drwxr-xr-x 3 root   root   4096 2026-04-26 00:46 .
+drwxr-xr-x 5 system radio  4096 2026-04-26 00:50 ..
+-rw-r--r-- 1 root   root    445 2026-04-26 00:46 action.sh
+-rw-r--r-- 1 root   root    590 2026-04-26 00:46 app_replace_list.txt
+-rw-r--r-- 1 root   root  10019 2026-04-26 00:46 autopif4.sh
+-rw-r--r-- 1 root   root  21364 2026-04-26 00:46 classes.dex
+-rw-r--r-- 1 root   root   2906 2026-04-26 00:46 common_func.sh
+-rw-r--r-- 1 root   root   4523 2026-04-26 00:46 common_setup.sh
+-rw-r--r-- 1 root   root    860 2026-04-26 00:46 example.pif.prop
+-rw-r--r-- 1 root   root    387 2026-04-26 00:46 killpi.sh
+-rw-r--r-- 1 root   root   6521 2026-04-26 00:46 migrate.sh
+-rw-r--r-- 1 root   root    260 2026-04-26 00:46 module.prop
+-rw-r--r-- 1 root   root   1518 2026-04-26 00:46 post-fs-data.sh
+-rw-r--r-- 1 root   root   1536 2026-04-26 00:46 service.sh
+-rw-r--r-- 1 root   root    343 2026-04-23 15:29 uninstall.sh
+drwxr-xr-x 2 root   root   4096 2026-04-26 00:46 zygisk
+
+=== Is x86_64.so executable + readable? ===
+-rw-r--r-- 1 root root 169584 2026-04-26 00:46 /data/adb/modules/playintegrityfix/zygisk/x86_64.so
+/data/adb/modules/playintegrityfix/zygisk/x86_64.so: ELF shared object, 64-bit LSB x86-64, for Android 26, built by NDK r29 (14206865), BuildID=9f5de6fc2fa6a33409cfd9c323e3cd042c7fae82, stripped
+
+=== ZYGOTE PROCESS — is PIF .so loaded into it? ===
+--- zygote pid 422 ---
+zygote64
+7fe7df856000-7fe7df8a5000 r-xp 00000000 00:82 401                        /system/lib64/libzygisk.so
+7fe7df8a5000-7fe7df8a8000 r--p 0004e000 00:82 401                        /system/lib64/libzygisk.so
+7fe7df8a8000-7fe7df8a9000 rw-p 00050000 00:82 401                        /system/lib64/libzygisk.so
+7fe7df8f5000-7fe7df8f6000 r-xp 00000000 00:82 400                        /system/lib64/libzygisk-ld.so
+7fe7df8f6000-7fe7df8f7000 r--p 00000000 00:82 400                        /system/lib64/libzygisk-ld.so
+7fe7df8f7000-7fe7df8f8000 rw-p 00000000 00:82 400                        /system/lib64/libzygisk-ld.so
+--- zygote pid 423 ---
+zygote
+--- zygote pid 698 ---
+zygote64
+7fe7df856000-7fe7df8a5000 r-xp 00000000 00:82 401                        /system/lib64/libzygisk.so
+7fe7df8a5000-7fe7df8a8000 r--p 0004e000 00:82 401                        /system/lib64/libzygisk.so
+7fe7df8a8000-7fe7df8a9000 rw-p 00050000 00:82 401                        /system/lib64/libzygisk.so
+7fe7df8f5000-7fe7df8f6000 r-xp 00000000 00:82 400                        /system/lib64/libzygisk-ld.so
+7fe7df8f6000-7fe7df8f7000 r--p 00000000 00:82 400                        /system/lib64/libzygisk-ld.so
+7fe7df8f7000-7fe7df8f8000 rw-p 00000000 00:82 400                        /system/lib64/libzygisk-ld.so
+--- zygote pid 1129 ---
+webview_zygote
+--- zygote pid 4844 ---
+sh-c
+  echo "=== MAGISK CORE STATE ==="
+  magisk -v
+  magisk -V
+  echo
+  echo "=== ZYGISK DB FLAG ==="
+  sqlite3 /data/adb/magisk.db "SELECT * FROM settings;" 2>&1
+  echo
+  echo "=== PIF MODULE STATE (disable / remove markers?) ==="
+  ls -la /data/adb/modules/playintegrityfix/
+  for f in disable remove update skip_mount; do
+    [ -f /data/adb/modules/playintegrityfix/$f ] && echo "  *** $f present ***"
+  done
+  echo
+  echo "=== Is x86_64.so executable + readable? ==="
+  ls -la /data/adb/modules/playintegrityfix/zygisk/x86_64.so
+  file /data/adb/modules/playintegrityfix/zygisk/x86_64.so 2>/dev/null
+  echo
+  echo "=== ZYGOTE PROCESS — is PIF .so loaded into it? ==="
+  for pid in $(pgrep -f zygote); do
+    echo "--- zygote pid $pid ---"
+    cat /proc/$pid/cmdline 2>/dev/null; echo
+    grep -E "playintegrity|zygisk" /proc/$pid/maps 2>/dev/null | head -10
+  done
+  echo
+  echo "=== MAGISK BOOT LOG ==="
+  for log in /cache/magisk.log /data/adb/magisk.log /data/cache/magisk.log; do
+    if [ -f "$log" ]; then
+      echo "--- $log (last 60 lines) ---"
+      tail -60 "$log"
+    fi
+  done
+  echo
+  echo "=== LOGCAT — Zygisk + PIF + Magisk tags ==="
+  logcat -d 2>&1 | grep -iE "zygisk|playintegrity|pif|magisk" | tail -50
+  echo
+  echo "=== PIF post-fs-data.sh (where does it expect pif.json?) ==="
+  cat /data/adb/modules/playintegrityfix/post-fs-data.sh
+  echo
+  echo "=== PIF service.sh ==="
+  cat /data/adb/modules/playintegrityfix/service.sh
+  echo
+  echo "=== PIF common_setup.sh (key logic) ==="
+  cat /data/adb/modules/playintegrityfix/common_setup.sh
+  echo
+  echo "=== Where does PIF look for pif.json? (grep for it) ==="
+  grep -rn "pif.json\|pif.prop" /data/adb/modules/playintegrityfix/ 2>/dev/null
+  echo
+  echo "=== SELinux denials related to PIF/Zygisk ==="
+  dmesg 2>/dev/null | grep -iE "avc.*denied.*(zygisk|playintegrity|pif)" | tail -20
+  echo
+  echo "=== Zygisk loader log if it exists ==="
+  for f in /data/adb/zygisk_loader.log /data/adb/zygisk.log /data/adb/zygisksu.log; do
+    [ -f "$f" ] && echo "--- $f ---" && cat "$f"
+  done
+
+
+=== MAGISK BOOT LOG ===
+--- /cache/magisk.log (last 60 lines) ---
+04-26 00:55:34.227    72    72 I : Magisk 0fe46c5a-delta(26301) daemon started
+04-26 00:55:34.230    72    72 I : * Device API level: 33
+04-26 00:55:34.230    72    72 I : * CPU ABI 64-bit: x86_64,arm64-v8a
+04-26 00:55:34.230    72    72 I : * CPU ABI 32-bit: x86,armeabi-v7a,armeabi
+04-26 00:55:34.239    72    74 I : ** post-fs-data mode running
+04-26 00:55:34.249    72    74 I : * Unlock device blocks
+04-26 00:55:34.249    72    74 I : * Mounting mirrors
+04-26 00:55:34.253    72    74 I : PATH=[/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin]
+04-26 00:55:34.253    72    74 I : * Initializing Magisk environment
+04-26 00:55:35.641    72    74 I : * Running post-fs-data.d scripts
+04-26 00:55:35.642    77    77 I : post-fs-data.d: exec [00_zygisk_enforce.sh]
+04-26 00:55:35.659    72    74 I : * Enable MagiskHide
+04-26 00:55:35.661    72    74 I : hidelist: initializing internal data structures
+04-26 00:55:35.661    72    74 I : hidelist add: [com.google.android.gms/com.google.android.gms.unstable]
+04-26 00:55:35.661    72    74 I : hidelist add: [com.google.android.gms/com.google.android.gms]
+04-26 00:55:35.661    72    74 I : hidelist add: [com.google.android.gms/com.google.android.gms.persistent]
+04-26 00:55:35.661    72    74 I : hidelist add: [com.android.vending/com.android.vending]
+04-26 00:55:35.661    72    74 I : hidelist add: [com.google.android.gsf/com.google.android.gsf]
+04-26 00:55:35.673    72    74 I : zygisk_lsposed: applying [sepolicy.rule]
+04-26 00:55:35.676    72    74 W : zygisk_lsposed: failed to apply [sepolicy.rule]
+04-26 00:55:35.676    72    74 I : zygisk_lsposed: refresh [sepolicy.rule]
+04-26 00:55:35.676    72    74 I : * Running module post-fs-data scripts
+04-26 00:55:35.677    84    84 I : fake_proc: exec [post-fs-data.sh]
+04-26 00:55:35.690    84    84 I : playintegrityfix: exec [post-fs-data.sh]
+04-26 00:55:36.176    72    74 I : * Loading modules
+04-26 00:55:36.176    72    74 I : fake_proc: loading [system.prop]
+04-26 00:55:37.511    72    74 I : ** late_start service mode running
+04-26 00:55:37.511    72    74 I : * Running service.d scripts
+04-26 00:55:37.523    72    74 I : * Running module service scripts
+04-26 00:55:37.523    72    74 I : fake_proc: exec [service.sh]
+04-26 00:55:37.548    72    74 I : playintegrityfix: exec [service.sh]
+04-26 00:55:37.550    72    74 I : zygisk_lsposed: exec [service.sh]
+04-26 00:55:39.302   422   422 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-26 00:55:39.303   422   422 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-26 00:55:39.303   422   422 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-26 00:55:58.737    72  1552 I : ** boot-complete triggered
+--- /data/cache/magisk.log (last 60 lines) ---
+04-26 00:55:34.227    72    72 I : Magisk 0fe46c5a-delta(26301) daemon started
+04-26 00:55:34.230    72    72 I : * Device API level: 33
+04-26 00:55:34.230    72    72 I : * CPU ABI 64-bit: x86_64,arm64-v8a
+04-26 00:55:34.230    72    72 I : * CPU ABI 32-bit: x86,armeabi-v7a,armeabi
+04-26 00:55:34.239    72    74 I : ** post-fs-data mode running
+04-26 00:55:34.249    72    74 I : * Unlock device blocks
+04-26 00:55:34.249    72    74 I : * Mounting mirrors
+04-26 00:55:34.253    72    74 I : PATH=[/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin]
+04-26 00:55:34.253    72    74 I : * Initializing Magisk environment
+04-26 00:55:35.641    72    74 I : * Running post-fs-data.d scripts
+04-26 00:55:35.642    77    77 I : post-fs-data.d: exec [00_zygisk_enforce.sh]
+04-26 00:55:35.659    72    74 I : * Enable MagiskHide
+04-26 00:55:35.661    72    74 I : hidelist: initializing internal data structures
+04-26 00:55:35.661    72    74 I : hidelist add: [com.google.android.gms/com.google.android.gms.unstable]
+04-26 00:55:35.661    72    74 I : hidelist add: [com.google.android.gms/com.google.android.gms]
+04-26 00:55:35.661    72    74 I : hidelist add: [com.google.android.gms/com.google.android.gms.persistent]
+04-26 00:55:35.661    72    74 I : hidelist add: [com.android.vending/com.android.vending]
+04-26 00:55:35.661    72    74 I : hidelist add: [com.google.android.gsf/com.google.android.gsf]
+04-26 00:55:35.673    72    74 I : zygisk_lsposed: applying [sepolicy.rule]
+04-26 00:55:35.676    72    74 W : zygisk_lsposed: failed to apply [sepolicy.rule]
+04-26 00:55:35.676    72    74 I : zygisk_lsposed: refresh [sepolicy.rule]
+04-26 00:55:35.676    72    74 I : * Running module post-fs-data scripts
+04-26 00:55:35.677    84    84 I : fake_proc: exec [post-fs-data.sh]
+04-26 00:55:35.690    84    84 I : playintegrityfix: exec [post-fs-data.sh]
+04-26 00:55:36.176    72    74 I : * Loading modules
+04-26 00:55:36.176    72    74 I : fake_proc: loading [system.prop]
+04-26 00:55:37.511    72    74 I : ** late_start service mode running
+04-26 00:55:37.511    72    74 I : * Running service.d scripts
+04-26 00:55:37.523    72    74 I : * Running module service scripts
+04-26 00:55:37.523    72    74 I : fake_proc: exec [service.sh]
+04-26 00:55:37.548    72    74 I : playintegrityfix: exec [service.sh]
+04-26 00:55:37.550    72    74 I : zygisk_lsposed: exec [service.sh]
+04-26 00:55:39.302   422   422 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkAndSpecialize
+04-26 00:55:39.303   422   422 I : zygisk64: replaced com/android/internal/os/Zygote#nativeForkSystemServer
+04-26 00:55:39.303   422   422 I : zygisk64: replaced com/android/internal/os/Zygote#nativeSpecializeAppProcess
+04-26 00:55:58.737    72  1552 I : ** boot-complete triggered
+
+=== LOGCAT — Zygisk + PIF + Magisk tags ===
+04-26 00:55:47.350   697   697 E ActivityManager: Unable to find io.github.huskydg.magisk/u0
+04-26 00:57:05.073  4113  4113 D PIF/Native: Couldn't read config file
+04-26 00:58:01.991  4642  4642 D PIF/Native: Couldn't read config file
+
+=== PIF post-fs-data.sh (where does it expect pif.json?) ===
+MODPATH="${0%/*}"
+. $MODPATH/common_func.sh
+
+if [ -d "$MODPATH/zygisk" ]; then
+    # Remove Play Services and Play Store from Magisk DenyList when set to Enforce in normal mode
+    if magisk --denylist status; then
+        magisk --denylist rm com.google.android.gms
+        magisk --denylist rm com.android.vending
+    fi
+    # Run common tasks for installation and boot-time
+    . $MODPATH/common_setup.sh
+else
+    # Add Play Services DroidGuard and Play Store processes to Magisk DenyList for better results in scripts-only mode
+    magisk --denylist add com.google.android.gms com.google.android.gms.unstable
+    magisk --denylist add com.android.vending
+fi
+
+# Conditional early sensitive properties
+
+# Samsung
+resetprop_if_diff ro.boot.warranty_bit 0
+resetprop_if_diff ro.vendor.boot.warranty_bit 0
+resetprop_if_diff ro.vendor.warranty_bit 0
+resetprop_if_diff ro.warranty_bit 0
+
+# Realme
+resetprop_if_diff ro.boot.realmebootstate green
+
+# OnePlus
+resetprop_if_diff ro.is_ever_orange 0
+
+# Microsoft
+for PROP in $(resetprop | grep -oE 'ro.*.build.tags'); do
+    resetprop_if_diff $PROP release-keys
+done
+
+# Other
+for PROP in $(resetprop | grep -oE 'ro.*.build.type'); do
+    resetprop_if_diff $PROP user
+done
+resetprop_if_diff ro.adb.secure 1
+if ! $SKIPDELPROP; then
+    delprop_if_exist ro.boot.verifiedbooterror
+    delprop_if_exist ro.boot.verifyerrorpart
+fi
+resetprop_if_diff ro.boot.veritymode.managed yes
+resetprop_if_diff ro.debuggable 0
+resetprop_if_diff ro.force.debuggable 0
+resetprop_if_diff ro.secure 1
+
+=== PIF service.sh ===
+MODPATH="${0%/*}"
+. $MODPATH/common_func.sh
+
+# Conditional sensitive properties
+
+# Magisk Recovery Mode
+resetprop_if_match ro.boot.mode recovery unknown
+resetprop_if_match ro.bootmode recovery unknown
+resetprop_if_match vendor.boot.mode recovery unknown
+
+# SELinux
+resetprop_if_diff ro.boot.selinux enforcing
+# use delete since it can be 0 or 1 for enforcing depending on OEM
+if ! $SKIPDELPROP; then
+    delprop_if_exist ro.build.selinux
+fi
+# use toybox to protect stat access time reading
+if [ "$(toybox cat /sys/fs/selinux/enforce)" = "0" ]; then
+    chmod 640 /sys/fs/selinux/enforce
+    chmod 440 /sys/fs/selinux/policy
+fi
+
+# Conditional late sensitive properties
+
+# must be set after boot_completed for various OEMs
+{
+until [ "$(getprop sys.boot_completed)" = "1" ]; do
+    sleep 1
+done
+
+# SafetyNet/Play Integrity + OEM
+# avoid bootloop on some Xiaomi devices
+resetprop_if_diff ro.secureboot.lockstate locked
+# avoid breaking Realme fingerprint scanners
+resetprop_if_diff ro.boot.flash.locked 1
+resetprop_if_diff ro.boot.realme.lockstate 1
+# avoid breaking Oppo fingerprint scanners
+resetprop_if_diff ro.boot.vbmeta.device_state locked
+# avoid breaking OnePlus display modes/fingerprint scanners
+resetprop_if_diff vendor.boot.verifiedbootstate green
+# avoid breaking OnePlus/Oppo fingerprint scanners on OOS/ColorOS 12+
+resetprop_if_diff ro.boot.verifiedbootstate green
+resetprop_if_diff ro.boot.veritymode enforcing
+resetprop_if_diff vendor.boot.vbmeta.device_state locked
+
+# Other
+resetprop_if_diff sys.oem_unlock_allowed 0
+
+}&
+
+=== PIF common_setup.sh (key logic) ===
+# Remove any definitely conflicting modules that are installed
+if [ -d /data/adb/modules/safetynet-fix ]; then
+    touch /data/adb/modules/safetynet-fix/remove
+    ui_print "! Universal SafetyNet Fix (USNF) module will be removed on next reboot"
+fi
+
+# Replace/hide conflicting custom ROM injection app folders/files to disable them
+MAGISK_WHITEOUT=false
+[ -f /data/adb/magisk/util_functions.sh ] && [ "$(grep MAGISK_VER_CODE /data/adb/magisk/util_functions.sh | cut -d= -f2)" -ge 28102 ] && MAGISK_WHITEOUT=true;
+
+LIST=$MODPATH/app_replace_list.txt
+[ -f "$MODPATH/custom.app_replace_list.txt" ] && LIST=$MODPATH/custom.app_replace_list.txt
+for APP in $(grep -v '^#' $LIST); do
+    if [ -e "$APP" ]; then
+        case $APP in
+            /system/*) ;;
+            *) PREFIX=/system;;
+        esac
+        HIDEPATH=$MODPATH$PREFIX$APP
+        if [ -d "$APP" ]; then
+            $MAGISK_WHITEOUT || mkdir -p $HIDEPATH
+            if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
+                setfattr -n trusted.overlay.opaque -v y $HIDEPATH
+            elif $MAGISK_WHITEOUT; then
+                mkdir -p $(dirname $HIDEPATH)
+                mknod $HIDEPATH c 0 0
+            else
+                touch $HIDEPATH/.replace
+            fi
+        else
+            mkdir -p $(dirname $HIDEPATH)
+            if [ "$KSU" = "true" -o "$APATCH" = "true" -o "$MAGISK_WHITEOUT" = "true" ]; then
+                mknod $HIDEPATH c 0 0
+            else
+                touch $HIDEPATH
+            fi
+        fi
+        case $APP in
+            */overlay/*)
+                CFG=$(echo $APP | grep -oE '.*/overlay')/config/config.xml
+                if [ -f "$CFG" ]; then
+                    if [ -d "$APP" ]; then
+                        APK=$(readlink -f $APP/*.apk);
+                    elif [[ "$APP" = *".apk" ]]; then
+                        APK=$(readlink -f $APP);
+                    fi
+                    if [ -s "$APK" ]; then
+                        PKGNAME=$(unzip -p $APK AndroidManifest.xml | tr -d '\0' | grep -oE 'android.*overlay' | strings | tr -d '\n' | sed -e 's/^android//' -e 's/application//' -e 's;*http.*res/android;;' -e 's/manifest//' -e 's/overlay$//' | grep -oE '[[:alnum:].-_].*overlay' | cut -d\  -f2)
+                        if [ "$PKGNAME" ] && grep -q "overlay package=\"$PKGNAME" $CFG; then
+                            HIDECFG=$MODPATH$PREFIX$CFG
+                            if [ ! -f "$HIDECFG" ]; then
+                                mkdir -p $(dirname $HIDECFG)
+                                cp -af $CFG $HIDECFG
+                            fi
+                            sed -i 's;<overlay \(package="'"$PKGNAME"'".*\) />;<!-- overlay \1 -->;' $HIDECFG
+                        fi
+                    fi
+                fi
+            ;;
+        esac
+        if [[ -d "$APP" || "$APP" = *".apk" ]]; then
+            ui_print "! $(basename $APP .apk) ROM app disabled, please uninstall any user app versions/updates after next reboot"
+            [ "$HIDECFG" ] && ui_print "!  + $PKGNAME entry commented out in copied overlay config"
+        fi
+    fi
+done
+
+if ! $SKIPPERSISTPROP; then
+    # Work around custom ROM PropImitationHooks conflict when their persist props don't exist
+    if [ -n "$(resetprop ro.aospa.version)" -o -n "$(resetprop net.pixelos.version)" -o -n "$(resetprop ro.afterlife.version)" -o -f /data/system/gms_certified_props.json ]; then
+        for PROP in persist.sys.pihooks.first_api_level persist.sys.pihooks.security_patch; do
+            resetprop | grep -q "\[$PROP\]" || persistprop "$PROP" ""
+        done
+    fi
+
+    # Work around supported custom ROM PropImitationHooks/PixelPropsUtils (and hybrids) conflict when spoofProvider is disabled
+    if resetprop | grep -qE "persist.sys.pihooks|persist.sys.entryhooks|persist.sys.spoof|persist.sys.pixelprops|persist.sys.pp" || [ -f /data/system/gms_certified_props.json ]; then
+        persistprop persist.sys.pihooks.disable.gms_props true
+        persistprop persist.sys.pihooks.disable.gms_key_attestation_block true
+        persistprop persist.sys.entryhooks_enabled false
+        persistprop persist.sys.spoof.gms false
+        persistprop persist.sys.pixelprops.gms false
+        persistprop persist.sys.pixelprops.gapps false
+        persistprop persist.sys.pixelprops.google false
+        persistprop persist.sys.pixelprops.pi false
+        persistprop persist.sys.pp.gms false
+        persistprop persist.sys.pp.finsky false
+    fi
+elif [ "$MODPATH/uninstall.sh" ]; then
+    sh $MODPATH/uninstall.sh
+fi
+
+=== Where does PIF look for pif.json? (grep for it) ===
+
+=== SELinux denials related to PIF/Zygisk ===
+
+=== Zygisk loader log if it exists ===
+pirate101@DEBIAN13:/$ 
