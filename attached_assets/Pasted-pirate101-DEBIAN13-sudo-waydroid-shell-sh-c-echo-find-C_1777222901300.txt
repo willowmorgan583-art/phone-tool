@@ -1,0 +1,206 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+  echo "=== find CapCut real launcher activity ==="
+  cmd package resolve-activity --brief com.lemon.lvoverseas
+  echo ""
+  
+  # Save it for next step
+  ACT=$(cmd package resolve-activity --brief com.lemon.lvoverseas | tail -1)
+  echo "Will launch: $ACT"
+  
+  echo ""
+  echo "=== launching for real + capturing all output ==="
+  pm clear com.lemon.lvoverseas
+  am force-stop com.lemon.lvoverseas
+  sleep 1
+  logcat -c
+  
+  am start -W -n "$ACT"
+  sleep 8
+  
+  echo ""
+  echo "=== process check ==="
+  ps -A | grep -iE "lemon|lvoverseas" || echo "(no process — app exited)"
+  
+  echo ""
+  echo "=== logcat (everything from launch) ==="
+  logcat -d 2>&1 | grep -iE "lemon|lvoverseas|capcut|bytedance|tt_|effect_sdk|veimage|nle|device.*not|unsupport|incompatible|abort|signal|FATAL|AndroidRuntime|tombstoned|DEBUG" | tail -100
+'
+
+echo ""
+echo "============================================================"
+echo "=== HARDWARE / FEATURE CHECKS (these got dropped before) ==="
+echo "============================================================"
+sudo waydroid shell -- sh -c '
+' doneintf "%-30s = %s\n" "$p" "$(getprop $p)"bilist; dom \nufacturer \GL" | head -10o|ha
+=== find CapCut real launcher activity ===
+priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=false
+com.lemon.lvoverseas/com.vega.main.MainActivity
+
+Will launch: com.lemon.lvoverseas/com.vega.main.MainActivity
+
+=== launching for real + capturing all output ===
+Success
+Starting: Intent { cmp=com.lemon.lvoverseas/com.vega.main.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.lemon.lvoverseas/com.vega.main.MainActivity
+TotalTime: 4084
+WaitTime: 4089
+Complete
+
+=== process check ===
+(no process — app exited)
+
+=== logcat (everything from launch) ===
+04-26 17:01:17.483  6890  7075 W System.err:    at com.bytedance.sdk.account.network.dispatcher.ApiDispatcher.bpea_origin_run(Unknown Source:262169)
+04-26 17:01:17.483  6890  7075 W System.err:    at com.bytedance.sdk.account.network.dispatcher.ApiDispatcher.run(Unknown Source:8)
+04-26 17:01:17.483  6890  7075 W System.err: Caused by: java.lang.ClassNotFoundException: com.bytedance.sdk.account.adapter.bpea.AccountSdkBpeaAdapter
+04-26 17:01:17.504  6890  7075 D Helios:Network-White: Block request passport-api.capcutapi.com
+04-26 17:01:17.524   696   791 E VerityUtils: Failed to measure fs-verity, errno 1: /data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk
+04-26 17:01:17.543  6890  6890 W System.err: java.lang.UnsupportedOperationException: CronetEngine has not been initialized.
+04-26 17:01:17.543  6890  6890 W System.err:    at com.bytedance.frameworks.baselib.network.http.cronet.impl.SsCronetHttpClient.getEffectiveConnectionType(Unknown Source:131077)
+04-26 17:01:17.543  6890  6890 W System.err:    at com.bytedance.ttnet.TTNetInit.getEffectiveConnectionType(Unknown Source:196620)
+04-26 17:01:17.553  6890  6890 W System.err: java.lang.UnsupportedOperationException: CronetEngine has not been initialized.
+04-26 17:01:17.553  6890  6890 W System.err:    at com.bytedance.frameworks.baselib.network.http.cronet.impl.SsCronetHttpClient.getEffectiveConnectionType(Unknown Source:131077)
+04-26 17:01:17.553  6890  6890 W System.err:    at com.bytedance.ttnet.TTNetInit.getEffectiveConnectionType(Unknown Source:196620)
+04-26 17:01:17.559   696  6242 D CoreBackPreview: Window{41695f4 u0 com.lemon.lvoverseas/com.vega.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@3bc5f92, mPriority=0}
+04-26 17:01:17.568  6890  6951 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.590  6890  7084 E DynamiteModule: Failed to load module descriptor class: No field MODULE_ID in class Lcom/google/android/gms/dynamite/descriptors/com/google/android/gms/measurement/dynamite/ModuleDescriptor; (declaration of 'com.google.android.gms.dynamite.descriptors.com.google.android.gms.measurement.dynamite.ModuleDescriptor' appears in /data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes27.dex)
+04-26 17:01:17.598  6890  6978 E OpenGLRenderer: Device claims wide gamut support, cannot find matching config, error = EGL_SUCCESS
+04-26 17:01:17.611  6890  7054 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.622   446   922 E HWComposer: getSupportedContentTypes: getSupportedContentTypes failed for display 0: Unsupported (8)
+04-26 17:01:17.633  6890  7084 W emon.lvoverseas: ClassLoaderContext classpath size mismatch. expected=16, found=0 (DLC[];PCL[base.apk*799829477:base.apk!classes2.dex*1247375453:base.apk!classes3.dex*3348852869:base.apk!classes4.dex*4061457093:base.apk!classes5.dex*2810991609:base.apk!classes6.dex*3597535720:base.apk!classes7.dex*748657258:base.apk!classes8.dex*3359003228:base.apk!classes9.dex*2761066043:base.apk!classes10.dex*4144932335:base.apk!classes11.dex*2344723111:base.apk!classes12.dex*1199760:base.apk!classes13.dex*2477387473:base.apk!classes14.dex*1370805622:base.apk!classes15.dex*1575670434:base.apk!classes16.dex*1267972259]{PCL[/system/framework/org.apache.http.legacy.jar*3751013904]#PCL[/system/framework/com.android.location.provider.jar*1318803953]#PCL[/system/framework/com.android.media.remotedisplay.jar*3508004919]#PCL[/system_ext/framework/androidx.window.extensions.jar*1341008790]#PCL[/system_ext/framework/androidx.window.sidecar.jar*498821022]} | DLC[];PCL[])
+04-26 17:01:17.647  6890  7084 I emon.lvoverseas: Waiting for a blocking GC ClassLinker
+04-26 17:01:17.691  6890  6899 I emon.lvoverseas: Background concurrent copying GC freed 748550(33MB) AllocSpace objects, 45(1752KB) LOS objects, 66% free, 19MB/59MB, paused 169us,79us total 220.084ms
+04-26 17:01:17.693  6890  7084 I emon.lvoverseas: WaitForGcToComplete blocked ClassLinker on Background for 45.667ms
+04-26 17:01:17.817  6890  7037 W emon.lvoverseas: Long monitor contention with owner lynx-brief-io-thread-2 (6996) at void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String)(Runtime.java:1079) waiters=0 in void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String) for 105ms
+04-26 17:01:18.342  6890  7064 E shadowhook_tag: shadowhook version 2.0.1-rc.9: shadowhook init(default_mode: SHARED, debuggable: false), return: 12, real-init: no
+04-26 17:01:18.343   696   766 W system_server: Failed to determine oat file name for dex location /data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk: Dalvik cache directory does not exist
+04-26 17:01:18.352  6890  7008 W System.err: java.lang.UnsupportedOperationException: CronetEngine has not been initialized.
+04-26 17:01:18.352  6890  7008 W System.err:    at com.bytedance.frameworks.baselib.network.http.cronet.impl.SsCronetHttpClient.getEffectiveConnectionType(Unknown Source:131077)
+04-26 17:01:18.352  6890  7008 W System.err:    at com.bytedance.ttnet.TTNetInit.getEffectiveConnectionType(Unknown Source:196620)
+04-26 17:01:18.352  6890  7008 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.353  6890  7011 W System.err: java.lang.UnsupportedOperationException: CronetEngine has not been initialized.
+04-26 17:01:18.353  6890  7011 W System.err:    at com.bytedance.frameworks.baselib.network.http.cronet.impl.SsCronetHttpClient.getEffectiveConnectionType(Unknown Source:131077)
+04-26 17:01:18.353  6890  7011 W System.err:    at com.bytedance.ttnet.TTNetInit.getEffectiveConnectionType(Unknown Source:196620)
+04-26 17:01:18.353  6890  7011 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.356  6890  7088 W System.err:    at com.bytedance.lynx.service.image.UIImageClassWarmer.warmClass(Unknown Source:524756)
+04-26 17:01:18.356  6890  7088 W System.err:    at com.bytedance.lynx.service.image.LynxImageService$11.run(Unknown Source:196616)
+04-26 17:01:18.356  6890  7088 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.400  6890  7084 W emon.lvoverseas: ClassLoaderContext classpath size mismatch. expected=16, found=27 (DLC[];PCL[base.apk*799829477:base.apk!classes2.dex*1247375453:base.apk!classes3.dex*3348852869:base.apk!classes4.dex*4061457093:base.apk!classes5.dex*2810991609:base.apk!classes6.dex*3597535720:base.apk!classes7.dex*748657258:base.apk!classes8.dex*3359003228:base.apk!classes9.dex*2761066043:base.apk!classes10.dex*4144932335:base.apk!classes11.dex*2344723111:base.apk!classes12.dex*1199760:base.apk!classes13.dex*2477387473:base.apk!classes14.dex*1370805622:base.apk!classes15.dex*1575670434:base.apk!classes16.dex*1267972259]{PCL[/system/framework/org.apache.http.legacy.jar*3751013904]#PCL[/system/framework/com.android.location.provider.jar*1318803953]#PCL[/system/framework/com.android.media.remotedisplay.jar*3508004919]#PCL[/system_ext/framework/androidx.window.extensions.jar*1341008790]#PCL[/system_ext/framework/androidx.window.sidecar.jar*498821022]} | DLC[];PCL[/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk*898356789:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes2.dex*184945949:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes3.dex*656702262:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes4.dex*263044443:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes5.dex*3646606104:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes6.dex*3077553454:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes7.dex*595070551:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes8.dex*1511257631:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes9.dex*1674311218:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes10.dex*685628063:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes11.dex*2292701033:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes12.dex*696749156:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes13.dex*2046860871:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes14.dex*1741812225:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes15.dex*860177503:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes16.dex*2786981584:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes17.dex*1163494443:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes18.dex*2083787260:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes19.dex*3197176823:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes20.dex*449384373:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes21.dex*3416096202:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes22.dex*3126194908:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes23.dex*3230290575:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes24.dex*1721786847:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes25.dex*3092496977:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes26.dex*1411943653:/data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classe
+04-26 17:01:18.494  6890  7113 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:18.498  6890  6919 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:18.570  6890  7084 E DynamiteModule: Failed to load module descriptor class: No field MODULE_ID in class Lcom/google/android/gms/dynamite/descriptors/com/google/android/gms/measurement/dynamite/ModuleDescriptor; (declaration of 'com.google.android.gms.dynamite.descriptors.com.google.android.gms.measurement.dynamite.ModuleDescriptor' appears in /data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk!classes27.dex)
+04-26 17:01:18.706  6890  7114 D Helios:Network-White: Block request editor-api.capcutapi.com
+04-26 17:01:18.736   696  1299 D CoreBackPreview: Window{330db96 u0 com.lemon.lvoverseas/SplashScreen EXITING}: Setting back callback null
+04-26 17:01:18.739   696   752 W InputManager-JNI: Input channel object '330db96 com.lemon.lvoverseas/SplashScreen (client)' was disposed without first being removed with the input manager!
+04-26 17:01:18.745  6890  7115 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:18.915  6890  7065 W System.err:    at com.bytedance.ttnet.AppConsts.getCdnHostSuffix(Unknown Source:196629)
+04-26 17:01:18.915  6890  7065 W System.err:    at com.bytedance.ttnet.config.AppConfig.cdnShouldSampling(Unknown Source:17039391)
+04-26 17:01:18.915  6890  7065 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.917  6890  7065 W System.err:    at com.bytedance.ttnet.AppConsts.getCdnHostSuffix(Unknown Source:196629)
+04-26 17:01:18.917  6890  7065 W System.err:    at com.bytedance.ttnet.config.AppConfig.cdnShouldSampling(Unknown Source:17039391)
+04-26 17:01:18.918  6890  7065 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.919  6890  7065 W System.err:    at com.bytedance.ttnet.AppConsts.getCdnHostSuffix(Unknown Source:196629)
+04-26 17:01:18.920  6890  7065 W System.err:    at com.bytedance.ttnet.config.AppConfig.cdnShouldSampling(Unknown Source:17039391)
+04-26 17:01:18.920  6890  7065 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.925  6890  7065 W System.err:    at com.bytedance.ttnet.AppConsts.getCdnHostSuffix(Unknown Source:196629)
+04-26 17:01:18.925  6890  7065 W System.err:    at com.bytedance.ttnet.config.AppConfig.cdnShouldSampling(Unknown Source:17039391)
+04-26 17:01:18.925  6890  7065 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.928  6890  7065 W System.err:    at com.bytedance.ttnet.AppConsts.getCdnHostSuffix(Unknown Source:196629)
+04-26 17:01:18.928  6890  7065 W System.err:    at com.bytedance.ttnet.config.AppConfig.cdnShouldSampling(Unknown Source:17039391)
+04-26 17:01:18.929  6890  7065 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.930  6890  7065 W System.err:    at com.bytedance.ttnet.AppConsts.getCdnHostSuffix(Unknown Source:196629)
+04-26 17:01:18.930  6890  7065 W System.err:    at com.bytedance.ttnet.config.AppConfig.cdnShouldSampling(Unknown Source:17039391)
+04-26 17:01:18.930  6890  7065 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.962  6890  7055 W System.err:    at com.bytedance.ttnet.AppConsts.getCdnHostSuffix(Unknown Source:196629)
+04-26 17:01:18.962  6890  7055 W System.err:    at com.bytedance.ttnet.config.AppConfig.cdnShouldSampling(Unknown Source:17039391)
+04-26 17:01:18.962  6890  7055 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:18.999  1420  3204 I PhenotypeResourceReader: unable to find any Phenotype resource metadata for com.lemon.lvoverseas
+04-26 17:01:19.078  6890  7126 E emon.lvoverseas: No package ID 6a found for ID 0x6a0b0013.
+04-26 17:01:19.090  6890  7126 I FA      : To enable debug logging run: adb shell setprop log.tag.FA VERBOSE
+04-26 17:01:19.090  6890  7126 I FA      : To enable faster debug mode event logging run:
+04-26 17:01:19.090  6890  7126 I FA      :   adb shell setprop debug.firebase.analytics.app com.lemon.lvoverseas
+04-26 17:01:19.228  6890  7009 W System.err: java.lang.UnsupportedOperationException: CronetEngine has not been initialized.
+04-26 17:01:19.228  6890  7009 W System.err:    at com.bytedance.frameworks.baselib.network.http.cronet.impl.SsCronetHttpClient.getEffectiveConnectionType(Unknown Source:131077)
+04-26 17:01:19.228  6890  7009 W System.err:    at com.bytedance.ttnet.TTNetInit.getEffectiveConnectionType(Unknown Source:196620)
+04-26 17:01:19.228  6890  7009 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:19.229  6890  6997 W System.err: java.lang.UnsupportedOperationException: CronetEngine has not been initialized.
+04-26 17:01:19.229  6890  6997 W System.err:    at com.bytedance.frameworks.baselib.network.http.cronet.impl.SsCronetHttpClient.getEffectiveConnectionType(Unknown Source:131077)
+04-26 17:01:19.229  6890  6997 W System.err:    at com.bytedance.ttnet.TTNetInit.getEffectiveConnectionType(Unknown Source:196620)
+04-26 17:01:19.229  6890  6997 W System.err:    at com.bytedance.bpea.transmit.delegate.BPEAThread.run(Unknown Source:196617)
+04-26 17:01:19.985  6890  7053 I EffectSDK-2130: [jnimanager.cpp 114] getPackageName name: com.lemon.lvoverseas
+04-26 17:01:19.989  6890  6944 E shadowhook_tag: shadowhook version 2.0.1-rc.9: shadowhook init(default_mode: SHARED, debuggable: false), return: 12, real-init: no
+04-26 17:01:19.999  6890  7037 W emon.lvoverseas: Long monitor contention with owner DefaultDispatcher-worker-10 (7053) at void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String)(Runtime.java:1079) waiters=0 in void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String) for 1.655s
+04-26 17:01:20.056  6890  7137 W emon.lvoverseas: Long monitor contention with owner DefaultDispatcher-worker-10 (7053) at void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String)(Runtime.java:1079) waiters=4 in void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String) for 969ms
+04-26 17:01:20.157  6890  6890 W emon.lvoverseas: Long monitor contention with owner DefaultDispatcher-worker-10 (7053) at void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String)(Runtime.java:1079) waiters=5 in void java.lang.Runtime.exit(int) for 1.046s
+04-26 17:01:20.157  6890  6890 I emon.lvoverseas: System.exit called, status: -1
+04-26 17:01:20.157  6890  6890 I AndroidRuntime: VM exiting with result code -1, cleanup skipped.
+04-26 17:01:20.263   696  2797 I WindowManager: WIN DEATH: Window{e5a1f00 u0 com.lemon.lvoverseas/com.vega.main.MainActivity}
+04-26 17:01:20.263   696  2799 D ConnectivityService: ConnectivityService NetworkRequestInfo binderDied(uid/pid:10158/6890, [NetworkRequest [ REQUEST id=226, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10158 RequestorUid: 10158 RequestorPkg: com.lemon.lvoverseas UnderlyingNetworks: Null] ]], android.os.BinderProxy@371d13)
+04-26 17:01:20.263   696  2797 W InputManager-JNI: Input channel object 'e5a1f00 com.lemon.lvoverseas/com.vega.main.MainActivity (client)' was disposed without first being removed with the input manager!
+04-26 17:01:20.264   696   878 D ConnectivityService: releasing NetworkRequest [ REQUEST id=226, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10158 RequestorUid: 10158 RequestorPkg: com.lemon.lvoverseas UnderlyingNetworks: Null] ] (release request)
+04-26 17:01:20.264   696  3392 D ConnectivityService: ConnectivityService NetworkRequestInfo binderDied(uid/pid:10158/6890, [NetworkRequest [ LISTEN id=227, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10158 RequestorUid: 10158 RequestorPkg: com.lemon.lvoverseas UnderlyingNetworks: Null] ]], android.os.BinderProxy@9ec776f)
+04-26 17:01:20.264   696   876 D EthernetNetworkFactory: eth0: onNetworkUnneeded for request: NetworkRequest [ REQUEST id=226, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10158 RequestorUid: 10158 RequestorPkg: com.lemon.lvoverseas UnderlyingNetworks: Null] ]
+04-26 17:01:20.265   696  6242 I ActivityManager: Process com.lemon.lvoverseas (pid 6890) has died: fg  TOP 
+04-26 17:01:20.270   696  2797 W WindowManager: Failed to deliver inset state change to w=Window{e5a1f00 u0 com.lemon.lvoverseas/com.vega.main.MainActivity EXITING}
+04-26 17:01:20.270   696  2797 W WindowManager: Failed to deliver inset state change to w=Window{41695f4 u0 com.lemon.lvoverseas/com.vega.main.MainActivity}
+04-26 17:01:20.279   696  1417 I WindowManager: WIN DEATH: Window{41695f4 u0 com.lemon.lvoverseas/com.vega.main.MainActivity}
+04-26 17:01:20.279   696  1417 W InputManager-JNI: Input channel object '41695f4 com.lemon.lvoverseas/com.vega.main.MainActivity (client)' was disposed without first being removed with the input manager!
+04-26 17:01:20.286   696  6242 W ActivityTaskManager: Force removing ActivityRecord{bb20958 u0 com.lemon.lvoverseas/com.vega.main.MainActivity} t36}: app died, no saved state
+04-26 17:01:20.419   696   770 W WindowManager: Failed to deliver inset state change to w=Window{e5a1f00 u0 com.lemon.lvoverseas/com.vega.main.MainActivity EXITING}
+04-26 17:01:20.837   696   766 I ActivityTaskManager: Displayed com.lemon.lvoverseas/com.vega.main.MainActivity: +4s84ms
+04-26 17:01:21.066   696   696 W NotificationService: Object died trying to hide custom toast android.os.BinderProxy@700be86 in package com.lemon.lvoverseas
+04-26 17:01:24.930   696  2681 W ActivityManager: Foreground service started from background can not have location/camera/microphone access: service com.liuzh.deviceinfo/.notification.NotificationService
+
+============================================================
+=== HARDWARE / FEATURE CHECKS (these got dropped before) ===
+============================================================
+--- features CapCut commonly checks ---
+feature:android.hardware.audio.low_latency
+feature:android.hardware.audio.output
+feature:android.hardware.bluetooth
+feature:android.hardware.camera
+feature:android.hardware.camera.any
+feature:android.hardware.camera.autofocus
+feature:android.hardware.camera.capability.manual_post_processing
+feature:android.hardware.camera.capability.manual_sensor
+feature:android.hardware.camera.capability.raw
+feature:android.hardware.camera.flash
+feature:android.hardware.camera.front
+feature:android.hardware.camera.level.full
+feature:android.hardware.opengles.aep
+feature:android.hardware.sensor.accelerometer
+feature:android.hardware.sensor.ambient_temperature
+feature:android.hardware.sensor.barometer
+feature:android.hardware.sensor.compass
+feature:android.hardware.sensor.gyroscope
+feature:android.hardware.sensor.light
+feature:android.hardware.sensor.proximity
+feature:android.hardware.sensor.relative_humidity
+feature:android.hardware.touchscreen
+feature:android.hardware.vulkan.compute
+feature:android.hardware.vulkan.level=1
+feature:android.hardware.vulkan.version=4198400
+feature:android.software.live_wallpaper
+
+--- GPU / GLES / Vulkan ---
+Sync configuration: [using: EGL_ANDROID_native_fence_sync EGL_KHR_wait_sync]
+EGL implementation : 1.5 Android META-EGL
+EGL_ANDROID_front_buffer_auto_refresh EGL_ANDROID_get_frame_timestamps EGL_ANDROID_get_native_client_buffer EGL_ANDROID_presentation_time EGL_EXT_surface_CTA861_3_metadata EGL_EXT_surface_SMPTE2086_metadata EGL_KHR_get_all_proc_addresses EGL_KHR_swap_buffers_with_damage EGL_ANDROID_image_native_buffer EGL_ANDROID_native_fence_sync EGL_ANDROID_recordable EGL_EXT_buffer_age EGL_EXT_create_context_robustness EGL_EXT_pixel_format_float EGL_IMG_context_priority EGL_KHR_config_attribs EGL_KHR_create_context EGL_KHR_create_context_no_error EGL_KHR_fence_sync EGL_KHR_gl_colorspace EGL_KHR_gl_renderbuffer_image EGL_KHR_gl_texture_2D_image EGL_KHR_gl_texture_3D_image EGL_KHR_gl_texture_cubemap_image EGL_KHR_image EGL_KHR_image_base EGL_KHR_mutable_render_buffer EGL_KHR_no_config_context EGL_KHR_reusable_sync EGL_KHR_surfaceless_context EGL_KHR_wait_sync 
+GLES: Intel, Mesa Intel(R) HD Graphics 4400 (HSW GT2), OpenGL ES 3.2 Mesa 26.0.1
+GL_EXT_debug_marker GL_EXT_blend_minmax GL_EXT_multi_draw_arrays GL_EXT_texture_filter_anisotropic GL_EXT_texture_compression_s3tc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_format_BGRA8888 GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_mapbuffer GL_OES_rgb8_rgba8 GL_OES_standard_derivatives GL_OES_stencil8 GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_vertex_half_float GL_EXT_draw_instanced GL_EXT_texture_sRGB_decode GL_OES_EGL_image GL_OES_depth_texture GL_AMD_performance_monitor GL_OES_packed_depth_stencil GL_EXT_texture_type_2_10_10_10_REV GL_NV_conditional_render GL_OES_get_program_binary GL_APPLE_texture_max_level GL_EXT_discard_framebuffer GL_EXT_read_format_bgra GL_EXT_texture_storage GL_NV_pack_subimage GL_NV_texture_barrier GL_EXT_frag_depth GL_NV_fbo_color_attachments GL_OES_EGL_image_external GL_OES_EGL_sync GL_OES_vertex_array_object GL_OES_viewport_array GL_ANGLE_pack_reverse_row_order GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_EXT_occlusion_query_boolean GL_EXT_robustness GL_EXT_sRGB GL_EXT_texture_rg GL_EXT_unpack_subimage GL_NV_draw_buffers GL_NV_read_buffer GL_NV_read_depth GL_NV_read_depth_stencil GL_NV_read_stencil GL_APPLE_sync GL_EXT_draw_buffers GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_shadow_samplers GL_KHR_debug GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_NV_generate_mipmap_sRGB GL_NV_pixel_buffer_object GL_OES_depth_texture_cube_map GL_OES_required_internalformat GL_OES_surfaceless_context GL_EXT_color_buffer_float GL_EXT_debug_label GL_EXT_sRGB_write_control GL_EXT_separate_shader_objects GL_EXT_shader_group_vote GL_EXT_shader_implicit_conversions GL_EXT_shader_integer_mix GL_EXT_tessellation_point_size GL_EXT_tessellation_shader GL_INTEL_performance_query GL_ANDROID_extension_pack_es31a GL_EXT_base_instance GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_copy_image GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_gpu_shader5 GL_EXT_multi_draw_indirect GL_EXT_polygon_offset_clamp GL_EXT_primitive_bounding_box GL_EXT_render_snorm GL_EXT_shader_io_blocks GL_EXT_texture_border_clamp GL_EXT_texture_buffer GL_EXT_texture_cube_map_array GL_EXT_texture_norm16 GL_EXT_texture_view GL_KHR_blend_equation_advanced GL_KHR_context_flush_control GL_KHR_robust_buffer_access_behavior GL_NV_image_formats GL_NV_shader_noperspective_interpolation GL_OES_copy_image GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_gpu_shader5 GL_OES_primitive_bounding_box GL_OES_sample_shading GL_OES_sample_variables GL_OES_shader_io_blocks GL_OES_shader_multisample_interpolation GL_OES_tessellation_point_size GL_OES_tessellation_shader GL_OES_texture_border_clamp GL_OES_texture_buffer GL_OES_texture_cube_map_array GL_OES_texture_stencil8 GL_OES_texture_storage_multisample_2d_array GL_OES_texture_view GL_EXT_blend_func_extended GL_EXT_buffer_storage GL_EXT_float_blend GL_EXT_geometry_point_size GL_EXT_geometry_shader GL_EXT_shader_samples_identical GL_EXT_texture_sRGB_R8 GL_KHR_no_error GL_KHR_texture_compression_astc_sliced_3d GL_OES_EGL_image_external_essl3 GL_OES_geometry_point_size GL_OES_geometry_shader GL_OES_shader_image_atomic GL_EXT_clear_texture GL_EXT_clip_cull_distance GL_EXT_conservative_depth GL_EXT_disjoint_timer_query GL_EXT_texture_compression_s3tc_srgb GL_MESA_shader_integer_functions GL_EXT_clip_control GL_EXT_color_buffer_half_float GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_semaphore GL_EXT_semaphore_fd GL_EXT_texture_compression_bptc GL_EXT_texture_mirror_clamp_to_edge GL_KHR_parallel_shader_compile GL_NV_alpha_to_coverage_dither_control GL_EXT_EGL_image_storage GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_texture_shadow_lod GL_INTEL_blackhole_render GL_MESA_framebuffer_flip_y GL_NV_compute_shader_derivatives GL_EXT_demote_to_helper_invocation GL_EXT_depth_clamp GL_EXT_texture_query_lod GL_MESA_sampler_objects GL_EXT_EGL_image_storage_compression GL_EXT_texture_storage_compression GL_MESA_bgra GL_EXT_shader_clock 
+
+--- model / hardware props (CapCut blocklist targets) ---
+ro.product.model               = SM-S928B
+ro.product.device              = e3q
+ro.product.manufacturer        = Samsung
+ro.product.board               = 
+ro.hardware                    = waydroid
+ro.board.platform              = waydroid
+ro.kernel.qemu                 = 0
+ro.boot.qemu                   = 0
+ro.bootloader                  = S928BXXU1AXBA
+ro.product.cpu.abi             = x86_64
+ro.product.cpu.abilist         = x86_64,x86,arm64-v8a,armeabi-v7a,armeabi
+pirate101@DEBIAN13:~$ 
