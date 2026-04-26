@@ -1,0 +1,115 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+  logcat -d 2>&1 | grep -iE "Helios|region|geo|vpn|fs-verity|fsverity|MagiskHide|denylist|integrity|attest|deviceCheck|environment.*check" | tail -60
+  echo ""
+  echo "=== was the process killed or did it call exit? ==="
+  logcat -d 2>&1 | grep -E "6890|emon.lvoverseas" | grep -iE "exit|kill|finish|terminat|abort|sigkill|signal" | tail -20
+  echo ""
+  echo "=== outbound network — were ANY capcut endpoints reached? ==="
+  logcat -d 2>&1 | grep -iE "capcutapi|tiktokv|byteoversea" | grep -iE "200|connect|response|success" | tail -10
+'
+
+# Also test: can the host even reach CapCut backend?
+curl -sI --max-time 5 https://passport-api.capcutapi.com 2>&1 | head -5
+curl -sI --max-time 5 https://www.capcut.com 2>&1 | head -5
+
+# And re-run the dropped hardware checks (one command, no nested shell)
+sudo waydroid shell -- getprop ro.product.model
+sudo waydroid shell -- getprop ro.hardware
+sudo waydroid shell -- getprop ro.boot.qemu
+sudo waydroid shell -- pm list features | grep -iE "vulkan|opengl|gpu|telephony|wifi|bluetooth"
+sudo waydroid shell -- dumpsys SurfaceFlinger | grep -E "GLES|Vendor|Renderer" | head -5
+04-26 17:01:16.309  6890  6890 W System.err:    at com.vega.launcher.privacy.ttp.RegionSdkInit$init$2.onRegionChanged(Unknown Source:50659411)
+04-26 17:01:16.309  6890  6890 W System.err:    at com.bytedance.privacy.region.RegionManager.notifyObserversRegionChanged(Unknown Source:50659394)
+04-26 17:01:16.309  6890  6890 W System.err:    at com.bytedance.privacy.region.RegionManager.notifyRegionUpdate$region_release(Unknown Source:50724991)
+04-26 17:01:16.309  6890  6890 W System.err:    at com.bytedance.privacy.region.RegionSource.calculateLocalRegion$region_release(Unknown Source:34013417)
+04-26 17:01:16.309  6890  6890 W System.err:    at com.bytedance.privacy.region.RegionManager.initRegion(Unknown Source:17236121)
+04-26 17:01:16.414  6890  6961 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:16.429  6890  6944 D Helios:Network-White: Block request mon-v2-boot.capcutapi.com
+04-26 17:01:16.481  6890  6976 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:16.486  6890  6961 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:16.487  6890  6944 D Helios:Network-White: Block request mon-v2-boot.capcutapi.com
+04-26 17:01:16.489  6890  6976 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:16.498  6890  6979 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:16.499  6890  6979 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:16.678  6890  6949 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:16.693  6890  6950 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.107  6890  7032 D Helios:Network-White: Block request feed-api.capcutapi.com
+04-26 17:01:17.117  6890  7034 D Helios:Network-White: Block request feed-api.capcutapi.com
+04-26 17:01:17.164  6890  6979 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:17.171  6890  6979 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:17.310  6890  7052 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.358  6890  6948 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.363  6890  6973 D Helios:Network-White: Block request cehe9z-cdn-settings.appsflyersdk.com
+04-26 17:01:17.367  6890  7025 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.371  6890  6973 D Helios:Network-White: Block request cehe9z-cdn-settings.appsflyersdk.com
+04-26 17:01:17.385  6890  7056 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.411  6890  7059 D Helios:Network-White: Block request vcs-sg.byteintl.com
+04-26 17:01:17.504  6890  7075 D Helios:Network-White: Block request passport-api.capcutapi.com
+04-26 17:01:17.524   696   791 E VerityUtils: Failed to measure fs-verity, errno 1: /data/app/~~6sn17hsdpno9IlrtfNjyiA==/com.lemon.lvoverseas-LdZfXojtXyggVsYjZjEwxQ==/base.apk
+04-26 17:01:17.568  6890  6951 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.611  6890  7054 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:17.614  6890  6961 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:17.615  6890  6961 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:17.692  6890  7002 D Helios:Network-White: Block request mon-va.byteoversea.com
+04-26 17:01:17.711  6890  6977 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:17.712  6890  6977 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:18.480  6890  6981 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:18.492  6890  6981 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:18.494  6890  7113 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:18.498  6890  6919 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:18.681  6890  6976 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:18.706  6890  7114 D Helios:Network-White: Block request editor-api.capcutapi.com
+04-26 17:01:18.722  6890  6976 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:18.745  6890  7115 D Helios:Network-White: Block request commerce-api.capcutapi.com
+04-26 17:01:18.958  6890  6961 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:18.989  6890  6961 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:19.881  6890  6977 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:19.882  6890  6977 D Helios:Network-White: Block request graph.facebook.com
+04-26 17:01:20.264   696  3392 D ConnectivityService: ConnectivityService NetworkRequestInfo binderDied(uid/pid:10158/6890, [NetworkRequest [ LISTEN id=227, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10158 RequestorUid: 10158 RequestorPkg: com.lemon.lvoverseas UnderlyingNetworks: Null] ]], android.os.BinderProxy@9ec776f)
+04-26 17:01:30.589   696   777 I ActivityManager: Start proc 7252:org.lineageos.etar/u0a87 for broadcast {org.lineageos.etar/com.android.calendar.widget.CalendarAppWidgetService$CalendarFactory}
+04-26 17:01:30.615  7252  7252 W .lineageos.etar: Unexpected CPU variant for x86: x86_64.
+04-26 17:01:30.615  7252  7252 W .lineageos.etar: Known variants: atom, sandybridge, silvermont, kabylake, default
+04-26 17:01:30.617  7252  7252 E .lineageos.etar: Not starting debugger since process cannot load the jdwp agent.
+04-26 17:01:30.660  7252  7252 V GraphicsEnvironment: ANGLE Developer option for 'org.lineageos.etar' set to: 'default'
+04-26 17:01:30.660  7252  7252 V GraphicsEnvironment: ANGLE GameManagerService for org.lineageos.etar: false
+04-26 17:08:09.084   696   768 W NotifHistoryProto: notification package name (com.nordvpn.android) not found in string cache
+04-26 17:08:09.084   696   768 W NotifHistoryProto: notification channel name (VPN connection notifications) not found in string cache
+04-26 17:08:09.084   696   768 W NotifHistoryProto: notification channel id (nordvpn_vpn_status) not found in string cache
+04-26 17:08:26.312   941   941 W TouchableRegionManager: onHeadsUpPinnedModeChanged
+04-26 17:08:32.012   941   941 W TouchableRegionManager: onHeadsUpPinnedModeChanged
+
+=== was the process killed or did it call exit? ===
+04-26 17:01:16.510  6890  6927 W System.err: zoin:putBoolean capcut_key.lib.decode.finished false
+04-26 17:01:16.511  6890  6927 W System.err: zoin:getBoolean capcut_key.lib.decode.finished false
+04-26 17:01:17.331  6890  6927 W System.err: zoin:putBoolean capcut_key.lib.decode.finished true
+04-26 17:01:18.736   696  1299 D CoreBackPreview: Window{330db96 u0 com.lemon.lvoverseas/SplashScreen EXITING}: Setting back callback null
+04-26 17:01:20.157  6890  6890 W emon.lvoverseas: Long monitor contention with owner DefaultDispatcher-worker-10 (7053) at void java.lang.Runtime.loadLibrary0(java.lang.ClassLoader, java.lang.Class, java.lang.String)(Runtime.java:1079) waiters=5 in void java.lang.Runtime.exit(int) for 1.046s
+04-26 17:01:20.157  6890  6890 I emon.lvoverseas: System.exit called, status: -1
+04-26 17:01:20.157  6890  6890 I AndroidRuntime: VM exiting with result code -1, cleanup skipped.
+04-26 17:01:20.266   696   778 I libprocessgroup: Successfully killed process cgroup uid 10158 pid 6890 in 0ms
+04-26 17:01:20.270   696  2797 W WindowManager: Failed to deliver inset state change to w=Window{e5a1f00 u0 com.lemon.lvoverseas/com.vega.main.MainActivity EXITING}
+04-26 17:01:20.271   422   422 I Zygote  : Process 6890 exited cleanly (255)
+04-26 17:01:20.419   696   770 W WindowManager: Failed to deliver inset state change to w=Window{e5a1f00 u0 com.lemon.lvoverseas/com.vega.main.MainActivity EXITING}
+
+=== outbound network — were ANY capcut endpoints reached? ===
+HTTP/2 404 
+content-type: text/html
+content-length: 144
+x-tt-trace-host: 01c65ea8d65211ff52621395f2707f4d173e31b62e66592dfbce74c411d8087d587b0fd395b2dc24dbda2b9f21b62b4076f0ffd1378204c0f71d6d05b7ab480dee949cfda8e840d793746f810d858ab719
+x-tt-trace-id: 00-260427010955A43BD80970EBB2487080-17D301AF7FB47DB0-00
+HTTP/2 200 
+content-type: text/html; charset=UTF-8
+x-tt-logid: 202604270109555C41C3EF5B07CAC8083C
+content-language: en
+x-modernjs-render: server
+SM-S928B
+waydroid
+0
+feature:android.hardware.bluetooth
+feature:android.hardware.opengles.aep
+feature:android.hardware.vulkan.compute
+feature:android.hardware.vulkan.level=1
+feature:android.hardware.vulkan.version=4198400
+feature:android.hardware.wifi
+GLES: Intel, Mesa Intel(R) HD Graphics 4400 (HSW GT2), OpenGL ES 3.2 Mesa 26.0.1
+pirate101@DEBIAN13:~$ 
