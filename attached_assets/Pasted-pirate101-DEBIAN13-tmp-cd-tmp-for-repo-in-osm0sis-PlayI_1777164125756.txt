@@ -1,0 +1,61 @@
+pirate101@DEBIAN13:/tmp$ cd /tmp
+for repo in \
+    "osm0sis/PlayIntegrityFork" \
+    "chiteroman/PlayIntegrityFix" \
+    "aviraxp/Zygisk-PlayIntegrityFix" \
+    "Magisk-Modules-Alt-Repo/PlayIntegrityFix" \
+    "Magisk-Modules-Repo/playintegrityfix" \
+    "WSA-Community/PlayIntegrityFix" \
+    "hldr4/ih8sn-pif"; do
+  echo "============================================"
+  echo "REPO: $repo"
+  echo "============================================"
+  zip_url=$(curl -sL "https://api.github.com/repos/${repo}/releases/latest" \
+    | grep '"browser_download_url"' \
+    | sed 's/.*: "//;s/".*//' \
+    | grep -i '\.zip$' | head -1)
+  if [ -z "$zip_url" ]; then
+    echo "  (no release zip found)"
+    continue
+  fi
+  echo "  Latest zip: $zip_url"
+  # Download zip headers + central directory only (saves bandwidth)
+  curl -sL "$zip_url" -o probe.zip
+  echo "  zygisk/ binaries shipped:"
+  unzip -l probe.zip 2>/dev/null | grep -E 'zygisk/.*\.so$' | sed 's/^/    /'
+  rm -f probe.zip
+done
+============================================
+REPO: osm0sis/PlayIntegrityFork
+============================================
+  Latest zip: https://github.com/osm0sis/PlayIntegrityFork/releases/download/v16/PlayIntegrityFork-v16.zip
+  zygisk/ binaries shipped:
+       136832  2026-01-09 00:28   zygisk/arm64-v8a.so
+       101596  2026-01-09 00:28   zygisk/armeabi-v7a.so
+       154780  2026-01-09 00:28   zygisk/x86.so
+       169584  2026-01-09 00:28   zygisk/x86_64.so
+============================================
+REPO: chiteroman/PlayIntegrityFix
+============================================
+  (no release zip found)
+============================================
+REPO: aviraxp/Zygisk-PlayIntegrityFix
+============================================
+  (no release zip found)
+============================================
+REPO: Magisk-Modules-Alt-Repo/PlayIntegrityFix
+============================================
+  (no release zip found)
+============================================
+REPO: Magisk-Modules-Repo/playintegrityfix
+============================================
+  (no release zip found)
+============================================
+REPO: WSA-Community/PlayIntegrityFix
+============================================
+  (no release zip found)
+============================================
+REPO: hldr4/ih8sn-pif
+============================================
+  (no release zip found)
+pirate101@DEBIAN13:/tmp$ 
