@@ -1,0 +1,52 @@
+pirate101@DEBIAN13:~$ sudo waydroid shell -- sh -c '
+  echo "=== full clean log capture ==="
+  pm clear com.lemon.lvoverseas 2>/dev/null
+  am force-stop com.lemon.lvoverseas 2>/dev/null
+  sleep 1
+  logcat -c
+  
+  # Launch via intent (not monkey) so it actually starts the splash
+  am start -W -n com.lemon.lvoverseas/.activities.SplashActivity 2>/dev/null \
+    || am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER \
+       $(pm dump com.lemon.lvoverseas | grep -m1 "android.intent.action.MAIN" -A1 | grep -oE "com\.lemon\.lvoverseas/[^ ]+") 2>/dev/null \
+    || monkey -p com.lemon.lvoverseas -c android.intent.category.LAUNCHER 1
+  
+  # Wait for the splash + the 3-sec exit
+  sleep 7
+  
+  echo ""
+  echo "=== ALL logcat lines mentioning capcut/lemon (no filter) ==="
+  logcat -d 2>&1 | grep -iE "lemon|capcut|lvoverseas|bytedance|tt_native|effect_sdk|veimage" | tail -80
+  
+  echo ""
+  echo "=== process activity (did the app even start a process?) ==="
+  ps -A 2>&1 | grep -iE "lemon|capcut|lvoverseas"
+  
+  echo ""
+  echo "=== ActivityManager start result ==="
+  logcat -d 2>&1 | grep -iE "ActivityTaskManager.*lvoverseas|ActivityManager.*lvoverseas|START.*lvoverseas|Displayed.*lvoverseas|Killing.*lvoverseas" | tail -10
+  
+  echo ""
+  echo "=== fatal/crash signals ==="
+  logcat -d -b crash 2>&1 | tail -30
+  
+' logcat -d 2>&1 | grep -E "AndroidRuntime|libc.*Fatal|tombstoned|DEBUG.*pid" | tail -20
+[sudo] password for pirate101: 
+=== full clean log capture ===
+Success
+Starting: Intent { cmp=com.lemon.lvoverseas/.activities.SplashActivity }
+Error type 3
+Error: Activity class {com.lemon.lvoverseas/com.lemon.lvoverseas.activities.SplashActivity} does not exist.
+
+=== ALL logcat lines mentioning capcut/lemon (no filter) ===
+04-26 16:59:18.527   696  2800 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.lemon.lvoverseas/.activities.SplashActivity} from uid 0
+
+=== process activity (did the app even start a process?) ===
+
+=== ActivityManager start result ===
+04-26 16:59:18.527   696  2800 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.lemon.lvoverseas/.activities.SplashActivity} from uid 0
+
+=== fatal/crash signals ===
+
+=== AndroidRuntime fatal ===
+pirate101@DEBIAN13:~$ 
