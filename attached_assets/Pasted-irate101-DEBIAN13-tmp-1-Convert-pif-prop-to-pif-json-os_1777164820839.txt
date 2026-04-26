@@ -1,0 +1,112 @@
+irate101@DEBIAN13:/tmp$ # 1. Convert pif.prop to pif.json (osm0sis v16 reads JSON)
+sudo tee /home/pirate101/.local/share/waydroid/data/adb/pif.json > /dev/null << 'EOF'
+{
+  "MANUFACTURER": "Google",
+  "MODEL": "Pixel 9 Pro XL",
+  "FINGERPRINT": "google/komodo_beta/komodo:CANARY/ZP11.260320.007/15154667:user/release-keys",
+  "BRAND": "google",
+  "PRODUCT": "komodo_beta",
+  "DEVICE": "komodo",
+  "RELEASE": "15",
+  "ID": "ZP11.260320.007",
+  "INCREMENTAL": "15154667",
+  "TYPE": "user",
+  "TAGS": "release-keys",
+  "SECURITY_PATCH": "2026-04-05",
+  "DEVICE_INITIAL_SDK_INT": "33",
+  "*api_level": "35",
+  "*.security_patch": "2026-04-05",
+  "verboseLogs": "1"
+}
+EOF
+
+# 2. Confirm pif.json is in place
+echo "=== pif.json contents ==="
+sudo cat /home/pirate101/.local/share/waydroid/data/adb/pif.json
+echo ""
+
+# 3. Restart container so the staged PIF v16 install activates
+waydroid session stop 2>/dev/null
+sudo systemctl restart waydroid-container; sleep 30
+nohup waydroid session start > /tmp/sess_v16_active.log 2>&1 &
+' am force-stop com.google.android.gsf fresh hooks ===""-exec ls -la {} \;
+=== pif.json contents ===
+{
+  "MANUFACTURER": "Google",
+  "MODEL": "Pixel 9 Pro XL",
+  "FINGERPRINT": "google/komodo_beta/komodo:CANARY/ZP11.260320.007/15154667:user/release-keys",
+  "BRAND": "google",
+  "PRODUCT": "komodo_beta",
+  "DEVICE": "komodo",
+  "RELEASE": "15",
+  "ID": "ZP11.260320.007",
+  "INCREMENTAL": "15154667",
+  "TYPE": "user",
+  "TAGS": "release-keys",
+  "SECURITY_PATCH": "2026-04-05",
+  "DEVICE_INITIAL_SDK_INT": "33",
+  "*api_level": "35",
+  "*.security_patch": "2026-04-05",
+  "verboseLogs": "1"
+}
+
+[1]+  Done                    nohup waydroid session start > /tmp/sess_pif_reinstall.log 2>&1
+[1] 1000318
+=== PIF module files (zygisk/ should now exist) ===
+total 100
+drwxr-xr-x 3 root   root   4096 2026-04-26 00:46 .
+drwxr-xr-x 5 system radio  4096 2026-04-26 00:50 ..
+-rw-r--r-- 1 root   root    445 2026-04-26 00:46 action.sh
+-rw-r--r-- 1 root   root    590 2026-04-26 00:46 app_replace_list.txt
+-rw-r--r-- 1 root   root  10019 2026-04-26 00:46 autopif4.sh
+-rw-r--r-- 1 root   root  21364 2026-04-26 00:46 classes.dex
+-rw-r--r-- 1 root   root   2906 2026-04-26 00:46 common_func.sh
+-rw-r--r-- 1 root   root   4523 2026-04-26 00:46 common_setup.sh
+-rw-r--r-- 1 root   root    860 2026-04-26 00:46 example.pif.prop
+-rw-r--r-- 1 root   root    387 2026-04-26 00:46 killpi.sh
+-rw-r--r-- 1 root   root   6521 2026-04-26 00:46 migrate.sh
+-rw-r--r-- 1 root   root    260 2026-04-26 00:46 module.prop
+-rw-r--r-- 1 root   root   1518 2026-04-26 00:46 post-fs-data.sh
+-rw-r--r-- 1 root   root   1536 2026-04-26 00:46 service.sh
+-rw-r--r-- 1 root   root    343 2026-04-23 15:29 uninstall.sh
+drwxr-xr-x 2 root   root   4096 2026-04-26 00:46 zygisk
+
+=== zygisk binaries (must show .so files) ===
+total 564
+drwxr-xr-x 2 root root   4096 2026-04-26 00:46 .
+drwxr-xr-x 3 root root   4096 2026-04-26 00:46 ..
+-rw-r--r-- 1 root root 136832 2026-04-26 00:46 arm64-v8a.so
+-rw-r--r-- 1 root root 101596 2026-04-26 00:46 armeabi-v7a.so
+-rw-r--r-- 1 root root 154780 2026-04-26 00:46 x86.so
+-rw-r--r-- 1 root root 169584 2026-04-26 00:46 x86_64.so
+
+=== ALL .so files in PIF ===
+-rw-r--r-- 1 root root 101596 2026-04-26 00:46 /data/adb/modules/playintegrityfix/zygisk/armeabi-v7a.so
+-rw-r--r-- 1 root root 169584 2026-04-26 00:46 /data/adb/modules/playintegrityfix/zygisk/x86_64.so
+-rw-r--r-- 1 root root 154780 2026-04-26 00:46 /data/adb/modules/playintegrityfix/zygisk/x86.so
+-rw-r--r-- 1 root root 136832 2026-04-26 00:46 /data/adb/modules/playintegrityfix/zygisk/arm64-v8a.so
+
+=== module.prop (should show v16 / osm0sis) ===
+id=playintegrityfix
+name=Play Integrity Fork
+version=v16
+versionCode=164000
+author=osm0sis & chiteroman @ xda-developers
+description=Fix <A13 Play Integrity DEVICE verdict
+updateJson=https://raw.githubusercontent.com/osm0sis/PlayIntegrityFork/main/update.json
+
+=== MagiskHide still configured ===
+MagiskHide is enabled
+com.android.vending|com.android.vending
+com.google.android.gms|com.google.android.gms
+com.google.android.gms|com.google.android.gms.persistent
+com.google.android.gms|com.google.android.gms.unstable
+com.google.android.gsf|com.google.android.gsf
+
+=== pif.json visible from inside container ===
+-rw-r--r-- 1 root root 494 2026-04-26 00:49 /data/adb/pif.json
+
+=== Force GMS to re-init under fresh hooks ===
+pirate101@DEBIAN13:/tmp$ sudo waydroid shell -- cat /data/adb/pif.log
+cat: /data/adb/pif.log: No such file or directory
+pirate101@DEBIAN13:/tmp$ 
