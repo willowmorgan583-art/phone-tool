@@ -1,0 +1,87 @@
+pirate101@DEBIAN13:/$ # === FIX 1: Install proper busybox so autopif4 works for future rotations ===
+sudo waydroid shell -- sh -c '
+  echo "=== check what busybox is available ==="
+  which busybox
+  busybox --list 2>&1 | grep -E "^(wget|curl)$"
+  ls -la /data/adb/magisk/busybox 2>/dev/null
+  echo ""
+  echo "=== try magisk busybox path ==="
+  /data/adb/magisk/busybox --list 2>&1 | grep -E "^(wget|curl)$"
+'
+
+# === FIX 2: Manually apply Pixel 6 Pro Android 13 fingerprint (known-good, stable, less likely banned than CANARY) ===
+WD_DATA=/home/pirate101/.local/share/waydroid/data
+
+# Write the fresh JSON to all paths PIF v16 reads from
+sudo tee "$WD_DATA/adb/modules/playintegrityfix/custom.pif.json" > /dev/null << 'EOF'
+{
+  "MANUFACTURER": "Google",
+  "MODEL": "Pixel 6 Pro",
+  "FINGERPRINT": "google/raven/raven:13/TQ3A.230901.001/10750268:user/release-keys",
+  "BRAND": "google",
+  "PRODUCT": "raven",
+  "DEVICE": "raven",
+  "RELEASE": "13",
+  "ID": "TQ3A.230901.001",
+  "INCREMENTAL": "10750268",
+  "TYPE": "user",
+  "TAGS": "release-keys",
+  "SECURITY_PATCH": "2023-09-05",
+  "DEVICE_INITIAL_SDK_INT": "32",
+  "*api_level": "33",
+' sleep 5t -n com.google.android.gms/.app.settings.GoogleSettingsLink 2>&1 | head -5
+=== check what busybox is available ===
+-rwxr-xr-x 1 root root 2245448 2026-04-24 17:07 /data/adb/magisk/busybox
+
+=== try magisk busybox path ===
+wget
+chmod: cannot access '/home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/*.json': No such file or directory
+=== new fingerprint placed ===
+{
+  "MANUFACTURER": "Google",
+  "MODEL": "Pixel 6 Pro",
+  "FINGERPRINT": "google/raven/raven:13/TQ3A.230901.001/10750268:user/release-keys",
+  "BRAND": "google",
+  "PRODUCT": "raven",
+  "DEVICE": "raven",
+  "RELEASE": "13",
+  "ID": "TQ3A.230901.001",
+  "INCREMENTAL": "10750268",
+  "TYPE": "user",
+  "TAGS": "release-keys",
+  "SECURITY_PATCH": "2023-09-05",
+  "DEVICE_INITIAL_SDK_INT": "32",
+  "*api_level": "33",
+  "*.security_patch": "2023-09-05",
+  "spoofBuild": "1",
+  "spoofProps": "1",
+  "spoofProvider": "1",
+  "verboseLogs": "1"
+}
+
+=== clearing droidguard cache ===
+done
+
+=== restart GMS ===
+Starting: Intent { cmp=com.google.android.gms/.app.settings.GoogleSettingsLink }
+pirate101@DEBIAN13:/$ sudo waydroid shell -- sh -c '
+  echo "=== confirm new fingerprint loaded by PIF ==="
+  logcat -d 2>&1 | grep "PIF/Native\|PIF/Java" | tail -20
+  echo ""
+  echo "=== integrity result ==="
+  logcat -d 2>&1 | grep -iE "Finsky.*integrity|DroidGuard" | tail -10
+'
+=== confirm new fingerprint loaded by PIF ===
+
+=== integrity result ===
+04-26 01:23:42.235  2809  2809 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.droidguard.DroidGuardFastRefreshGmsTaskBoundService.ACTION_TASK_READY dat=chimera-action:/... cmp=com.google.android.gms/.chimera.UnstableInternalBoundBrokerService }
+04-26 01:23:43.315  2809  2906 D PIF/Java:DG: DroidGuard detected!
+04-26 01:23:43.462  2809  2850 D PIF/Java:DG: DroidGuard detected!
+04-26 01:23:45.883  2809  2906 D PIF/Java:DG: DroidGuard detected!
+04-26 01:23:52.897  2809  2809 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.droidguard.DroidGuardFastRefreshGmsTaskBoundService.ACTION_TASK_READY dat=chimera-action:/... cmp=com.google.android.gms/.chimera.UnstableInternalBoundBrokerService }
+04-26 01:23:58.183  2255  2330 I Finsky  : [48] requestIntegrityToken() finished for com.kblack.demo_play_integrity_api.
+04-26 01:24:00.311  2809  2850 D PIF/Java:DG: DroidGuard detected!
+04-26 01:24:03.947  2255  2605 I Finsky  : [96] Integrity key attestation record generated successfully.
+04-26 01:24:04.058  2809  2851 D PIF/Java:DG: DroidGuard detected!
+04-26 01:24:05.460  2255  2330 I Finsky  : [48] requestIntegrityToken() finished for com.kblack.demo_play_integrity_api.
+pirate101@DEBIAN13:/$ 
