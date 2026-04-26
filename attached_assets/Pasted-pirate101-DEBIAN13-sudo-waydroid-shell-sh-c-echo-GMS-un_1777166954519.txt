@@ -1,0 +1,204 @@
+pirate101@DEBIAN13:/$ sudo waydroid shell -- sh -c '
+  echo "=== GMS unstable process — what bridges/translators are loaded? ==="
+  PID=$(pgrep -f "gms.unstable" | head -1)
+  if [ -z "$PID" ]; then
+    echo "GMS not running — starting it..."
+    am force-stop com.google.android.gms
+    sleep 2
+    am start -n com.google.android.gms/.app.settings.GoogleSettingsLink >/dev/null 2>&1
+    sleep 5
+    PID=$(pgrep -f "gms.unstable" | head -1)
+  fi
+  echo "GMS unstable PID: $PID"
+  if [ -n "$PID" ]; then
+    echo "--- houdini/native_bridge in /proc/$PID/maps ---"
+    grep -E "houdini|native_bridge|nativebridge|libndk_translation" /proc/$PID/maps | sort -u
+    echo "--- /proc/$PID/cpuinfo first 5 lines ---"
+    head -5 /proc/$PID/cpuinfo 2>/dev/null
+    echo "--- emulated arch detection markers ---"
+    grep -E "x86|x86_64|qemu|goldfish" /proc/$PID/maps | head -5
+  fi
+  echo ""
+  echo "=== System native bridge config ==="
+  getprop | grep -iE "bridge|houdini|abilist|cpu.abi"
+  echo ""
+  echo "=== libhoudini files on rootfs ==="
+  find /system /vendor -name "libhoudini*" 2>/dev/null
+  find /system /vendor -name "*native_bridge*" 2>/dev/null
+  echo ""
+  echo "=== fake_proc module — what is it currently doing? ==="
+  ls -la /data/adb/modules/fake_proc/
+  echo "--- fake_proc system.prop ---"
+  cat /data/adb/modules/fake_proc/system.prop 2>/dev/null
+' find /data/adb/modules/fake_proc/system -type f 2>/dev/null | head -20
+=== GMS unstable process — what bridges/translators are loaded? ===
+GMS unstable PID: 2809
+--- houdini/native_bridge in /proc/2809/maps ---
+7f1a6d61e000-7f1a6de34000 r-xp 00000000 00:37 11038891                   /system/lib64/libhoudini.so
+7f1a6de35000-7f1a6de63000 r--p 00816000 00:37 11038891                   /system/lib64/libhoudini.so
+7f1a6de63000-7f1a6df03000 rw-p 00844000 00:37 11038891                   /system/lib64/libhoudini.so
+7f1d204e0000-7f1d204e1000 r--p 00000000 00:37 3308                       /system/lib64/libnativebridge_lazy.so
+7f1d204e1000-7f1d204e2000 r-xp 00000000 00:37 3308                       /system/lib64/libnativebridge_lazy.so
+7f1d204e2000-7f1d204e3000 r--p 00000000 00:37 3308                       /system/lib64/libnativebridge_lazy.so
+7f1d204e3000-7f1d204e4000 rw-p 00000000 00:37 3308                       /system/lib64/libnativebridge_lazy.so
+7f1d312f7000-7f1d312f9000 r--p 00000000 00:37 212                        /apex/com.android.art/lib64/libnativebridge.so
+7f1d312f9000-7f1d312fc000 r-xp 00001000 00:37 212                        /apex/com.android.art/lib64/libnativebridge.so
+7f1d312fc000-7f1d312fd000 r--p 00003000 00:37 212                        /apex/com.android.art/lib64/libnativebridge.so
+7f1d312fd000-7f1d312fe000 rw-p 00003000 00:37 212                        /apex/com.android.art/lib64/libnativebridge.so
+--- /proc/2809/cpuinfo first 5 lines ---
+--- emulated arch detection markers ---
+7043e000-704d2000 r--p 00000000 00:37 2438                               /system/framework/x86_64/boot.oat
+704d2000-7080b000 r-xp 00094000 00:37 2438                               /system/framework/x86_64/boot.oat
+7080c000-7081f000 rw-p 00000000 00:37 2439                               /system/framework/x86_64/boot.vdex
+7081f000-70820000 r--p 003cd000 00:37 2438                               /system/framework/x86_64/boot.oat
+70820000-70821000 rw-p 003ce000 00:37 2438                               /system/framework/x86_64/boot.oat
+
+=== System native bridge config ===
+[ro.dalvik.vm.native.bridge]: [libhoudini.so]
+[ro.enable.native.bridge.exec]: [1]
+[ro.odm.product.cpu.abilist]: [x86_64,x86]
+[ro.odm.product.cpu.abilist32]: [x86]
+[ro.odm.product.cpu.abilist64]: [x86_64]
+[ro.product.cpu.abi]: [x86_64]
+[ro.product.cpu.abilist]: [x86_64,x86,arm64-v8a,armeabi-v7a,armeabi]
+[ro.product.cpu.abilist32]: [x86,armeabi-v7a,armeabi]
+[ro.product.cpu.abilist64]: [x86_64,arm64-v8a]
+[ro.system.product.cpu.abilist]: [x86_64,x86]
+[ro.system.product.cpu.abilist32]: [x86]
+[ro.system.product.cpu.abilist64]: [x86_64]
+[ro.vendor.enable.native.bridge.exec]: [1]
+[ro.vendor.enable.native.bridge.exec64]: [1]
+[ro.vendor.product.cpu.abilist]: [x86_64,x86]
+[ro.vendor.product.cpu.abilist32]: [x86]
+[ro.vendor.product.cpu.abilist64]: [x86_64]
+
+=== libhoudini files on rootfs ===
+/system/lib/libhoudini.so
+/system/lib64/libhoudini.so
+/system/lib/arm/libnative_bridge_vdso.so
+/system/lib64/arm64/libnative_bridge_vdso.so
+
+=== fake_proc module — what is it currently doing? ===
+total 72
+drwxr-xr-x 2 root   root  4096 2026-04-25 23:25 .
+drwxr-xr-x 5 system radio 4096 2026-04-26 00:50 ..
+-rw-r--r-- 1 root   root   298 2026-04-23 23:50 .fake_version
+-rw-r--r-- 1 root   root  3157 2026-04-24 16:54 fake_cpuinfo
+-rw-r--r-- 1 root   root   299 2026-04-24 16:54 fake_version
+-rw-r--r-- 1 root   root   173 2026-04-23 23:50 module.prop
+-rwxr-xr-x 1 root   root   296 2026-04-25 20:06 post-fs-data.sh
+-rw-r--r-- 1 root   root   156 2026-04-24 16:57 post-fs-data.sh.OFF
+-rw-r--r-- 1 root   root   156 2026-04-25 20:06 post-fs-data.sh.OFF.bak
+-rwxr-xr-x 1 root   root   864 2026-04-25 22:17 service.sh
+-rw-r--r-- 1 root   root   963 2026-04-24 17:16 service.sh.OFF
+-rw-r--r-- 1 root   root   963 2026-04-25 20:06 service.sh.OFF.bak
+-rwxr-xr-x 1 root   root   864 2026-04-25 22:17 service.sh.bak.umali.1777155458
+-rw-r--r-- 1 root   root  2104 2026-04-25 23:21 system.prop
+-rw-r--r-- 1 root   root  2622 2026-04-25 22:02 system.prop.bak.1777154571
+-rw-r--r-- 1 root   root  2086 2026-04-25 23:17 system.prop.bak.before_hwfix.1777159022
+-rw-r--r-- 1 root   root  1944 2026-04-25 23:21 system.prop.bak.before_hwwd.1777159311
+-rw-r--r-- 1 root   root  2132 2026-04-25 22:17 system.prop.bak.umali.1777155458
+--- fake_proc system.prop ---
+# Samsung S24 Ultra identity - apps query these via Build.* class
+ro.product.model=SM-S928B
+ro.product.brand=samsung
+ro.product.manufacturer=Samsung
+ro.product.device=e3q
+ro.product.name=e3qxxx
+ro.build.product=e3q
+ro.build.flavor=user
+ro.build.tags=release-keys
+ro.build.type=user
+ro.build.id=UP1A.231005.007
+ro.build.version.incremental=S928BXXU1AXBA
+ro.build.characteristics=phone
+ro.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+ro.build.description=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+ro.build.display.id=e3qxxx-user 14 UP1A.231005.007 S928BXXU1AXBA release-keys
+ro.bootimage.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+
+# Per-partition identity - model/brand/manufacturer only (NO build.fingerprint)
+ro.product.system.brand=samsung
+ro.product.system.device=e3q
+ro.product.system.manufacturer=Samsung
+ro.product.system.model=SM-S928B
+ro.product.system.name=e3qxxx
+ro.product.vendor.brand=samsung
+ro.product.vendor.device=e3q
+ro.product.vendor.manufacturer=Samsung
+ro.product.vendor.model=SM-S928B
+ro.product.vendor.name=e3qxxx
+ro.product.product.brand=samsung
+ro.product.product.device=e3q
+ro.product.product.manufacturer=Samsung
+ro.product.product.model=SM-S928B
+ro.product.product.name=e3qxxx
+
+# Carrier identity (Verizon)
+ro.csc.country_code=USA
+ro.csc.countryiso_code=US
+ro.csc.sales_code=XAA
+gsm.sim.operator.alpha=Verizon
+gsm.sim.operator.numeric=311480
+gsm.sim.operator.iso-country=us
+gsm.operator.alpha=Verizon
+gsm.operator.numeric=311480
+gsm.operator.iso-country=us
+
+# Serial / IMEI
+ro.serialno=R3CW80E4XAB
+ro.boot.serialno=R3CW80E4XAB
+ro.ril.imei=357499130124581
+ro.ril.imei1=357499130124581
+ro.ril.imei2=357499130124599
+persist.radio.imei=357499130124581
+persist.radio.imei1=357499130124581
+persist.radio.imei2=357499130124599
+
+# ro.hardware patch (was leaking 'unknown')
+
+
+ro.boot.selinux=enforcing
+ro.build.selinux=1
+
+
+# === HAL must resolve to Waydroid vendor binaries ===
+ro.hardware=waydroid
+ro.boot.hardware=waydroid
+ro.hardware.chipname=waydroid
+ro.board.platform=waydroid
+--- fake_proc post-fs-data.sh ---
+#!/system/bin/sh
+# fake_proc post-fs-data: early binds before zygote starts
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+mount -o bind /data/adb/modules/fake_proc/fake_cpuinfo /proc/cpuinfo 2>/dev/null
+resetprop -n ro.kernel.qemu 0
+resetprop -n ro.boot.qemu 0
+--- fake_proc service.sh ---
+#!/system/bin/sh
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+mount -o bind /data/adb/modules/fake_proc/fake_cpuinfo /proc/cpuinfo 2>/dev/null
+
+# Bootloader
+resetprop -n ro.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.bootloader S928BXXU1AXBA
+resetprop -n ro.boot.verifiedbootstate green
+resetprop -n ro.boot.veritymode enforcing
+resetprop -n ro.boot.flash.locked 1
+resetprop -n ro.boot.warranty_bit 0
+resetprop -n ro.warranty_bit 0
+resetprop -n ro.boot.vbmeta.device_state locked
+resetprop -n ro.kernel.qemu 0
+resetprop -n ro.boot.qemu 0
+
+# SELinux runtime spoof
+resetprop -n ro.boot.selinux enforcing
+resetprop -n ro.build.selinux 1
+
+# Strip Lineage residue
+for p in ro.lineage.device ro.lineage.version ro.modversion \
+         ro.lineage.releasetype ro.cm.device ro.cm.version; do
+    resetprop -n "$p" "" 2>/dev/null
+done
+--- fake_proc system/ replacement tree ---
+pirate101@DEBIAN13:/$ 
