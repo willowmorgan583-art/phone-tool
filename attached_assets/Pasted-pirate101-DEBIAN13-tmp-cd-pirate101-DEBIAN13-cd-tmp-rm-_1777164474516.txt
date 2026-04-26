@@ -1,0 +1,76 @@
+pirate101@DEBIAN13:/tmp$ cd .. 
+pirate101@DEBIAN13:/$ cd /tmp
+rm -f PIF.zip
+
+# Download
+wget -O PIF.zip \
+  https://github.com/osm0sis/PlayIntegrityFork/releases/download/v16/PlayIntegrityFork-v16.zip
+
+# Sanity check x86_64 binary is in there
+unzip -l PIF.zip | grep zygisk/x86_64.so
+
+# osm0sis fork uses pif.json (not pif.prop) — peek inside
+unzip -p PIF.zip pif.json 2>/dev/null | head -20
+
+# Push into container
+sudo cp PIF.zip /home/pirate101/.local/share/waydroid/data/local/tmp/
+
+# Remove the broken old PIF first, then install fresh
+sudo waydroid shell -- sh -c '
+  echo "=== removing broken old PIF ==="
+  touch /data/adb/modules/playintegrityfix/remove
+  echo "=== installing osm0sis v16 ==="
+  magisk --install-module /data/local/tmp/PIF.zip
+  echo "=== post-install file tree ==="
+  ls -la /data/adb/modules/playintegrityfix/
+  echo "=== zygisk binaries (THE SUCCESS CRITERION) ==="
+  ls -la /data/adb/modules/playintegrityfix/zygisk/
+  find /data/adb/modules/playintegrityfix/ -name "*.so" -exec ls -la {} \;
+'
+--2026-04-26 03:46:49--  https://github.com/osm0sis/PlayIntegrityFork/releases/download/v16/PlayIntegrityFork-v16.zip
+Resolving github.com (github.com)... 20.87.245.0
+Connecting to github.com (github.com)|20.87.245.0|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/723007708/51286bf2-3efa-4cbd-ac2f-89189127a4f9?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-26T01%3A35%3A48Z&rscd=attachment%3B+filename%3DPlayIntegrityFork-v16.zip&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-26T00%3A34%3A55Z&ske=2026-04-26T01%3A35%3A48Z&sks=b&skv=2018-11-09&sig=o%2BMLYKfi43FNKCrP4xMKzqxwe%2FWY75557SQ%2FPoVngOQ%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NzE2NDcxMCwibmJmIjoxNzc3MTY0NDEwLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.qf0qJX--iTBbFDWR03GSbl_iMXijiNWi8aM5v6K5EjI&response-content-disposition=attachment%3B%20filename%3DPlayIntegrityFork-v16.zip&response-content-type=application%2Foctet-stream [following]
+--2026-04-26 03:46:51--  https://release-assets.githubusercontent.com/github-production-release-asset/723007708/51286bf2-3efa-4cbd-ac2f-89189127a4f9?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-26T01%3A35%3A48Z&rscd=attachment%3B+filename%3DPlayIntegrityFork-v16.zip&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-26T00%3A34%3A55Z&ske=2026-04-26T01%3A35%3A48Z&sks=b&skv=2018-11-09&sig=o%2BMLYKfi43FNKCrP4xMKzqxwe%2FWY75557SQ%2FPoVngOQ%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NzE2NDcxMCwibmJmIjoxNzc3MTY0NDEwLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.qf0qJX--iTBbFDWR03GSbl_iMXijiNWi8aM5v6K5EjI&response-content-disposition=attachment%3B%20filename%3DPlayIntegrityFork-v16.zip&response-content-type=application%2Foctet-stream
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.109.133, 185.199.110.133, 185.199.111.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.109.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 283340 (277K) [application/octet-stream]
+Saving to: ‘PIF.zip’
+
+PIF.zip                100%[=========================>] 276.70K   436KB/s    in 0.6s    
+
+2026-04-26 03:46:52 (436 KB/s) - ‘PIF.zip’ saved [283340/283340]
+
+   169584  2026-01-09 00:28   zygisk/x86_64.so
+=== removing broken old PIF ===
+=== installing osm0sis v16 ===
+******************************************
+ Play Integrity Fork 
+ by osm0sis & chiteroman @ xda-developers 
+******************************************
+*******************
+ Powered by Magisk 
+*******************
+- Extracting module files
+- Restoring uninstall.sh
+- Done
+=== post-install file tree ===
+total 52
+drwxr-xr-x 2 root   root  4096 2026-04-26 00:46 .
+drwxr-xr-x 5 system radio 4096 2026-04-25 19:18 ..
+-rw-r--r-- 1 root   root   615 2026-04-23 15:29 action.sh
+-rwxr-xr-x 1 root   root  5304 2026-04-23 15:29 autopif.sh
+-rwxr-xr-x 1 root   root  1521 2026-04-23 15:29 autopif_ota.sh
+-rw-r--r-- 1 root   root  1542 2026-04-23 15:29 common_func.sh
+-rw-r--r-- 1 root   root   260 2026-04-26 00:46 module.prop
+-rw-r--r-- 1 root   root   279 2026-04-23 15:29 pif.prop
+-rw-r--r-- 1 root   root  3104 2026-04-23 15:29 post-fs-data.sh
+-rw-r--r-- 1 root   root  2538 2026-04-23 15:29 security_patch.sh
+-rw-r--r-- 1 root   root  1348 2026-04-23 15:29 service.sh
+-rw-r--r-- 1 root   root   343 2026-04-23 15:29 uninstall.sh
+-rw-r--r-- 1 root   root     0 2026-04-26 00:46 update
+=== zygisk binaries (THE SUCCESS CRITERION) ===
+ls: /data/adb/modules/playintegrityfix/zygisk/: Invalid argument
+pirate101@DEBIAN13:/tmp$ 
