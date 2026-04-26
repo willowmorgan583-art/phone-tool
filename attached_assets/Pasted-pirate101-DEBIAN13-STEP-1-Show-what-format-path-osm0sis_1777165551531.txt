@@ -1,0 +1,218 @@
+pirate101@DEBIAN13:/$ # === STEP 1: Show what format/path osm0sis v16 actually expects ===
+sudo waydroid shell -- sh -c '
+  echo "=== example.pif.prop (template showing expected format) ==="
+  cat /data/adb/modules/playintegrityfix/example.pif.prop
+  echo ""
+  echo "=== common_setup.sh (where config is loaded) ==="
+  cat /data/adb/modules/playintegrityfix/common_setup.sh
+  echo ""
+  echo "=== ALL pif.json/pif.prop references in module ==="
+  grep -rn "pif\.\(json\|prop\)\|PIF_CONFIG\|CONFIG_FILE\|/data/adb/" /data/adb/modules/playintegrityfix/ 2>/dev/null
+  echo ""
+  echo "=== The .so binary itself — look for hardcoded paths inside ==="
+  strings /data/adb/modules/playintegrityfix/zygisk/x86_64.so 2>/dev/null | grep -E "\.json$|\.prop$|/data/adb" | head -20
+'
+
+# === STEP 2: While that runs, place config at every plausible path ===
+PIF_JSON_CONTENT=$(sudo cat /home/pirate101/.local/share/waydroid/data/adb/pif.json)
+WD_DATA=/home/pirate101/.local/share/waydroid/data
+
+# Place pif.json at all paths v16 forks have ever used
+for p in \
+  "$WD_DATA/adb/pif.json" \
+  "$WD_DATA/adb/modules/playintegrityfix/pif.json" \
+  "$WD_DATA/adb/modules/playintegrityfix/custom.pif.json"; do
+  echo "$PIF_JSON_CONTENT" | sudo tee "$p" > /dev/null
+  sudo chmod 644 "$p"
+  sudo chown root:root "$p"
+done
+
+# Also create .pif.prop format (osm0sis sometimes uses this)
+' logcat -d 2>&1 | grep -E "PIF|playintegrity" | tail -30 - need to run PI Checker)"op"
+=== example.pif.prop (template showing expected format) ===
+# Rename to custom.pif.prop once completed
+#
+# These are the current suggested defaults but you may add as many other fields/properties as needed
+#
+# See android.os.Build source for all fields and field values' corresponding properties:
+# https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/os/Build.java
+
+# Build Fields
+MANUFACTURER=
+MODEL=
+FINGERPRINT=
+BRAND=
+PRODUCT=
+DEVICE=
+RELEASE=
+ID=
+INCREMENTAL=
+TYPE=
+TAGS=
+SECURITY_PATCH=
+DEVICE_INITIAL_SDK_INT=
+
+# System Properties
+*.build.id=        # for ro.build.id
+*.security_patch=  # for ro.build.version.security_patch
+*api_level=        # for ro.board.api_level, ro.board.first_api_level, ro.product.first_api_level and ro.vendor.api_level
+
+# Advanced Settings
+spoofBuild=1
+spoofProps=1
+spoofProvider=1
+spoofSignature=0
+spoofVendingFinger=0
+spoofVendingSdk=0
+verboseLogs=0
+
+=== common_setup.sh (where config is loaded) ===
+# Remove any definitely conflicting modules that are installed
+if [ -d /data/adb/modules/safetynet-fix ]; then
+    touch /data/adb/modules/safetynet-fix/remove
+    ui_print "! Universal SafetyNet Fix (USNF) module will be removed on next reboot"
+fi
+
+# Replace/hide conflicting custom ROM injection app folders/files to disable them
+MAGISK_WHITEOUT=false
+[ -f /data/adb/magisk/util_functions.sh ] && [ "$(grep MAGISK_VER_CODE /data/adb/magisk/util_functions.sh | cut -d= -f2)" -ge 28102 ] && MAGISK_WHITEOUT=true;
+
+LIST=$MODPATH/app_replace_list.txt
+[ -f "$MODPATH/custom.app_replace_list.txt" ] && LIST=$MODPATH/custom.app_replace_list.txt
+for APP in $(grep -v '^#' $LIST); do
+    if [ -e "$APP" ]; then
+        case $APP in
+            /system/*) ;;
+            *) PREFIX=/system;;
+        esac
+        HIDEPATH=$MODPATH$PREFIX$APP
+        if [ -d "$APP" ]; then
+            $MAGISK_WHITEOUT || mkdir -p $HIDEPATH
+            if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
+                setfattr -n trusted.overlay.opaque -v y $HIDEPATH
+            elif $MAGISK_WHITEOUT; then
+                mkdir -p $(dirname $HIDEPATH)
+                mknod $HIDEPATH c 0 0
+            else
+                touch $HIDEPATH/.replace
+            fi
+        else
+            mkdir -p $(dirname $HIDEPATH)
+            if [ "$KSU" = "true" -o "$APATCH" = "true" -o "$MAGISK_WHITEOUT" = "true" ]; then
+                mknod $HIDEPATH c 0 0
+            else
+                touch $HIDEPATH
+            fi
+        fi
+        case $APP in
+            */overlay/*)
+                CFG=$(echo $APP | grep -oE '.*/overlay')/config/config.xml
+                if [ -f "$CFG" ]; then
+                    if [ -d "$APP" ]; then
+                        APK=$(readlink -f $APP/*.apk);
+                    elif [[ "$APP" = *".apk" ]]; then
+                        APK=$(readlink -f $APP);
+                    fi
+                    if [ -s "$APK" ]; then
+                        PKGNAME=$(unzip -p $APK AndroidManifest.xml | tr -d '\0' | grep -oE 'android.*overlay' | strings | tr -d '\n' | sed -e 's/^android//' -e 's/application//' -e 's;*http.*res/android;;' -e 's/manifest//' -e 's/overlay$//' | grep -oE '[[:alnum:].-_].*overlay' | cut -d\  -f2)
+                        if [ "$PKGNAME" ] && grep -q "overlay package=\"$PKGNAME" $CFG; then
+                            HIDECFG=$MODPATH$PREFIX$CFG
+                            if [ ! -f "$HIDECFG" ]; then
+                                mkdir -p $(dirname $HIDECFG)
+                                cp -af $CFG $HIDECFG
+                            fi
+                            sed -i 's;<overlay \(package="'"$PKGNAME"'".*\) />;<!-- overlay \1 -->;' $HIDECFG
+                        fi
+                    fi
+                fi
+            ;;
+        esac
+        if [[ -d "$APP" || "$APP" = *".apk" ]]; then
+            ui_print "! $(basename $APP .apk) ROM app disabled, please uninstall any user app versions/updates after next reboot"
+            [ "$HIDECFG" ] && ui_print "!  + $PKGNAME entry commented out in copied overlay config"
+        fi
+    fi
+done
+
+if ! $SKIPPERSISTPROP; then
+    # Work around custom ROM PropImitationHooks conflict when their persist props don't exist
+    if [ -n "$(resetprop ro.aospa.version)" -o -n "$(resetprop net.pixelos.version)" -o -n "$(resetprop ro.afterlife.version)" -o -f /data/system/gms_certified_props.json ]; then
+        for PROP in persist.sys.pihooks.first_api_level persist.sys.pihooks.security_patch; do
+            resetprop | grep -q "\[$PROP\]" || persistprop "$PROP" ""
+        done
+    fi
+
+    # Work around supported custom ROM PropImitationHooks/PixelPropsUtils (and hybrids) conflict when spoofProvider is disabled
+    if resetprop | grep -qE "persist.sys.pihooks|persist.sys.entryhooks|persist.sys.spoof|persist.sys.pixelprops|persist.sys.pp" || [ -f /data/system/gms_certified_props.json ]; then
+        persistprop persist.sys.pihooks.disable.gms_props true
+        persistprop persist.sys.pihooks.disable.gms_key_attestation_block true
+        persistprop persist.sys.entryhooks_enabled false
+        persistprop persist.sys.spoof.gms false
+        persistprop persist.sys.pixelprops.gms false
+        persistprop persist.sys.pixelprops.gapps false
+        persistprop persist.sys.pixelprops.google false
+        persistprop persist.sys.pixelprops.pi false
+        persistprop persist.sys.pp.gms false
+        persistprop persist.sys.pp.finsky false
+    fi
+elif [ "$MODPATH/uninstall.sh" ]; then
+    sh $MODPATH/uninstall.sh
+fi
+
+=== ALL pif.json/pif.prop references in module ===
+
+=== The .so binary itself — look for hardcoded paths inside ===
+/data/adb/modules/playintegrityfix/classes.dex
+/data/adb/modules/playintegrityfix/pif.prop
+/data/adb/modules/playintegrityfix/custom.pif.json
+/data/adb/modules/playintegrityfix/custom.pif.prop
+/data/adb/modules/playintegrityfix/pif.json
+chmod: cannot access '/home/pirate101/.local/share/waydroid/data/adb/*.prop': No such file or directory
+chmod: cannot access '/home/pirate101/.local/share/waydroid/data/adb/*.json': No such file or directory
+=== Config placed at all candidate paths ===
+✅ /data/adb/pif.json (644 494 bytes)
+✅ /data/adb/pif.prop (644 321 bytes)
+✅ /data/adb/modules/playintegrityfix/pif.json (644 494 bytes)
+✅ /data/adb/modules/playintegrityfix/pif.prop (644 321 bytes)
+✅ /data/adb/modules/playintegrityfix/custom.pif.json (644 494 bytes)
+✅ /data/adb/modules/playintegrityfix/custom.pif.prop (644 321 bytes)
+=== pif.log NOW (should populate when GMS calls integrity API) ===
+(still empty - need to run PI Checker)
+
+=== Recent PIF/Native logs ===
+04-26 00:57:05.073  4113  4113 D PIF/Native: Couldn't read config file
+04-26 00:58:01.991  4642  4642 D PIF/Native: Couldn't read config file
+04-26 01:04:37.231  5031  5031 D PIF/Native: Read from file descriptor for 'dex' -> 21364 bytes
+04-26 01:04:37.231  5031  5031 D PIF/Native: Read from file descriptor for 'config' -> 321 bytes
+04-26 01:04:37.231  5031  5031 D PIF/Native: Converting config from prop format to JSON format
+04-26 01:04:37.262  5031  5031 D PIF/Native: JSON contains 14 keys!
+04-26 01:04:37.262  5031  5031 D PIF/Native: Verbose logging (level 1) enabled!
+pirate101@DEBIAN13:/$ sudo waydroid shell -- sh -c '
+  echo "=== pif.log ==="
+  cat /data/adb/pif.log 2>/dev/null
+  echo ""
+  echo "=== logcat for PIF (last 30 since check) ==="
+  logcat -d 2>&1 | grep -iE "PIF/Native|playintegrity" | tail -30
+'
+=== pif.log ===
+
+=== logcat for PIF (last 30 since check) ===
+04-26 00:57:05.073  4113  4113 D PIF/Native: Couldn't read config file
+04-26 00:58:01.991  4642  4642 D PIF/Native: Couldn't read config file
+04-26 01:04:37.231  5031  5031 D PIF/Native: Read from file descriptor for 'dex' -> 21364 bytes
+04-26 01:04:37.231  5031  5031 D PIF/Native: Read from file descriptor for 'config' -> 321 bytes
+04-26 01:04:37.231  5031  5031 D PIF/Native: Converting config from prop format to JSON format
+04-26 01:04:37.262  5031  5031 D PIF/Native: JSON contains 14 keys!
+04-26 01:04:37.262  5031  5031 D PIF/Native: Verbose logging (level 1) enabled!
+04-26 01:05:01.751  5293  5293 D PIF/Native: Read from file descriptor for 'dex' -> 21364 bytes
+04-26 01:05:01.751  5293  5293 D PIF/Native: Read from file descriptor for 'config' -> 321 bytes
+04-26 01:05:01.751  5293  5293 D PIF/Native: Converting config from prop format to JSON format
+04-26 01:05:01.819  5293  5293 D PIF/Native: JSON contains 14 keys!
+04-26 01:05:01.819  5293  5293 D PIF/Native: Verbose logging (level 1) enabled!
+04-26 01:05:01.819  5293  5293 D PIF/Native: Found '__system_property_read_callback' handle at 0x7fea991d3e90
+04-26 01:05:01.836  5293  5293 D PIF/Native: JNI DG: Getting system classloader
+04-26 01:05:01.836  5293  5293 D PIF/Native: JNI DG: Creating module classloader
+04-26 01:05:01.838  5293  5293 D PIF/Native: JNI DG: Loading module class
+04-26 01:05:01.839  5293  5293 D PIF/Native: JNI DG: Sending JSON
+04-26 01:05:01.844  5293  5293 D PIF/Native: JNI DG: Calling EntryPoint.init
+pirate101@DEBIAN13:/$ 
