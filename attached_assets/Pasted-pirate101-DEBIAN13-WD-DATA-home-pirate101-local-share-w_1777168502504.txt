@@ -1,0 +1,101 @@
+pirate101@DEBIAN13:/$ WD_DATA=/home/pirate101/.local/share/waydroid/data
+FP=$WD_DATA/adb/modules/fake_proc
+
+# Restore exact pre-ABI working files (the ones we know were running OK)
+sudo cp "$FP/service.sh.bak.before_abi.1777167166" "$FP/service.sh"
+sudo cp "$FP/system.prop.bak.before_abi.1777167166" "$FP/system.prop"
+sudo chmod 755 "$FP/service.sh"
+sudo chmod 644 "$FP/system.prop"
+
+# post-fs-data.sh is already in clean form (just /proc binds + qemu props)
+echo "=== current post-fs-data.sh (should be clean — no ABI/houdini) ==="
+sudo cat "$FP/post-fs-data.sh"
+
+# Sanity check: ensure NO ABI/houdini residue anywhere
+echo ""
+echo "=== ABI/houdini sanity check (must be empty) ==="
+sudo grep -nE "abilist|cpu.abi=|houdini|native\.bridge|empty_lib" \
+  "$FP/service.sh" "$FP/system.prop" "$FP/post-fs-data.sh" \
+  && echo "⚠ residue found — DO NOT proceed" \
+  || echo "✅ clean"
+
+# Re-enable fake_proc only (keep PIF disabled)
+sudo rm -f "$FP/disable"
+echo "✅ fake_proc re-enabled (PIF still disabled)"
+
+# Cold restart with same recipe that just worked
+sudo systemctl stop waydroid-container
+sleep 2
+sudo waydroid session stop 2>/dev/null
+sudo waydroid container stop 2>/dev/null
+sleep 2
+sudo pkill -9 -f waydroid 2>/dev/null
+sudo pkill -9 -f lxc-start 2>/dev/null
+sudo waydroid statusrt &droid-container>/dev/nullullev/nullop 2>/dev/null
+=== current post-fs-data.sh (should be clean — no ABI/houdini) ===
+#!/system/bin/sh
+# fake_proc post-fs-data: early binds before zygote starts
+mount -o bind /data/adb/modules/fake_proc/fake_version /proc/version 2>/dev/null
+mount -o bind /data/adb/modules/fake_proc/fake_cpuinfo /proc/cpuinfo 2>/dev/null
+resetprop -n ro.kernel.qemu 0
+resetprop -n ro.boot.qemu 0
+
+=== ABI/houdini sanity check (must be empty) ===
+✅ clean
+✅ fake_proc re-enabled (PIF still disabled)
+[gbinder] WARNING: Service manager /dev/anbox-binder has died
+                                                             [1]+  Done                    waydroid session start
+Killed
+Killed
+
+=== cold start ===
+Session:        STOPPED
+Vendor type:    MAINLINE
+[1] 1177159
+[gbinder] Service manager /dev/anbox-binder has appeared
+Session:        RUNNING
+Container:      RUNNING
+Vendor type:    MAINLINE
+IP address:     192.168.240.112
+Session user:   pirate101(1000)
+Wayland display:        wayland-0
+pirate101@DEBIAN13:/$ [04:53:58] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+[04:53:58] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+[04:53:58] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+[04:53:58] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+[04:54:04] Android with user 0 is ready
+^C
+pirate101@DEBIAN13:/$ waydroid show-full-ui &
+
+# After UI loads, verify Samsung S24 identity is back AND no ABI tampering
+sleep 5
+sudo waydroid shell -- sh -c '
+  echo "--- Samsung identity check ---"
+  getprop ro.product.model
+  getprop ro.product.brand
+  getprop ro.build.fingerprint
+  echo ""
+  echo "--- ABI props (should be x86_64 — UNTAMPERED, normal) ---"
+  getprop ro.product.cpu.abi
+  getprop ro.product.cpu.abilist
+  echo ""
+  echo "--- modules state ---"
+  for m in fake_proc playintegrityfix; do
+    [ -f "/data/adb/modules/$m/disable" ] && echo "$m DISABLED" || echo "$m enabled"
+  done
+'
+[2] 1181408
+[2]+  Done                    waydroid show-full-ui
+--- Samsung identity check ---
+SM-S928B
+samsung
+samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU1AXBA:user/release-keys
+
+--- ABI props (should be x86_64 — UNTAMPERED, normal) ---
+x86_64
+x86_64,x86,arm64-v8a,armeabi-v7a,armeabi
+
+--- modules state ---
+fake_proc enabled
+playintegrityfix DISABLED
+pirate101@DEBIAN13:/$ 
