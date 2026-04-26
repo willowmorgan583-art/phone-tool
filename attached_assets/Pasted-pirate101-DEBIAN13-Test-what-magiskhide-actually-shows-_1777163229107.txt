@@ -1,0 +1,599 @@
+pirate101@DEBIAN13:~$ # Test what magiskhide actually shows — these ARE valid on your build
+sudo waydroid shell -- sh -c '
+  echo "=== magiskhide status ==="
+  magiskhide status
+  echo "=== magiskhide ls (current hide list) ==="
+  magiskhide ls
+  echo "=== magiskhide enable (force-on if not) ==="
+  magiskhide enable
+  echo "=== add GMS family explicitly ==="
+  magiskhide add com.google.android.gms com.google.android.gms.unstable
+  magiskhide add com.google.android.gms com.google.android.gms.persistent
+  magiskhide add com.google.android.gms
+  magiskhide add com.android.vending
+  magiskhide add com.google.android.gsf
+  echo "=== verify ==="
+  magiskhide ls
+'
+=== magiskhide status ===
+MagiskHide is enabled
+=== magiskhide ls (current hide list) ===
+com.android.vending|com.android.vending
+com.google.android.gms|com.google.android.gms
+com.google.android.gms|com.google.android.gms.persistent
+com.google.android.gms|com.google.android.gms.unstable
+com.google.android.gsf|com.google.android.gsf
+=== magiskhide enable (force-on if not) ===
+=== add GMS family explicitly ===
+Target already exists in hidelist
+Target already exists in hidelist
+Target already exists in hidelist
+Target already exists in hidelist
+Target already exists in hidelist
+=== verify ===
+com.android.vending|com.android.vending
+com.google.android.gms|com.google.android.gms
+com.google.android.gms|com.google.android.gms.persistent
+com.google.android.gms|com.google.android.gms.unstable
+com.google.android.gsf|com.google.android.gsf
+pirate101@DEBIAN13:~$ # 1. Enable PIF debug logging
+sudo sed -i 's/^DEBUG=false/DEBUG=true/' \
+  /home/pirate101/.local/share/waydroid/data/adb/pif.prop
+
+# 2. Restart container so PIF picks up DEBUG=true
+waydroid session stop 2>/dev/null
+sudo systemctl restart waydroid-container; sleep 25
+nohup waydroid session start > /tmp/sess_dbg.log 2>&1 &
+sleep 60
+
+# 3. Configure magiskhide properly (the right CLI for this build)
+sudo waydroid shell -- sh -c '
+  magiskhide enable
+  magiskhide add com.google.android.gms
+  magiskhide add com.google.android.gms com.google.android.gms.unstable
+  magiskhide add com.google.android.gms com.google.android.gms.persistent
+  magiskhide add com.android.vending
+  magiskhide add com.google.android.gsf
+  echo "=== hide list now ==="
+  magiskhide ls
+  echo "=== status ==="
+  magiskhide status
+  echo "=== force-stop GMS so it relaunches under hide ==="
+  am force-stop com.google.android.gms
+  am force-stop com.android.vending
+'
+
+sleep 5
+
+# 4. Now open Play Integrity API Checker in Waydroid UI and tap Check
+# Then read the PIF debug log:
+echo "After running PI Checker, run:"
+echo "  sudo waydroid shell -- cat /data/adb/pif.log"
+[1]+  Done                    nohup waydroid session start > /tmp/sess_after_sulist_off.log 2>&1
+[1] 945998
+[1]+  Done                    nohup waydroid session start > /tmp/sess_dbg.log 2>&1
+Target already exists in hidelist
+Target already exists in hidelist
+Target already exists in hidelist
+Target already exists in hidelist
+Target already exists in hidelist
+=== hide list now ===
+com.android.vending|com.android.vending
+com.google.android.gms|com.google.android.gms
+com.google.android.gms|com.google.android.gms.persistent
+com.google.android.gms|com.google.android.gms.unstable
+com.google.android.gsf|com.google.android.gsf
+=== status ===
+MagiskHide is enabled
+=== force-stop GMS so it relaunches under hide ===
+After running PI Checker, run:
+  sudo waydroid shell -- cat /data/adb/pif.log
+pirate101@DEBIAN13:~$ cat /data/adb/pif.log
+cat: /data/adb/pif.log: No such file or directory
+pirate101@DEBIAN13:~$ sed -n '277,781p' /tmp/magisk_full_dump.txt
+   --install [PATH]          install applets into PATH
+
+Advanced Options (Internal APIs):
+   --daemon                  manually start magisk daemon
+   --stop                    remove all magisk changes and stop daemon
+   --[init trigger]          callback on init triggers. Valid triggers:
+                             post-fs-data, service, boot-complete, zygote-restart
+   --unlock-blocks           set BLKROSET flag to OFF for all block devices
+   --restorecon              restore selinux context on Magisk files
+   --clone-attr SRC DEST     clone permission, owner, and selinux context
+   --clone SRC DEST          clone SRC to DEST
+   --sqlite SQL              exec SQL commands to Magisk database
+   --path                    print Magisk tmpfs mount path
+   --preinit-device          resolve a device to store preinit files
+   --hide ARGS               MagiskHide config CLI
+
+Available applets:
+    su, resetprop, magiskhide
+
+
+###### MODULES OVERVIEW ######
+total 20
+drwxr-xr-x 5 system radio 4096 2026-04-25 19:18 .
+drwx------ 7 root   root  4096 2026-04-26 00:05 ..
+drwxr-xr-x 2 root   root  4096 2026-04-25 23:25 fake_proc
+drwxr-xr-x 2 root   root  4096 2026-04-25 23:36 playintegrityfix
+drwxr-xr-x 5 root   root  4096 2026-04-25 23:39 zygisk_lsposed
+--- MODULE: fake_proc ---
+total 72
+drwxr-xr-x 2 root   root  4096 2026-04-25 23:25 .
+drwxr-xr-x 5 system radio 4096 2026-04-25 19:18 ..
+-rw-r--r-- 1 root   root   298 2026-04-23 23:50 .fake_version
+-rw-r--r-- 1 root   root  3157 2026-04-24 16:54 fake_cpuinfo
+-rw-r--r-- 1 root   root   299 2026-04-24 16:54 fake_version
+-rw-r--r-- 1 root   root   173 2026-04-23 23:50 module.prop
+-rwxr-xr-x 1 root   root   296 2026-04-25 20:06 post-fs-data.sh
+-rw-r--r-- 1 root   root   156 2026-04-24 16:57 post-fs-data.sh.OFF
+-rw-r--r-- 1 root   root   156 2026-04-25 20:06 post-fs-data.sh.OFF.bak
+-rwxr-xr-x 1 root   root   864 2026-04-25 22:17 service.sh
+-rw-r--r-- 1 root   root   963 2026-04-24 17:16 service.sh.OFF
+-rw-r--r-- 1 root   root   963 2026-04-25 20:06 service.sh.OFF.bak
+-rwxr-xr-x 1 root   root   864 2026-04-25 22:17 service.sh.bak.umali.1777155458
+-rw-r--r-- 1 root   root  2104 2026-04-25 23:21 system.prop
+-rw-r--r-- 1 root   root  2622 2026-04-25 22:02 system.prop.bak.1777154571
+-rw-r--r-- 1 root   root  2086 2026-04-25 23:17 system.prop.bak.before_hwfix.1777159022
+-rw-r--r-- 1 root   root  1944 2026-04-25 23:21 system.prop.bak.before_hwwd.1777159311
+-rw-r--r-- 1 root   root  2132 2026-04-25 22:17 system.prop.bak.umali.1777155458
+  module.prop:
+id=fake_proc
+name=Fake /proc/version & full S24 Ultra mask
+version=v2.0
+versionCode=2
+author=PlinianOmniverse
+description=Complete Galaxy S24 Ultra hardware & display spoof
+--- MODULE: playintegrityfix ---
+total 52
+drwxr-xr-x 2 root   root  4096 2026-04-25 23:36 .
+drwxr-xr-x 5 system radio 4096 2026-04-25 19:18 ..
+-rw-r--r-- 1 root   root   615 2026-04-23 15:29 action.sh
+-rwxr-xr-x 1 root   root  5304 2026-04-23 15:29 autopif.sh
+-rwxr-xr-x 1 root   root  1521 2026-04-23 15:29 autopif_ota.sh
+-rw-r--r-- 1 root   root  1542 2026-04-23 15:29 common_func.sh
+-rw-r--r-- 1 root   root   293 2026-04-23 15:29 module.prop
+-rw-r--r-- 1 root   root   279 2026-04-23 15:29 pif.prop
+-rw-r--r-- 1 root   root  3104 2026-04-23 15:29 post-fs-data.sh
+-rw-r--r-- 1 root   root  2538 2026-04-23 15:29 security_patch.sh
+-rw-r--r-- 1 root   root  1348 2026-04-23 15:29 service.sh
+-rw-r--r-- 1 root   root   343 2026-04-23 15:29 uninstall.sh
+  module.prop:
+id=playintegrityfix
+name=Play Integrity Fix [INJECT]
+version=v4.5-inject-s
+versionCode=45
+author=chiteroman, KOWX712
+description=Universal modular fix for Play Integrity on devices running Android 8-16
+updateJson=https://raw.githubusercontent.com/KOWX712/PlayIntegrityFix/inject_s/update.json
+--- MODULE: zygisk_lsposed ---
+total 4904
+drwxr-xr-x 5 root   root     4096 2026-04-25 23:39 .
+drwxr-xr-x 5 system radio    4096 2026-04-25 19:18 ..
+-rw-r--r-- 1 root   root      204 2026-04-25 13:10 action.sh
+drwxr-xr-x 2 root   shell    4096 2026-04-25 13:10 bin
+-rwxr--r-- 1 root   root     1307 2026-04-25 13:10 daemon
+-rw-r--r-- 1 root   root  2054958 2026-04-25 13:10 daemon.apk
+drwxr-xr-x 2 root   root     4096 2026-04-25 13:10 framework
+-rw-r--r-- 1 root   root  2917755 2026-04-25 13:10 manager.apk
+-rw-r--r-- 1 root   root      357 2026-04-25 13:10 module.prop
+-rw-r--r-- 1 root   root      409 2026-04-25 13:10 sepolicy.rule
+-rw-r--r-- 1 root   root      962 2026-04-25 13:10 service.sh
+-rw-r--r-- 1 root   root     1014 2026-04-25 13:10 uninstall.sh
+drwxr-xr-x 2 root   root     4096 2026-04-25 13:10 zygisk
+  module.prop:
+id=zygisk_lsposed
+name=Zygisk - LSPosed
+version=v1.11.0 (7209)
+versionCode=7209
+author=JingMatrix & LSPosed Developers
+description=Another enhanced implementation of Xposed Framework. Supports Android 8.1 ~ 16. Requires Magisk 26.0+ and Zygisk enabled.
+updateJson=https://raw.githubusercontent.com/JingMatrix/LSPosed/master/magisk-loader/update/zygisk.json
+
+###### PIF — root + module + logs ######
+=== /data/adb/pif.prop ===
+FINGERPRINT=google/komodo_beta/komodo:CANARY/ZP11.260320.007/15154667:user/release-keys
+MANUFACTURER=Google
+MODEL=Pixel 9 Pro XL
+SECURITY_PATCH=2026-04-05
+spoofBuild=true
+spoofProps=false
+spoofProvider=false
+spoofSignature=false
+spoofVendingBuild=true
+spoofVendingSdk=false
+DEBUG=false
+=== /data/adb/pif.json ===
+(missing)
+=== /data/adb/pif.log ===
+(missing)
+=== /data/adb/modules/playintegrityfix/pif.prop ===
+FINGERPRINT=google/oriole_beta/oriole:CANARY/ZP11.260220.007/14993212:user/release-keys
+MANUFACTURER=Google
+MODEL=Pixel 6
+SECURITY_PATCH=2026-03-05
+spoofBuild=true
+spoofProps=false
+spoofProvider=false
+spoofSignature=false
+spoofVendingBuild=true
+spoofVendingSdk=false
+DEBUG=false
+=== /data/adb/modules/playintegrityfix/pif.json ===
+(missing)
+=== /data/adb/modules/playintegrityfix/custom.pif.json ===
+(missing)
+=== /data/adb/modules/playintegrityfix/module.prop ===
+id=playintegrityfix
+name=Play Integrity Fix [INJECT]
+version=v4.5-inject-s
+versionCode=45
+author=chiteroman, KOWX712
+description=Universal modular fix for Play Integrity on devices running Android 8-16
+updateJson=https://raw.githubusercontent.com/KOWX712/PlayIntegrityFix/inject_s/update.json
+=== /data/adb/modules/playintegrityfix/service.sh ===
+MODPATH="${0%/*}"
+. "$MODPATH"/common_func.sh
+
+# Conditional sensitive properties
+
+# Magisk Recovery Mode
+resetprop_if_match ro.boot.mode recovery unknown
+resetprop_if_match ro.bootmode recovery unknown
+resetprop_if_match vendor.boot.mode recovery unknown
+
+# SELinux
+resetprop_if_diff ro.boot.selinux enforcing
+# use toybox to protect stat access time reading
+if [ "$(toybox cat /sys/fs/selinux/enforce)" = "0" ]; then
+    chmod 640 /sys/fs/selinux/enforce
+    chmod 440 /sys/fs/selinux/policy
+fi
+
+# Conditional late sensitive properties
+
+until [ "$(getprop sys.boot_completed)" = "1" ]; do
+    sleep 1
+done
+
+# SafetyNet/Play Integrity + OEM
+# avoid bootloop on some Xiaomi devices
+resetprop_if_diff ro.secureboot.lockstate locked
+# avoid breaking Realme fingerprint scanners
+resetprop_if_diff ro.boot.flash.locked 1
+resetprop_if_diff ro.boot.realme.lockstate 1
+# avoid breaking Oppo fingerprint scanners
+resetprop_if_diff ro.boot.vbmeta.device_state locked
+# avoid breaking OnePlus display modes/fingerprint scanners
+resetprop_if_diff vendor.boot.verifiedbootstate green
+# avoid breaking OnePlus/Oppo fingerprint scanners on OOS/ColorOS 12+
+resetprop_if_diff ro.boot.verifiedbootstate green
+resetprop_if_diff ro.boot.veritymode enforcing
+resetprop_if_diff vendor.boot.vbmeta.device_state locked
+
+# Other
+resetprop_if_diff sys.oem_unlock_allowed 0
+=== /data/adb/modules/playintegrityfix/post-fs-data.sh ===
+MODPATH="${0%/*}"
+. "$MODPATH"/common_func.sh
+
+# Remove Play Services and Play Store from Magisk DenyList when set to Enforce in normal mode
+if magisk --denylist status; then
+    magisk --denylist rm com.google.android.gms
+else
+    # Check if Shamiko is installed and whitelist feature isn't enabled
+    if [ -d "/data/adb/modules/zygisk_shamiko" ] && [ ! -f "/data/adb/shamiko/whitelist" ]; then
+        magisk --denylist add com.google.android.gms com.google.android.gms
+        magisk --denylist add com.google.android.gms com.google.android.gms.unstable
+        magisk --denylist add com.android.vending
+    fi
+fi
+
+# Hide action.sh if not using Magisk
+if [ "$KSU" = true ] || [ "$APATCH" = true ]; then
+    [ -f "$MODPATH/action.sh" ] && mv -f "$MODPATH/action.sh" "$MODPATH/action.sh.old"
+else
+    [ -f "$MODPATH/action.sh.old" ] && mv -f "$MODPATH/action.sh.old" "$MODPATH/action.sh"
+fi
+
+# Conditional early sensitive properties
+
+# Samsung
+resetprop_if_diff ro.boot.warranty_bit 0
+resetprop_if_diff ro.vendor.boot.warranty_bit 0
+resetprop_if_diff ro.vendor.warranty_bit 0
+resetprop_if_diff ro.warranty_bit 0
+
+# Realme
+resetprop_if_diff ro.boot.realmebootstate green
+
+# OnePlus
+resetprop_if_diff ro.is_ever_orange 0
+
+# Microsoft
+for PROP in $(resetprop | grep -oE 'ro.*.build.tags'); do
+    resetprop_if_diff "$PROP" release-keys
+done
+
+# Other
+for PROP in $(resetprop | grep -oE 'ro.*.build.type'); do
+    resetprop_if_diff "$PROP" user
+done
+resetprop_if_diff ro.adb.secure 1
+resetprop_if_diff ro.debuggable 0
+resetprop_if_diff ro.force.debuggable 0
+resetprop_if_diff ro.secure 1
+
+# Work around custom ROM PropImitationHooks conflict when their persist props don't exist
+if resetprop | grep -qE "ro.aospa.version|net.pixelos.version|ro.afterlife.version" || [ -f /data/system/gms_certified_props.json ]; then
+    resetprop_if_diff persist.sys.pihooks.first_api_level ""
+    resetprop_if_diff persist.sys.pihooks.security_patch ""
+fi
+
+# Work around supported custom ROM PropImitationHooks/PixelPropsUtils (and hybrids) conflict when spoofProvider is disabled
+if resetprop | grep -qE "persist.sys.pihooks|persist.sys.entryhooks|persist.sys.pixelprops" || [ -f /data/system/gms_certified_props.json ]; then
+    resetprop -n -p persist.sys.pihooks.disable.gms_props true
+    resetprop -n -p persist.sys.pihooks.disable.gms_key_attestation_block true
+    resetprop -n -p persist.sys.entryhooks_enabled false
+    resetprop -n -p persist.sys.pixelprops.gms false
+    resetprop -n -p persist.sys.pixelprops.gapps false
+    resetprop -n -p persist.sys.pixelprops.google false
+    resetprop -n -p persist.sys.pixelprops.pi false
+    resetprop -n -p persist.sys.pp.gms false
+    resetprop -n -p persist.sys.pp.vending false
+fi
+
+# LeafOS "gmscompat: Dynamically spoof props for GMS"
+# https://review.leafos.org/c/LeafOS-Project/android_frameworks_base/+/4416
+# https://review.leafos.org/c/LeafOS-Project/android_frameworks_base/+/4417/5
+if [ -f /data/system/gms_certified_props.json ] && [ ! "$(resetprop persist.sys.spoof.gms)" = "false" ]; then
+        resetprop persist.sys.spoof.gms false
+fi
+
+resetprop -c || true
+=== /data/adb/modules/playintegrityfix/action.sh ===
+MODDIR="/data/adb/modules/playintegrityfix"
+
+if [ -z "$MMRL" ] && [ ! -z "$MAGISKTMP" ]; then
+    pm path io.github.a13e300.ksuwebui > /dev/null 2>&1 && {
+        echo "- Launching WebUI in KSUWebUIStandalone..."
+        am start -n "io.github.a13e300.ksuwebui/.WebUIActivity" -e id "playintegrityfix"
+        exit 0
+    }
+    pm path com.dergoogler.mmrl.wx > /dev/null 2>&1 && {
+        echo "- Launching WebUI in WebUI X..."
+        am start -n "com.dergoogler.mmrl.wx/.ui.activity.webui.WebUIActivity" -e MOD_ID "playintegrityfix"
+        exit 0
+    }
+fi
+
+sh $MODDIR/autopif_ota.sh || true
+sh $MODDIR/autopif.sh
+=== /data/adb/modules/playintegrityfix/autopif.sh ===
+#!/bin/sh
+
+PATH=/data/adb/ap/bin:/data/adb/ksu/bin:/data/adb/magisk:/data/data/com.termux/files/usr/bin:$PATH
+MODDIR=/data/adb/modules/playintegrityfix
+version=$(grep "^version=" $MODDIR/module.prop | sed 's/version=//g')
+
+. $MODDIR/common_func.sh
+
+# lets try to use tmpfs for processing
+TEMPDIR="$MODDIR/temp" #fallback
+[ -w /sbin ] && TEMPDIR="/sbin/playintegrityfix"
+[ -w /debug_ramdisk ] && TEMPDIR="/debug_ramdisk/playintegrityfix"
+[ -w /dev ] && TEMPDIR="/dev/playintegrityfix"
+mkdir -p "$TEMPDIR"
+cd "$TEMPDIR"
+
+echo "[+] PlayIntegrityFix $version"
+echo "[+] $(basename "$0")"
+printf "\n\n"
+
+set_random_beta() {
+        if [ "$(echo "$MODEL_LIST" | wc -l)" -ne "$(echo "$PRODUCT_LIST" | wc -l)" ]; then
+                echo "Warning: MODEL_LIST and PRODUCT_LIST have different lengths, using Pixel 6 fallback"
+                MODEL="Pixel 6"
+                PRODUCT="oriole_beta"
+        else
+                count=$(echo "$MODEL_LIST" | wc -l)
+                rand_index=$(( $$ % count ))
+                MODEL=$(echo "$MODEL_LIST" | sed -n "$((rand_index + 1))p")
+                PRODUCT=$(echo "$PRODUCT_LIST" | sed -n "$((rand_index + 1))p")
+        fi
+}
+
+get_model_product_list() {
+        printf "{\"model\":["
+        count=0
+        total=$(echo "$MODEL_LIST" | wc -l)
+        echo "$MODEL_LIST" | while read -r model; do
+                count=$((count + 1))
+                printf "\"%s\"" "$model"
+                [ $count -lt $total ] && printf ","
+        done
+        printf "],\"product\":["
+        count=0
+        total=$(echo "$PRODUCT_LIST" | wc -l)
+        echo "$PRODUCT_LIST" | while read -r product; do
+                count=$((count + 1))
+                printf "\"%s\"" "$product"
+                [ $count -lt $total ] && printf ","
+        done
+        printf "]}"
+
+        rm -rf "$TEMPDIR"
+        exit 0
+}
+
+# Get latest Pixel Canary information
+download https://developer.android.com/about/versions PIXEL_VERSIONS_HTML
+LATEST_URL=$(grep -o 'https://developer.android.com/about/versions/.*[0-9]"' PIXEL_VERSIONS_HTML | sort -ru | cut -d\" -f1 | head -n1)
+download "$LATEST_URL" PIXEL_LATEST_HTML
+
+# Get FI information
+FI_URL="https://developer.android.com$(grep -o 'href=".*download.*"' PIXEL_LATEST_HTML | grep 'qpr' | cut -d\" -f2 | head -n1)"
+download "$FI_URL" PIXEL_FI_HTML
+
+# Extract device information
+MODEL_LIST="$(grep -A1 'tr id=' PIXEL_FI_HTML | grep 'td' | sed 's;.*<td>\(.*\)</td>.*;\1;')";
+PRODUCT_LIST="$(grep 'tr id=' PIXEL_FI_HTML | sed 's;.*<tr id="\(.*\)">.*;\1_beta;')";
+
+# List available devices
+if [ "$1" = "--list" ] || [ "$1" = "-l" ]; then
+        get_model_product_list
+fi
+
+# Select and configure device
+echo "- Selecting Pixel Canary device ..."
+if [ -z "$PRODUCT" ] || ! echo "$PRODUCT_LIST" | grep -q "$PRODUCT"; then
+        set_random_beta
+fi
+echo "$MODEL ($PRODUCT)"
+
+# Get device fingerprint and security patch from Flash Tool and bulletins
+DEVICE="$(echo "$PRODUCT" | sed 's/_beta//')"
+download https://flash.android.com PIXEL_FLASH_HTML
+FLASH_KEY=$(grep -o '<body data-client-config=.*' PIXEL_FLASH_HTML | cut -d\; -f2 | cut -d\& -f1)
+if command -v curl > /dev/null 2>&1; then
+        curl --connect-timeout 10 -H "Referer: https://flash.android.com" -s "https://content-flashstation-pa.googleapis.com/v1/builds?product=$PRODUCT&key=$FLASH_KEY" > PIXEL_STATION_JSON || download_fail "https://flash.android.com"
+else
+        busybox wget -T 10 --header "Referer: https://flash.android.com" -qO - "https://content-flashstation-pa.googleapis.com/v1/builds?product=$PRODUCT&key=$FLASH_KEY" > PIXEL_STATION_JSON || download_fail "https://flash.android.com"
+fi
+busybox tac PIXEL_STATION_JSON | busybox grep -m1 -A13 '"canary": true' > PIXEL_CANARY_JSON
+ID="$(grep 'releaseCandidateName' PIXEL_CANARY_JSON | cut -d\" -f4)"
+INCREMENTAL="$(grep 'buildId' PIXEL_CANARY_JSON | cut -d\" -f4)"
+FINGERPRINT="google/$PRODUCT/$DEVICE:CANARY/$ID/$INCREMENTAL:user/release-keys"
+download https://source.android.com/docs/security/bulletin/pixel PIXEL_SECBULL_HTML
+CANARY_ID="$(grep '"id"' PIXEL_CANARY_JSON | sed -e 's;.*canary-\(.*\)".*;\1;' -e 's;^\(.\{4\}\);\1-;')"
+SECURITY_PATCH="$(grep "<td>$CANARY_ID" PIXEL_SECBULL_HTML | sed 's;.*<td>\(.*\)</td>;\1;')"
+
+# Validate required field to prevent empty pif.prop
+if [ -z "$ID" ] || [ -z "$INCREMENTAL" ]; then
+        echo "! Failed to get pif.prop"
+        exit 1
+fi
+
+if [ -z "$SECURITY_PATCH" ]; then
+        echo "! Failed to determine exact security patch level"
+        echo "- Assuming probable security patch level from Canary build info"
+        SECURITY_PATCH="${CANARY_ID}-05"
+fi
+
+# Preserve previous setting
+spoofConfig="spoofBuild spoofProps spoofProvider spoofSignature spoofVendingBuild spoofVendingSdk DEBUG"
+for config in $spoofConfig; do
+        if grep -q "$config=true" "$MODDIR/pif.prop"; then
+                eval "$config=true"
+        else
+                eval "$config=false"
+        fi
+done
+
+echo "- Dumping values to pif.prop ..."
+echo ""
+cat <<EOF | tee pif.prop
+FINGERPRINT=$FINGERPRINT
+MANUFACTURER=Google
+MODEL=$MODEL
+SECURITY_PATCH=$SECURITY_PATCH
+spoofBuild=$spoofBuild
+spoofProps=$spoofProps
+spoofProvider=$spoofProvider
+spoofSignature=$spoofSignature
+spoofVendingBuild=$spoofVendingBuild
+spoofVendingSdk=$spoofVendingSdk
+DEBUG=$DEBUG
+EOF
+
+cat "$TEMPDIR/pif.prop" > /data/adb/pif.prop
+echo ""
+echo "- new pif.prop saved to /data/adb/pif.prop"
+
+if [ -e "/data/adb/tricky_store/pif_auto_security_patch" ]; then
+        sh "$MODDIR/security_patch.sh"
+else
+        rm -f $MODDIR/system.prop
+fi
+
+echo "- Cleaning up ..."
+rm -rf "$TEMPDIR"
+
+for i in $(busybox pidof com.google.android.gms.unstable com.android.vending); do
+        echo "- Killing pid $i"
+        kill -9 "$i"
+done
+
+echo "- Done!"
+sleep_pause
+=== /data/adb/modules/playintegrityfix/common_func.sh ===
+# resetprop_if_diff <prop name> <expected value>
+resetprop_if_diff() {
+    local NAME="$1"
+    local EXPECTED="$2"
+    local CURRENT="$(resetprop "$NAME")"
+
+    [ -z "$CURRENT" ] || [ "$CURRENT" = "$EXPECTED" ] || resetprop -n "$NAME" "$EXPECTED"
+}
+
+# resetprop_if_match <prop name> <value match string> <new value>
+resetprop_if_match() {
+    local NAME="$1"
+    local CONTAINS="$2"
+    local VALUE="$3"
+
+    [[ "$(resetprop "$NAME")" = *"$CONTAINS"* ]] && resetprop -n "$NAME" "$VALUE"
+}
+
+# stub for boot-time
+ui_print() { return; }
+
+sleep_pause() {
+    # APatch and KernelSU needs this
+    # but not KSU_NEXT, MMRL
+    if [ -z "$MMRL" ] && [ -z "$KSU_NEXT" ] && { [ "$KSU" = "true" ] || [ "$APATCH" = "true" ]; }; then
+        sleep 5
+    fi
+}
+
+download_fail() {
+    dl_domain=$(echo "$1" | awk -F[/:] '{print $4}')
+    # Clean up on download fail
+    rm -rf "$TEMPDIR"
+    ping -c 1 -W 5 "$dl_domain" > /dev/null 2>&1 || {
+        echo "[!] Unable to connect to $dl_domain, please check your internet connection and try again"
+        sleep_pause
+        exit 1
+    }
+    conflict_module=$(ls /data/adb/modules | grep busybox)
+    for i in $conflict_module; do 
+        echo "[!] Please remove $i and try again." 
+    done
+    echo "[!] download failed!"
+    echo "[x] bailing out!"
+    sleep_pause
+    exit 1
+}
+
+download() { busybox wget -T 10 --no-check-certificate -qO - "$1" > "$2" || download_fail "$1"; }
+if command -v curl > /dev/null 2>&1; then
+    download() { curl --connect-timeout 10 -s "$1" > "$2" || download_fail "$1"; }
+fi
+
+###### fake_proc — full content ######
+total 72
+drwxr-xr-x 2 root   root  4096 2026-04-25 23:25 .
+drwxr-xr-x 5 system radio 4096 2026-04-25 19:18 ..
+-rw-r--r-- 1 root   root   298 2026-04-23 23:50 .fake_version
+-rw-r--r-- 1 root   root  3157 2026-04-24 16:54 fake_cpuinfo
+-rw-r--r-- 1 root   root   299 2026-04-24 16:54 fake_version
+-rw-r--r-- 1 root   root   173 2026-04-23 23:50 module.prop
+-rwxr-xr-x 1 root   root   296 2026-04-25 20:06 post-fs-data.sh
+-rw-r--r-- 1 root   root   156 2026-04-24 16:57 post-fs-data.sh.OFF
+-rw-r--r-- 1 root   root   156 2026-04-25 20:06 post-fs-data.sh.OFF.bak
+-rwxr-xr-x 1 root   root   864 2026-04-25 22:17 service.sh
+-rw-r--r-- 1 root   root   963 2026-04-24 17:16 service.sh.OFF
+-rw-r--r-- 1 root   root   963 2026-04-25 20:06 service.sh.OFF.bak
+-rwxr-xr-x 1 root   root   864 2026-04-25 22:17 service.sh.bak.umali.1777155458
+pirate101@DEBIAN13:~$ 
