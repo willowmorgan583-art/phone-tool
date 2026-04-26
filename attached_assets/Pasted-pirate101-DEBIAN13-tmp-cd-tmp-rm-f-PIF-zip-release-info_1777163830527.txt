@@ -1,0 +1,93 @@
+pirate101@DEBIAN13:/tmp$ cd /tmp
+rm -f PIF.zip release_info.json
+
+# Get latest release info from github API for the active fork
+curl -sL https://api.github.com/repos/KOWX712/PlayIntegrityFix/releases/latest \
+  > release_info.json
+
+# Show what's available
+echo "=== Latest release: ==="
+grep -E '"tag_name"|"name"' release_info.json | head -5
+echo ""
+echo "=== All asset download URLs in this release: ==="
+grep '"browser_download_url"' release_info.json | sed 's/.*: "//;s/".*//'
+echo ""
+
+# Auto-download the first .zip asset
+PIF_URL=$(grep '"browser_download_url"' release_info.json \
+          | sed 's/.*: "//;s/".*//' \
+          | grep -i '\.zip$' | head -1)
+
+if [ -z "$PIF_URL" ]; then
+  echo "!!! No .zip asset found in latest release. Trying alternate forks..."
+  # Try chiteroman original (archived but maybe still resolves)
+  curl -sL https://api.github.com/repos/chiteroman/PlayIntegrityFix/releases/latest \
+    | grep '"browser_download_url"' | sed 's/.*: "//;s/".*//' | grep -i '\.zip$' | head -1
+  # Try osm0sis fork
+  echo "--- osm0sis fork ---"
+  curl -sL https://api.github.com/repos/osm0sis/PlayIntegrityFork/releases/latest \
+    | grep '"browser_download_url"' | sed 's/.*: "//;s/".*//' | grep -i '\.zip$' | head -1
+  exit 1
+unzip -l PIF.zip | grep '\.so$'S IS WHAT WE NEED) ==="==="
+=== Latest release: ===
+  "tag_name": "v4.5-inject-s",
+  "name": "inject-s v4.5",
+      "name": "PlayIntegrityFix_v4.5-inject-s.zip",
+
+=== All asset download URLs in this release: ===
+https://github.com/KOWX712/PlayIntegrityFix/releases/download/v4.5-inject-s/PlayIntegrityFix_v4.5-inject-s.zip
+
+  echo "PIF_URL=$(grep '"browser_download_url"' release_info.json \
+          | sed 's/.*: "//;s/".*//' \
+          | grep -i '\.zip$' | head -1)! No .zip asset found in latest release. Trying alternate forks..."
+bash: syntax error near unexpected token `fi'
+bash: syntax error
+Downloading: https://github.com/KOWX712/PlayIntegrityFix/releases/download/v4.5-inject-s/PlayIntegrityFix_v4.5-inject-s.zip
+PIF.zip                100%[=========================>] 579.02K   700KB/s    in 0.8s    
+
+=== ZIP contents (looking for zygisk/ binaries) ===
+Archive:  PIF.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+      615  1980-02-01 00:00   action.sh
+     5304  1980-02-01 00:00   autopif.sh
+     1521  1980-02-01 00:00   autopif_ota.sh
+    23996  1980-02-01 00:00   classes.dex
+     1542  1980-02-01 00:00   common_func.sh
+     3369  1980-02-01 00:00   customize.sh
+      293  1980-02-01 00:00   module.prop
+      279  1980-02-01 00:00   pif.prop
+     3096  1980-02-01 00:00   post-fs-data.sh
+     2329  1980-02-01 00:00   security_patch.sh
+     1348  1980-02-01 00:00   service.sh
+      343  1980-02-01 00:00   uninstall.sh
+        0  1980-02-01 00:00   META-INF/
+        0  1980-02-01 00:00   META-INF/com/
+        0  1980-02-01 00:00   META-INF/com/google/
+        0  1980-02-01 00:00   META-INF/com/google/android/
+      611  1980-02-01 00:00   META-INF/com/google/android/update-binary
+        8  1980-02-01 00:00   META-INF/com/google/android/updater-script
+        0  1980-02-01 00:00   webroot/
+      115  1980-02-01 00:00   webroot/config.json
+   406902  1980-02-01 00:00   webroot/icon.jpg
+     5754  1980-02-01 00:00   webroot/index.html
+        0  1980-02-01 00:00   webroot/assets/
+   475591  1980-02-01 00:00   webroot/assets/index-B-uHZZCz.js
+     8530  1980-02-01 00:00   webroot/assets/index-nG6HJaRz.css
+        0  1980-02-01 00:00   webroot/locales/
+      495  1980-02-01 00:00   webroot/locales/CONTRIBUTOR.md
+     1129  1980-02-01 00:00   webroot/locales/GUIDE.md
+      155  1980-02-01 00:00   webroot/locales/languages.json
+     4066  1980-02-01 00:00   webroot/locales/template.xml
+        0  1980-02-01 00:00   webroot/locales/strings/
+     4982  1980-02-01 00:00   webroot/locales/strings/ar.xml
+     4066  1980-02-01 00:00   webroot/locales/strings/en.xml
+     4350  1980-02-01 00:00   webroot/locales/strings/id.xml
+     4567  1980-02-01 00:00   webroot/locales/strings/tr.xml
+     4056  1980-02-01 00:00   webroot/locales/strings/zh-CN.xml
+     4002  1980-02-01 00:00   webroot/locales/strings/zh-TW.xml
+
+=== .so files in ZIP (THIS IS WHAT WE NEED) ===
+    67792  1980-02-01 00:00   zygisk/arm64-v8a.so
+    54108  1980-02-01 00:00   zygisk/armeabi-v7a.so
+pirate101@DEBIAN13:/tmp$ 
