@@ -1,0 +1,166 @@
+pirate101@DEBIAN13:/$ # ==== DIAGNOSTIC: what crashed + audio chain status ====
+
+# 1. Find which Android service triggered the "internal problem" dialog
+echo "=== Recent system_server / framework crashes ==="
+sudo waydroid shell -- sh -c '
+  logcat -d -b crash 2>&1 | tail -40
+  echo ""
+  echo "--- ANRs / fatal exceptions ---"
+  logcat -d 2>&1 | grep -E "FATAL|AndroidRuntime|ANR in|InternalProblem|system_server.*died" | tail -20
+  echo ""
+  echo "--- "internal problem" dialog source ---"
+  logcat -d 2>&1 | grep -iE "internal problem|contact your manufacturer|Build fingerprint inconsistent" | tail -10
+'
+
+echo ""
+echo "=== HOST audio stack ==="
+pactl info 2>/dev/null | grep -E "Server|Default Sink|Default Sample|Default Channel" || echo "pactl not available"
+echo ""
+echo "=== Default sink details ==="
+pactl list sinks short 2>/dev/null
+echo ""
+echo "=== current default-sample-rate config ==="
+grep -h "default-sample-rate\|default-fragment\|resample-method" \
+  /etc/pulse/daemon.conf ~/.config/pulse/daemon.conf 2>/dev/null | grep -v "^;\|^#" || echo "(using PA defaults — likely 44.1kHz, mismatched)"
+
+echo ""
+echo "=== Waydroid audio props ==="
+sudo waydroid shell -- sh -c '
+  echo "Audio HAL props:"
+' getprop | grep -iE "audio|af\." | head -20
+=== Recent system_server / framework crashes ===
+
+--- ANRs / fatal exceptions ---
+
+--- internal problem dialog source ---
+
+=== HOST audio stack ===
+Server String: /run/user/1000/pulse/native
+Server Protocol Version: 35
+Server Name: PulseAudio (on PipeWire 1.4.2)
+Server Version: 15.0.0
+Default Sample Specification: float32le 2ch 48000Hz
+Default Channel Map: front-left,front-right
+Default Sink: alsa_output.pci-0000_00_1b.0.analog-stereo
+
+=== Default sink details ===
+57      alsa_output.pci-0000_00_03.0.pro-output-3       PipeWire        s32le 8ch 48000HzSUSPENDED
+58      alsa_output.pci-0000_00_03.0.pro-output-7       PipeWire        s32le 8ch 48000HzSUSPENDED
+59      alsa_output.pci-0000_00_03.0.pro-output-8       PipeWire        s32le 8ch 48000HzSUSPENDED
+3611    alsa_output.pci-0000_00_1b.0.analog-stereo      PipeWire        s32le 2ch 48000HzRUNNING
+
+=== current default-sample-rate config ===
+(using PA defaults — likely 44.1kHz, mismatched)
+
+=== Waydroid audio props ===
+Audio HAL props:
+[af.thread.throttle]: [false]
+[audio.deep_buffer.media]: [true]
+[init.svc.audioserver]: [running]
+[init.svc.vendor.audio-hal]: [running]
+[init.svc_debug_pid.audioserver]: [446]
+[init.svc_debug_pid.vendor.audio-hal]: [425]
+[log.tag.APM_AudioPolicyManager]: [D]
+[ro.boottime.audioserver]: [27398541258972]
+[ro.boottime.vendor.audio-hal]: [27398491529506]
+pirate101@DEBIAN13:/$ # === FIX 1: align RELEASE with actual platform to stop "internal problem" ===
+WD_DATA=/home/pirate101/.local/share/waydroid/data
+PIF=$WD_DATA/adb/modules/playintegrityfix
+
+# Keep Pixel 9 Pro XL identity but set RELEASE=14 (the device's actual public Android version family)
+# and DEVICE_INITIAL_SDK_INT=33 to match LineageOS 20. *api_level=34 keeps GMS happy.
+sudo tee "$PIF/custom.pif.json" > /dev/null << 'JSON'
+{
+  "MANUFACTURER": "Google",
+  "MODEL": "Pixel 9 Pro XL",
+  "FINGERPRINT": "google/komodo_beta/komodo:14/AP31.240617.009/12094726:user/release-keys",
+  "BRAND": "google",
+  "PRODUCT": "komodo_beta",
+  "DEVICE": "komodo",
+  "RELEASE": "14",
+  "ID": "AP31.240617.009",
+  "INCREMENTAL": "12094726",
+  "TYPE": "user",
+  "TAGS": "release-keys",
+  "SECURITY_PATCH": "2024-06-05",
+  "DEVICE_INITIAL_SDK_INT": "33",
+  "*api_level": "34",
+  "*.security_patch": "2024-06-05",
+  "spoofBuild": "1",
+  "spoofProps": "1",
+  "spoofProvider": "1",
+  "verboseLogs": "1"
+}
+JSON
+sudo cp "$PIF/custom.pif.json" "$PIF/pif.json"
+"cho "✅ Fingerprint adjusted: Pixel 9 Pro XL but RELEASE=14 SDK=33 to match LineageOS 20
+chmod: cannot access '/home/pirate101/.local/share/waydroid/data/adb/modules/playintegrityfix/*.json': No such file or directory
+✅ Fingerprint adjusted: Pixel 9 Pro XL but RELEASE=14 SDK=33 to match LineageOS 20
+pirate101@DEBIAN13:/$ # === FIX 2: lock host PulseAudio + Waydroid audio HAL to matched rate ===
+
+# Force host PA to 48000 Hz native rate (matches Android default)
+mkdir -p ~/.config/pulse
+cat > ~/.config/pulse/daemon.conf << 'PA'
+default-sample-format = s16le
+default-sample-rate = 48000
+alternate-sample-rate = 44100
+default-sample-channels = 2
+default-fragments = 5
+default-fragment-size-msec = 25
+resample-method = speex-float-5
+avoid-resampling = true
+flat-volumes = no
+PA
+
+# Reload PulseAudio
+systemctl --user restart pipewire-pulse 2>/dev/null || pulseaudio --kill 2>/dev/null
+sleep 2
+pactl info | grep -E "Server|Default Sample" || true
+
+# Pin Waydroid to 48 kHz + larger buffers + full volume
+sudo waydroid shell -- sh -c '
+  resetprop -n ro.audio.silent 0
+  resetprop -n af.fast_track_multiplier 2
+  resetprop -n ro.af.client_heap_size_kbyte 7168
+  resetprop -n persist.audio.fluence.speaker false
+  resetprop -n persist.audio.fluence.voicecall false
+  resetprop -n media.aac_51_output_enabled true
+  resetprop -n ro.config.media_vol_steps 30
+  resetprop -n ro.config.vc_call_vol_steps 15
+  # Force volumes to max in-Android
+sudo waydroid statusrt &droid-container>/dev/nullullev/nullop 2>/dev/null
+Server String: /run/user/1000/pulse/native
+Server Protocol Version: 35
+Server Name: PulseAudio (on PipeWire 1.4.2)
+Server Version: 15.0.0
+Default Sample Specification: float32le 2ch 48000Hz
+Result: Parcel(NULL)
+Result: Parcel(NULL)
+✅ audio props set
+Killed
+Killed
+[1] 1214526
+[gbinder] Service manager /dev/anbox-binder has appeared
+Session:        RUNNING
+Container:      RUNNING
+Vendor type:    MAINLINE
+IP address:     192.168.240.112
+Session user:   pirate101(1000)
+Wayland display:        wayland-0
+pirate101@DEBIAN13:/$ [05:07:44] Android with user 0 is ready
+^C
+pirate101@DEBIAN13:/$ waydroid show-full-ui &
+sleep 10
+
+# Test: play any video/audio in YouTube/Chrome and confirm volume is normal
+
+# If sound is good and no more "internal problem" → snapshot it
+$HOME/waydroid_pi_snapshot.sh
+[2] 1219760
+[2]+  Done                    waydroid show-full-ui
+✅ Snapshot saved: /home/pirate101/waydroid_pi_backup/stack_20260426_050821.tar.gz
+total 560K
+-rw-r--r-- 1 pirate101 pirate101 278K Apr 26 05:00 stack_20260426_050001.tar.gz
+-rw-r--r-- 1 pirate101 pirate101 278K Apr 26 05:08 stack_20260426_050821.tar.gz
+lrwxrwxrwx 1 pirate101 pirate101   28 Apr 26 05:08 stack_latest.tar.gz -> stack_20260426_050821.tar.gz
+pirate101@DEBIAN13:/$ 
