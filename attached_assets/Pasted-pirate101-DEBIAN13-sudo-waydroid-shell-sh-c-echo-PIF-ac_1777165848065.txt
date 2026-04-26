@@ -1,0 +1,65 @@
+pirate101@DEBIAN13:/$ sudo waydroid shell -- sh -c '
+  echo "=== PIF activity since last check ==="
+  logcat -d 2>&1 | grep "PIF/Native" | tail -40
+  echo ""
+  echo "=== DroidGuard / Integrity related log entries ==="
+  logcat -d 2>&1 | grep -iE "DroidGuard|integrity|attestation" | tail -20
+'
+=== PIF activity since last check ===
+04-26 00:57:05.073  4113  4113 D PIF/Native: Couldn't read config file
+04-26 00:58:01.991  4642  4642 D PIF/Native: Couldn't read config file
+04-26 01:04:37.231  5031  5031 D PIF/Native: Read from file descriptor for 'dex' -> 21364 bytes
+04-26 01:04:37.231  5031  5031 D PIF/Native: Read from file descriptor for 'config' -> 321 bytes
+04-26 01:04:37.231  5031  5031 D PIF/Native: Converting config from prop format to JSON format
+04-26 01:04:37.262  5031  5031 D PIF/Native: JSON contains 14 keys!
+04-26 01:04:37.262  5031  5031 D PIF/Native: Verbose logging (level 1) enabled!
+04-26 01:05:01.751  5293  5293 D PIF/Native: Read from file descriptor for 'dex' -> 21364 bytes
+04-26 01:05:01.751  5293  5293 D PIF/Native: Read from file descriptor for 'config' -> 321 bytes
+04-26 01:05:01.751  5293  5293 D PIF/Native: Converting config from prop format to JSON format
+04-26 01:05:01.819  5293  5293 D PIF/Native: JSON contains 14 keys!
+04-26 01:05:01.819  5293  5293 D PIF/Native: Verbose logging (level 1) enabled!
+04-26 01:05:01.819  5293  5293 D PIF/Native: Found '__system_property_read_callback' handle at 0x7fea991d3e90
+04-26 01:05:01.836  5293  5293 D PIF/Native: JNI DG: Getting system classloader
+04-26 01:05:01.836  5293  5293 D PIF/Native: JNI DG: Creating module classloader
+04-26 01:05:01.838  5293  5293 D PIF/Native: JNI DG: Loading module class
+04-26 01:05:01.839  5293  5293 D PIF/Native: JNI DG: Sending JSON
+04-26 01:05:01.844  5293  5293 D PIF/Native: JNI DG: Calling EntryPoint.init
+04-26 01:08:20.647  5441  5441 D PIF/Native: Read from file descriptor for 'dex' -> 21364 bytes
+04-26 01:08:20.647  5441  5441 D PIF/Native: Read from file descriptor for 'config' -> 321 bytes
+04-26 01:08:20.647  5441  5441 D PIF/Native: Converting config from prop format to JSON format
+04-26 01:08:20.670  5441  5441 D PIF/Native: JSON contains 14 keys!
+04-26 01:08:20.670  5441  5441 D PIF/Native: Verbose logging (level 1) enabled!
+04-26 01:09:10.934  5952  5952 D PIF/Native: Read from file descriptor for 'dex' -> 21364 bytes
+04-26 01:09:10.934  5952  5952 D PIF/Native: Read from file descriptor for 'config' -> 321 bytes
+04-26 01:09:10.937  5952  5952 D PIF/Native: Converting config from prop format to JSON format
+04-26 01:09:11.012  5952  5952 D PIF/Native: JSON contains 14 keys!
+04-26 01:09:11.012  5952  5952 D PIF/Native: Verbose logging (level 1) enabled!
+04-26 01:09:11.013  5952  5952 D PIF/Native: Found '__system_property_read_callback' handle at 0x7fea991d3e90
+04-26 01:09:11.028  5952  5952 D PIF/Native: JNI DG: Getting system classloader
+04-26 01:09:11.028  5952  5952 D PIF/Native: JNI DG: Creating module classloader
+04-26 01:09:11.032  5952  5952 D PIF/Native: JNI DG: Loading module class
+04-26 01:09:11.033  5952  5952 D PIF/Native: JNI DG: Sending JSON
+04-26 01:09:11.039  5952  5952 D PIF/Native: JNI DG: Calling EntryPoint.init
+
+=== DroidGuard / Integrity related log entries ===
+04-26 01:09:07.280  5705  5757 I PhenotypeResourceReader: unable to find any Phenotype resource metadata for com.kblack.demo_play_integrity_api
+04-26 01:09:07.371  5862  5906 E y_integrity_api: No package ID 6a found for ID 0x6a0b0013.
+04-26 01:09:07.374  5862  5906 I FA      :   adb shell setprop debug.firebase.analytics.app com.kblack.demo_play_integrity_api
+04-26 01:09:07.399   697  3705 D CoreBackPreview: Window{a4ff1d3 u0 com.kblack.demo_play_integrity_api/com.kblack.demo_play_integrity_api.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@3a53409, mPriority=0}
+04-26 01:09:07.565   697   826 W InputDispatcher: Not sending touch gesture to 64ac581 ActivityRecordInputSink com.kblack.demo_play_integrity_api/.MainActivity because it is not responsive
+04-26 01:09:07.653   697   763 I ActivityTaskManager: Displayed com.kblack.demo_play_integrity_api/.MainActivity: +1s26ms
+04-26 01:09:08.020  5441  5937 I Finsky  : [105] Integrity key attestation record generated successfully.
+04-26 01:09:08.065   697   802 D CoreBackPreview: Window{ae11180 u0 com.kblack.demo_play_integrity_api/SplashScreen EXITING}: Setting back callback null
+04-26 01:09:08.065   697  1310 W InputManager-JNI: Input channel object 'ae11180 com.kblack.demo_play_integrity_api/SplashScreen (client)' was disposed without first being removed with the input manager!
+04-26 01:09:08.363  5705  5705 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.play.integrity.api.service.IntegrityApiDisplayListenerApiService.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentApiServiceNoInstantApps }
+04-26 01:09:08.363  5705  5705 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.play.integrity.api.service.IntegrityApiDisplayListenerApiService.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentApiServiceNoInstantApps }
+04-26 01:09:09.409   697   826 W InputDispatcher: Window 64ac581 ActivityRecordInputSink com.kblack.demo_play_integrity_api/.MainActivity already unregistered input channel
+04-26 01:09:10.811   697   774 I ActivityManager: Start proc 5952:com.google.android.gms.unstable/u0a133 for service {com.google.android.gms/com.google.android.gms.droidguard.DroidGuardService}
+04-26 01:09:10.876  5441  5937 I Finsky  : [105] Integrity key attestation record generated successfully.
+04-26 01:09:11.749  5952  5964 D PIF/Java:DG: DroidGuard detected!
+04-26 01:09:12.954  5441  5480 I Finsky  : [52] requestIntegrityToken() finished for com.kblack.demo_play_integrity_api.
+04-26 01:09:15.457  5441  5937 I Finsky  : [105] Integrity key attestation record generated successfully.
+04-26 01:09:15.514  5952  5964 D PIF/Java:DG: DroidGuard detected!
+04-26 01:09:16.994  5441  5476 I Finsky  : [48] requestIntegrityToken() finished for com.kblack.demo_play_integrity_api.
+04-26 01:09:30.847  5705  5705 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.play.integrity.api.service.IntegrityApiDisplayListenerApiService.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentApiServiceNoInstantApps }
+pirate101@DEBIAN13:/$
