@@ -1,0 +1,188 @@
+pirate101@DEBIAN13:/$ WD_DATA=/home/pirate101/.local/share/waydroid/data
+
+# === STEP 1: Completely disable fake_proc module so it can't run anything ===
+sudo touch "$WD_DATA/adb/modules/fake_proc/disable"
+echo "✅ fake_proc disabled (will be skipped on next boot)"
+
+# Also disable the playintegrityfix module just to isolate Waydroid boot
+sudo touch "$WD_DATA/adb/modules/playintegrityfix/disable"
+echo "✅ playintegrityfix disabled too (just for boot isolation)"
+
+# === STEP 2: Hard-stop Waydroid completely ===
+echo ""
+echo "=== stopping waydroid services hard ==="
+sudo systemctl stop waydroid-container 2>/dev/null
+sudo waydroid container stop 2>/dev/null
+sudo waydroid session stop 2>/dev/null
+sleep 3
+sudo pkill -9 -f waydroid 2>/dev/null
+sleep 2
+
+# === STEP 3: Start container fresh ===
+echo ""
+echo "=== starting container ==="
+sudo systemctl start waydroid-container
+sleep 5
+sudo waydroid status
+echo ""
+echo "=== container service status ==="
+sudo systemctl status waydroid-container --no-pager -l | head -30
+
+# === STEP 4: If container still won't start, show us the boot log ===
+echo ""
+echo "=== last 50 lines of waydroid container journal ==="
+sudo find /var/lib/waydroid -name "*.log" 2>/dev/null | xargs -r sudo tail -30
+✅ fake_proc disabled (will be skipped on next boot)
+✅ playintegrityfix disabled too (just for boot isolation)
+
+=== stopping waydroid services hard ===
+Killed
+
+=== starting container ===
+Session:        STOPPED
+Vendor type:    MAINLINE
+
+=== container service status ===
+● waydroid-container.service - Waydroid Container
+     Loaded: loaded (/usr/lib/systemd/system/waydroid-container.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-04-26 04:41:57 EAT; 5s ago
+ Invocation: b14e5db8d53d434ab3ffe5c95ca01f37
+   Main PID: 1139428 (waydroid)
+      Tasks: 2 (limit: 8586)
+     Memory: 19.1M (peak: 19.4M)
+        CPU: 214ms
+     CGroup: /system.slice/waydroid-container.service
+             └─1139428 /usr/bin/python3 /usr/bin/waydroid container start
+
+Apr 26 04:41:57 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+Apr 26 04:41:57 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+
+=== last 50 lines of waydroid container journal ===
+Apr 26 04:33:32 DEBIAN13 dnsmasq[1098741]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+Apr 26 04:33:32 DEBIAN13 dnsmasq-dhcp[1098741]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+Apr 26 04:33:32 DEBIAN13 dnsmasq-dhcp[1098741]: DHCP, sockets bound exclusively to interface waydroid0
+Apr 26 04:33:32 DEBIAN13 dnsmasq[1098741]: reading /etc/resolv.conf
+Apr 26 04:33:32 DEBIAN13 dnsmasq[1098741]: using nameserver 41.89.1.4#53
+Apr 26 04:33:32 DEBIAN13 dnsmasq[1098741]: using nameserver 41.204.164.3#53
+Apr 26 04:33:32 DEBIAN13 dnsmasq[1098741]: read /etc/hosts - 8 names
+Apr 26 04:36:07 DEBIAN13 waydroid[1096321]: [04:36:07] Stopping container
+Apr 26 04:36:13 DEBIAN13 waydroid[1096321]: [04:36:13] Starting up container for a new session
+Apr 26 04:36:13 DEBIAN13 dnsmasq[1120478]: started, version 2.91 cachesize 150
+Apr 26 04:36:13 DEBIAN13 dnsmasq[1120478]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+Apr 26 04:36:13 DEBIAN13 dnsmasq-dhcp[1120478]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+Apr 26 04:36:13 DEBIAN13 dnsmasq-dhcp[1120478]: DHCP, sockets bound exclusively to interface waydroid0
+Apr 26 04:36:13 DEBIAN13 dnsmasq[1120478]: reading /etc/resolv.conf
+Apr 26 04:36:13 DEBIAN13 dnsmasq[1120478]: using nameserver 41.89.1.4#53
+Apr 26 04:36:13 DEBIAN13 dnsmasq[1120478]: using nameserver 41.204.164.3#53
+Apr 26 04:36:13 DEBIAN13 dnsmasq[1120478]: read /etc/hosts - 8 names
+Apr 26 04:37:27 DEBIAN13 waydroid[1096321]: [04:37:26] Stopping container
+Apr 26 04:37:27 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+Apr 26 04:37:27 DEBIAN13 dnsmasq[1120478]: exiting on receipt of SIGTERM
+Apr 26 04:37:27 DEBIAN13 waydroid[1096321]: [04:37:27] Terminating session because the container was stopped
+Apr 26 04:37:27 DEBIAN13 waydroid[1096321]: [gbinder] Service manager /dev/anbox-binder has appeared
+Apr 26 04:37:27 DEBIAN13 waydroid[1096321]: [gbinder] Service manager /dev/anbox-binder has appeared
+Apr 26 04:37:27 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+Apr 26 04:37:27 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+Apr 26 04:37:27 DEBIAN13 systemd[1]: waydroid-container.service: Consumed 1.071s CPU time, 31.9M memory peak, 11.8M memory swap peak.
+Apr 26 04:37:27 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+Apr 26 04:37:28 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+Apr 26 04:39:50 DEBIAN13 waydroid[1126260]: [04:39:50] Starting up container for a new session
+Apr 26 04:39:50 DEBIAN13 dnsmasq[1134155]: started, version 2.91 cachesize 150
+Apr 26 04:39:50 DEBIAN13 dnsmasq[1134155]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
+Apr 26 04:39:50 DEBIAN13 dnsmasq-dhcp[1134155]: DHCP, IP range 192.168.240.2 -- 192.168.240.254, lease time 1h
+Apr 26 04:39:50 DEBIAN13 dnsmasq-dhcp[1134155]: DHCP, sockets bound exclusively to interface waydroid0
+Apr 26 04:39:50 DEBIAN13 dnsmasq[1134155]: reading /etc/resolv.conf
+Apr 26 04:39:50 DEBIAN13 dnsmasq[1134155]: using nameserver 41.89.1.4#53
+Apr 26 04:39:50 DEBIAN13 dnsmasq[1134155]: using nameserver 41.204.164.3#53
+Apr 26 04:39:50 DEBIAN13 dnsmasq[1134155]: read /etc/hosts - 8 names
+Apr 26 04:41:51 DEBIAN13 systemd[1]: Stopping waydroid-container.service - Waydroid Container...
+Apr 26 04:41:51 DEBIAN13 waydroid[1126260]: [04:41:51] Stopping container
+Apr 26 04:41:51 DEBIAN13 waydroid[1126260]: [04:41:51] Terminating session because the container was stopped
+Apr 26 04:41:51 DEBIAN13 waydroid[1126260]: [gbinder] Service manager /dev/anbox-binder has appeared
+Apr 26 04:41:51 DEBIAN13 systemd[1]: waydroid-container.service: Deactivated successfully.
+Apr 26 04:41:51 DEBIAN13 systemd[1]: Stopped waydroid-container.service - Waydroid Container.
+Apr 26 04:41:52 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+Apr 26 04:41:52 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+Apr 26 04:41:52 DEBIAN13 waydroid[1139258]: [04:41:52] Stopping container
+Apr 26 04:41:55 DEBIAN13 systemd[1]: waydroid-container.service: Main process exited, code=killed, status=9/KILL
+Apr 26 04:41:55 DEBIAN13 systemd[1]: waydroid-container.service: Failed with result 'signal'.
+Apr 26 04:41:57 DEBIAN13 systemd[1]: Starting waydroid-container.service - Waydroid Container...
+Apr 26 04:41:57 DEBIAN13 systemd[1]: Started waydroid-container.service - Waydroid Container.
+
+=== last 30 lines of LXC container log ===
+(1126260) [Sun, 26 Apr 2026 04:41:51] lxc-start: waydroid: ../src/lxc/start.c: lxc_end: 986 Failed to run lxc.hook.post-stop for container "waydroid"
+(1126260) [Sun, 26 Apr 2026 04:41:51] % lxc-info -P /var/lib/waydroid/lxc -n waydroid -sH
+(1126260) [Sun, 26 Apr 2026 04:41:51] STOPPED
+(1126260) [Sun, 26 Apr 2026 04:41:51] % /usr/lib/waydroid/data/scripts/waydroid-net.sh stop
+(1126260) [Sun, 26 Apr 2026 04:41:51] vnic is waydroid0
+(1126260) [Sun, 26 Apr 2026 04:41:51] /usr/lib/waydroid/data/scripts/waydroid-net.sh: 255: kill: No such process
+(1126260) [Sun, 26 Apr 2026 04:41:51] 
+(1126260) [Sun, 26 Apr 2026 04:41:51] % systemctl is-enabled -q nfcd
+(1126260) [Sun, 26 Apr 2026 04:41:51] % umount /var/lib/waydroid/rootfs/vendor/waydroid.prop
+(1126260) [Sun, 26 Apr 2026 04:41:51] % umount /var/lib/waydroid/rootfs/vendor
+(1126260) [Sun, 26 Apr 2026 04:41:51] % umount /var/lib/waydroid/rootfs/vendor
+(1126260) [Sun, 26 Apr 2026 04:41:51] % umount /var/lib/waydroid/rootfs
+(1126260) [Sun, 26 Apr 2026 04:41:51] % umount /var/lib/waydroid/rootfs
+(1126260) [Sun, 26 Apr 2026 04:41:51] Terminating session because the container was stopped
+(1139232) [Sun, 26 Apr 2026 04:41:51] Stopping container
+(1139232) [Sun, 26 Apr 2026 04:41:51] Hardware service is not even started
+(1139232) [Sun, 26 Apr 2026 04:41:51] % lxc-info -P /var/lib/waydroid/lxc -n waydroid -sH
+(1139232) [Sun, 26 Apr 2026 04:41:51] STOPPED
+(1139232) [Sun, 26 Apr 2026 04:41:51] % /usr/lib/waydroid/data/scripts/waydroid-net.sh stop
+(1139232) [Sun, 26 Apr 2026 04:41:52] vnic is waydroid0
+(1139232) [Sun, 26 Apr 2026 04:41:52] waydroid-net isn't running
+(1139232) [Sun, 26 Apr 2026 04:41:52] % systemctl is-enabled -q nfcd
+(1139258) [Sun, 26 Apr 2026 04:41:52] Stopping container
+(1139258) [Sun, 26 Apr 2026 04:41:52] Hardware service is not even started
+(1139258) [Sun, 26 Apr 2026 04:41:52] % lxc-info -P /var/lib/waydroid/lxc -n waydroid -sH
+(1139258) [Sun, 26 Apr 2026 04:41:52] STOPPED
+(1139258) [Sun, 26 Apr 2026 04:41:52] % /usr/lib/waydroid/data/scripts/waydroid-net.sh stop
+(1139258) [Sun, 26 Apr 2026 04:41:52] vnic is waydroid0
+(1139258) [Sun, 26 Apr 2026 04:41:52] waydroid-net isn't running
+(1139258) [Sun, 26 Apr 2026 04:41:52] % systemctl is-enabled -q nfcd
+pirate101@DEBIAN13:/$ waydroid session start &
+sleep 10
+waydroid show-full-ui &
+[1] 1140520
+[gbinder] Service manager /dev/anbox-binder has appeared
+[2] 1141311
+pirate101@DEBIAN13:/$ [04:42:30] Failed to get service waydroidplatform, trying again...
+[04:42:31] Failed to get service waydroidplatform, trying again...
+[04:42:32] Failed to get service waydroidplatform, trying again...
+[04:42:33] Failed to get service waydroidplatform, trying again...
+[04:42:44] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+[04:42:46] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+[04:42:46] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+[04:42:46] Failed to post notification: org.freedesktop.Notifications.Error.ExcessNotificationGeneration: Created too many similar notifications in quick succession
+[04:42:50] Android with user 0 is ready
+^C
+[2]+  Done                    waydroid show-full-ui
+pirate101@DEBIAN13:/$ WD_DATA=/home/pirate101/.local/share/waydroid/data
+
+# Re-enable PIF only (keep fake_proc DISABLED for now)
+sudo rm -f "$WD_DATA/adb/modules/playintegrityfix/disable"
+echo "✅ PIF re-enabled"
+
+# Confirm fake_proc is still disabled (it was the troublemaker)
+ls -la "$WD_DATA/adb/modules/fake_proc/disable" 2>/dev/null && echo "✅ fake_proc remains disabled"
+
+# Quick restart so PIF picks up
+sudo waydroid container stop
+sleep 3
+sudo waydroid container start
+sleep 10
+waydroid session start &
+sleep 8
+waydroid show-full-ui &
+✅ PIF re-enabled
+[04:44:57] Stopping container
+[gbinder] WARNING: Service manager /dev/anbox-binder has died
+                                                             [04:45:02] Container service is already running
+[2] 1149604
+[04:45:12] Session is already running
+[2]+  Done                    waydroid session start
+[2] 1149852
+pirate101@DEBIAN13:/$ [04:45:20] Waiting for binder Service Manager...
+[04:46:20] Service Manager never appeared
+[04:46:20] Failed to access IPlatform service
+
