@@ -1,0 +1,82 @@
+pirate101@DEBIAN13:~$ # === 1. Capture CapCut's exact rejection reason ===
+sudo waydroid shell -- sh -c '
+  # Clear log, launch CapCut, grab everything it logs in 5 seconds
+  logcat -c
+  am force-stop com.lemon.lvoverseas 2>/dev/null
+  am force-stop com.ss.android.ugc.aweme 2>/dev/null
+  am force-stop com.bytedance.ies.nle 2>/dev/null
+  
+  # CapCut package names (try both)
+  for pkg in com.lemon.lvoverseas com.lemon.lv com.bytedance.tiktok com.ss.android.ugc.trill; do
+    if pm list packages | grep -q "$pkg"; then
+      echo "=== Found CapCut variant: $pkg ==="
+      monkey -p "$pkg" -c android.intent.category.LAUNCHER 1 2>/dev/null
+      sleep 5
+      echo ""
+      echo "=== logcat from launch ==="
+      logcat -d 2>&1 | grep -iE "$pkg|capcut|lemon|bytedance|nle|device.*not.*support|unsupport|abort|abi|architecture|cpu_abi|tt_native" | tail -40
+      break
+    fi
+  done
+'
+
+# === 2. Show current ABI/native-bridge state ===
+echo ""
+echo "=== current ABI + native bridge ==="
+sudo waydroid shell -- sh -c '
+  echo "primary ABI:  $(getprop ro.product.cpu.abi)"
+  echo "ABI list:     $(getprop ro.product.cpu.abilist)"
+  echo "32-bit list:  $(getprop ro.product.cpu.abilist32)"
+  echo "64-bit list:  $(getprop ro.product.cpu.abilist64)"
+  echo "native bridge: $(getprop ro.dalvik.vm.native.bridge)"
+  echo "houdini:       $(getprop ro.enable.native.bridge.exec)"
+  echo ""
+' ls -la /system/bin/arm* /system/bin/houdini* 2>/dev/null || echo "no ARM exec helpers"l
+[sudo] password for pirate101: 
+=== Found CapCut variant: com.lemon.lvoverseas ===
+  bash arg: -p
+  bash arg: com.lemon.lvoverseas
+  bash arg: -c
+  bash arg: android.intent.category.LAUNCHER
+  bash arg: 1
+
+=== logcat from launch ===
+04-26 13:56:56.932   715  2525 I ActivityManager: Force stopping com.lemon.lvoverseas appid=10158 user=0: from pid 87043
+04-26 13:56:56.960  1084  1084 D CarrierSvcBindHelper: onHandleForceStop: [com.lemon.lvoverseas]
+04-26 13:56:56.983   715  2525 W ActivityManager: Invalid packageName: com.bytedance.ies.nle
+04-26 13:56:57.514 87067 21531 W Monkey  : args: [-p, com.lemon.lvoverseas, -c, android.intent.category.LAUNCHER, 1]
+04-26 13:56:57.515 87067 21531 W Monkey  :  arg: "com.lemon.lvoverseas"
+04-26 13:56:57.515 87067 21531 W Monkey  : data="com.lemon.lvoverseas"
+
+=== current ABI + native bridge ===
+primary ABI:  x86_64
+ABI list:     x86_64,x86,arm64-v8a,armeabi-v7a,armeabi
+32-bit list:  x86,armeabi-v7a,armeabi
+64-bit list:  x86_64,arm64-v8a
+native bridge: libhoudini.so
+houdini:       1
+
+=== translator libs present? ===
+-rw-r--r-- 1 root root 9323480 2026-04-24 17:06 /system/lib64/libhoudini.so
+-rw-r--r-- 1 root root 2500792 2026-04-24 17:06 /system/lib64/libndk_translation.so
+no translator installed
+
+=== /system/bin/arm? ===
+
+-rwxrwxrwx 1 root shell 9260 2026-04-24 17:06 /system/bin/houdini
+-rwxrwxrwx 1 root shell 9784 2026-04-24 17:06 /system/bin/houdini64
+
+/system/bin/arm:
+total 640
+drwxr-xr-x 2 root root      80 2026-04-26 11:12 .
+drwxr-xr-x 6 root root    8660 2026-04-26 11:12 ..
+-rwxrwxrwx 1 root shell   2836 2026-04-24 17:06 app_process
+-rwxrwxrwx 1 root shell 649644 2026-04-24 17:06 linker
+
+/system/bin/arm64:
+total 908
+drwxr-xr-x 2 root root      80 2026-04-26 11:12 .
+drwxr-xr-x 6 root root    8660 2026-04-26 11:12 ..
+-rwxrwxrwx 1 root shell  10896 2026-04-24 17:06 app_process64
+-rwxrwxrwx 1 root shell 915416 2026-04-24 17:06 linker64
+pirate101@DEBIAN13:~$ 
