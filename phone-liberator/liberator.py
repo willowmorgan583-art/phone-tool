@@ -1724,7 +1724,7 @@ class App(QMainWindow):
                 f"{adb} shell pm clear com.mkopa.devicesecurity 2>/dev/null || true",
                 f"{adb} shell pm clear com.mkopa.devicemanager  2>/dev/null || true",
                 f"{adb} shell dpm remove-active-admin "
-                "$(adb shell dumpsys device_policy 2>/dev/null | "
+                f"$({adb} shell dumpsys device_policy 2>/dev/null | "
                 "grep -oE '[a-z]+\\.mkopa\\.[a-z]+/[A-Za-z.]+' | head -1) 2>/dev/null || true",
                 f"echo 'MDM removal attempted'",
                 f"{adb} reboot",
@@ -1810,18 +1810,25 @@ class App(QMainWindow):
             Path(dst).mkdir(parents=True, exist_ok=True)
             return [f"idevicebackup2 {_udid()} backup --full {shq(dst)}", f"echo 'Saved: {dst}'"]
         if op.op_id == "ios.dfu":
-            ios = dev.android or "?"
-            try:
-                v = float(ios.split(".")[0])
-            except Exception:
-                v = 11
-            if v >= 8:
-                g = "iPhone 8+: hold Side+Vol Down 10s → release Side, keep Vol Down 5s"
-            elif v >= 7:
-                g = "iPhone 7: hold Side+Vol Down 10s → release Side, keep Vol Down 5s"
-            else:
-                g = "Older (6-): hold Home+Power 10s → release Power → keep Home 5s"
-            return [f"echo 'DFU Guide: {g}'", "idevice_id -l"]
+            # Note: DFU procedure depends on the iPhone *model*, not the iOS
+            # version. Since `dev.android` stores the iOS version (e.g. "17.2"),
+            # we can't reliably infer the model from it — show all three
+            # variants instead of guessing.
+            return [
+                "echo '=== DFU Mode Guide (choose by iPhone model) ==='",
+                "echo 'iPhone 8 / X / XS / 11 / 12 / 13 / 14 / 15 / 16:'",
+                "echo '  1. Plug in USB. 2. Quick press Vol Up. 3. Quick press Vol Down.'",
+                "echo '  4. Hold Side button until screen goes black.'",
+                "echo '  5. Still holding Side, also hold Vol Down for 5s.'",
+                "echo '  6. Release Side (keep Vol Down) for another 10s. Screen stays black = DFU.'",
+                "echo ''",
+                "echo 'iPhone 7 / 7 Plus:'",
+                "echo '  Hold Side + Vol Down together for 10s, release Side, keep Vol Down 5s.'",
+                "echo ''",
+                "echo 'iPhone 6s / SE (1st gen) / older:'",
+                "echo '  Hold Home + Power together 10s, release Power, keep Home 5s.'",
+                "idevice_id -l",
+            ]
         if op.op_id == "ios.passcode":
             return [
                 "echo 'WARNING: full device erase — all data lost'",
@@ -1917,7 +1924,10 @@ class App(QMainWindow):
             nck, ok = QInputDialog.getText(self, "AT Unlock", "NCK code:", QLineEdit.Normal, "")
             if not ok or not nck:
                 return None
-            return [f"(echo 'AT+CLCK=\"PN\",0,\"{nck}\"' && sleep 2) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"]
+            if not nck.isalnum():
+                self._log("[AT Unlock] NCK must be alphanumeric", "warn")
+                return None
+            return [f"(printf 'AT+CLCK=\"PN\",0,\"%s\"\\r\\n' {shq(nck)} && sleep 2) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"]
         if op.op_id == "ftr.nokia":
             return [
                 f"which wine >/dev/null 2>&1 || {{ echo 'Install Wine: Maintenance → Wine'; exit 1; }}",
@@ -1939,17 +1949,23 @@ class App(QMainWindow):
             nck, ok = QInputDialog.getText(self, "AT+CLCK Unlock", "NCK code:", QLineEdit.Normal, "")
             if not ok or not nck:
                 return None
-            return [f"(echo 'AT+CLCK=\"PN\",0,\"{nck}\"' && sleep 2) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"]
+            if not nck.isalnum():
+                self._log("[AT+CLCK] NCK must be alphanumeric", "warn")
+                return None
+            return [f"(printf 'AT+CLCK=\"PN\",0,\"%s\"\\r\\n' {shq(nck)} && sleep 2) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"]
         if op.op_id == "net.attempts":
             return [f"(echo 'AT+CPIN?' && sleep 1) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"]
         if op.op_id == "net.nck_gen":
             imei, ok = QInputDialog.getText(self, "NCK Generator", "IMEI:", QLineEdit.Normal, "")
             if not ok or not imei:
                 return None
+            if not imei.isdigit() or not (14 <= len(imei) <= 16):
+                self._log("[NCK Generator] IMEI must be 14-16 digits", "warn")
+                return None
             return [
-                f"echo 'Calculating NCK hint for IMEI {imei}'",
-                f"echo 'Luhn check digit:' $(python3 -c \"i='{imei}'; s=sum((2*int(d) - 9 if 2*int(d) > 9 else 2*int(d)) if (len(i)-idx-1)%2 else int(d) for idx,d in enumerate(i)); print(s%10==0)\")",
-                f"echo 'Note: real NCK requires the carrier MCC+MNC + master keys; use a paid IMEI service if needed.'",
+                f"echo 'Calculating NCK hint for IMEI '{shq(imei)}",
+                f"echo 'Luhn check digit:' $(IMEI={shq(imei)} python3 -c \"import os; i=os.environ['IMEI']; s=sum((2*int(d) - 9 if 2*int(d) > 9 else 2*int(d)) if (len(i)-idx-1)%2 else int(d) for idx,d in enumerate(i)); print(s%10==0)\")",
+                "echo 'Note: real NCK requires the carrier MCC+MNC + master keys; use a paid IMEI service if needed.'",
             ]
         if op.op_id == "net.qc_nv":
             return [
