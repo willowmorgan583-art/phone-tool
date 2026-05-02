@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Phone Liberator v4 — quick install script
+# Phone Liberator v5 — quick install script
 set -e
 
 INSTALL_DIR="$HOME/phone-liberator"
-mkdir -p "$INSTALL_DIR/tools" "$INSTALL_DIR/backup" "$INSTALL_DIR/firmware"
+mkdir -p "$INSTALL_DIR/tools" "$INSTALL_DIR/backup" \
+         "$INSTALL_DIR/firmware" "$INSTALL_DIR/logs"
 
 echo "=== Installing Python / PyQt5 ==="
 sudo apt-get update -qq
