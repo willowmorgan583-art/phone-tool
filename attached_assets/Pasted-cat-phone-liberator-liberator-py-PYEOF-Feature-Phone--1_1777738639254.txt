@@ -1,0 +1,88 @@
+cat >> ~/phone-liberator/liberator.py << 'PYEOF'
+
+        # ── Feature Phone ─────────────────────────────────────────────────────
+        if op=="Feature: AT Info":
+            return [
+                f"echo 'Sending AT info commands to {ser}'",
+                f"python3 -c \""
+                f"import serial,time; s=serial.Serial('{ser}',9600,timeout=2); "
+                f"[s.write((c+'\\r\\n').encode()) or time.sleep(0.6) or "
+                f"print(c,'->', s.read(300).decode(errors='replace')) "
+                f"for c in ['ATI','AT+CGMM','AT+CIMI','AT+CGSN','AT+CREG?','AT+CSQ']]\"",
+            ]
+        if op=="Feature: Read IMEI (AT)":
+            return [
+                f"python3 -c \""
+                f"import serial,time; s=serial.Serial('{ser}',9600,timeout=2); "
+                f"s.write(b'AT+CGSN\\r\\n'); time.sleep(1); "
+                f"print('IMEI:', s.read(300).decode(errors='replace'))\"",
+            ]
+        if op=="Feature: Factory Reset (AT)":
+            return [
+                f"echo 'Sending factory-reset AT commands to {ser}'",
+                f"python3 -c \""
+                f"import serial,time; s=serial.Serial('{ser}',9600,timeout=2); "
+                f"[s.write((c+'\\r\\n').encode()) or time.sleep(1.0) or "
+                f"print(c,'->', s.read(300).decode(errors='replace')) "
+                f"for c in ['AT*RSTDFLT','AT+RSTDFLT','AT+CRST=1']]\"",
+            ]
+        if op=="Feature: AT Network Unlock":
+            code,ok = QInputDialog.getText(self,"NCK Code","Enter Network Control Key:")
+            if not ok or not code: return None
+            return [
+                f"python3 -c \""
+                f"import serial,time; s=serial.Serial('{ser}',9600,timeout=2); "
+                f"cmds=['AT+CLCK=\\\"PN\\\",0,\\\"{code}\\\"','AT+CPIN={code}']; "
+                f"[s.write((c+'\\r\\n').encode()) or time.sleep(1) or "
+                f"print(c,'->', s.read(300).decode(errors='replace')) for c in cmds]\"",
+            ]
+        if op=="Feature: Nokia Flash (JAF/Phoenix via Wine)":
+            return [
+                "which wine || sudo apt-get install -y wine wine32",
+                "ls ~/phone-liberator/tools/*.exe 2>/dev/null | head -5 || "
+                "echo 'Download JAF.exe or PhoenixService.exe to ~/phone-liberator/tools/'",
+                "ls ~/phone-liberator/tools/*.exe 2>/dev/null | head -1 | "
+                "xargs -I{} wine {} 2>/dev/null &",
+            ]
+        if op=="Feature: MTK Flash (SP Flash Tool)":
+            return [
+                "ls ~/phone-liberator/tools/SP_Flash_Tool* 2>/dev/null | head -3 || "
+                "echo 'Download SP Flash Tool from spflashtools.com/linux to ~/phone-liberator/tools/'",
+                "cd ~/phone-liberator/tools && "
+                "ls SP_Flash_Tool*.tar.gz 2>/dev/null | head -1 | xargs -I{} tar xf {} && "
+                "ls SP_Flash_Tool*/flash_tool 2>/dev/null | head -1 | "
+                "xargs -I{} bash -c 'chmod +x {}; ./{} &' 2>/dev/null || "
+                "echo 'Extract SP Flash Tool .tar.gz to ~/phone-liberator/tools/ first'",
+            ]
+        if op=="Feature: DC-Unlocker (Wine)":
+            return [
+                "which wine || sudo apt-get install -y wine wine32",
+                "ls ~/phone-liberator/tools/dc-unlocker*.exe 2>/dev/null && "
+                "wine ~/phone-liberator/tools/dc-unlocker*.exe 2>/dev/null & || "
+                "echo 'Download dc-unlocker2client.exe from dc-unlocker.com → ~/phone-liberator/tools/'",
+            ]
+
+        # ── Network Unlock ────────────────────────────────────────────────────
+        if op=="Net: AT+CLCK Carrier Unlock":
+            code,ok = QInputDialog.getText(self,"NCK","Enter Network Control Key (NCK):")
+            if not ok or not code: return None
+            return [
+                f"python3 -c \""
+                f"import serial,time; s=serial.Serial('{ser}',9600,timeout=2); "
+                f"cmd='AT+CLCK=\\\"PN\\\",0,\\\"{code}\\\"'; "
+                f"s.write((cmd+'\\r\\n').encode()); time.sleep(1); "
+                f"print(s.read(500).decode(errors='replace'))\"",
+            ]
+        if op=="Net: Read Unlock Attempts (AT)":
+            return [
+                f"python3 -c \""
+                f"import serial,time; s=serial.Serial('{ser}',9600,timeout=2); "
+                f"s.write(b'AT+CLCK=\\\"PN\\\",2\\r\\n'); time.sleep(1); "
+                f"print(s.read(500).decode(errors='replace'))\"",
+            ]
+        if op=="Net: NCK Generator (IMEI-based)":
+            imei,ok = QInputDialog.getText(self,"IMEI","Enter 15-digit IMEI:")
+            if not ok or not imei: return None
+            return [
+                f"echo 'IMEI: {imei}'",
+                "echo
