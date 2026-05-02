@@ -1,0 +1,33 @@
+irate101@DEBIAN13:~$ sed -n '930,960p' ~/phone-liberator/liberator.py
+            return [
+                "echo '═══════════════════════════════════════'",
+                "echo ' iPhone Carrier Unlock — Official Only'",
+                "echo '═══════════════════════════════════════'",
+                "echo '1. Get IMEI: dial *#06# on device'",
+                "echo '2. Check lock: imei.info or carrier customer care'",
+                "echo '3. Contact original carrier with IMEI + ownership proof'",
+                "echo '   Safaricom Kenya: 100 / My Safaricom app'",
+                "echo '   Airtel Kenya: *100# or 0733100100'",
+                "echo '   Telkom Kenya: 100'",
+                "echo '4. After approval: insert foreign SIM → iOS confirms unlock'",
+                "echo 'No software tool bypasses iPhone carrier SIM lock.'",
+                f"ideviceinfo {uf} -k InternationalMobileEquipmentIdentity 2>/dev/null || true",
+            ]
+        if op=="iPhone: Activation Lock — Deceased Owner":
+            return [
+                "echo '═══════════════════════════════════════════════════════════'",
+                "echo ' Activation Lock — Deceased Owner (Apple official process)'",
+                "echo '═══════════════════════════════════════════════════════════'",
+                "echo ''",
+                "echo 'A18 (iPhone 16 Pro): NO software bypass exists in 2025.'",
+                "echo 'The only path is Apple Support with a deceased-owner claim.'",
+                "echo ''",
+                "echo 'STEP 1 — Gather these documents:'",
+                "echo '  ✓ Death certificate of previous owner (your grandfather)'",
+                "echo '  ✓ Proof of ownership: receipt, gift letter, carrier bill in his name'",
+                "echo '  ✓ Your own ID proving relationship or rightful possession'",
+                "echo ''",
+                "echo 'STEP 2 — Get the device serial number:'",
+                f"ideviceinfo {uf} -k SerialNumber 2>/dev/null || "
+                "echo '  → Connect in Recovery mode; serial may appear via idevice_id'",
+pirate101@DEBIAN13:~$
