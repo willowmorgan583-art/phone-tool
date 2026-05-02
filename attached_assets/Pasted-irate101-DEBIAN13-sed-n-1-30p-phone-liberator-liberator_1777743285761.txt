@@ -1,0 +1,54 @@
+irate101@DEBIAN13:~$ sed -n '1,30p' ~/phone-liberator/liberator.py && echo "---" && sed -n '290,310p' ~/phone-liberator/liberator.py
+#!/usr/bin/env python3
+"""Phone Liberator — Android · iPhone (all tools) · Mkopa · Feature Phone · Network Unlock · MTK · EDL"""
+import sys, os, subprocess, glob
+from pathlib import Path
+from datetime import datetime
+
+try: from PyQt5.QtWidgets import *
+except ImportError: print("Missing: sudo apt install python3-pyqt5"); sys.exit(1)
+try:
+    from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize
+    from PyQt5.QtGui import QColor, QTextCursor, QPalette, QBrush, QFont
+except ImportError: pass
+try: import usb.core; HAS_USB = True
+except ImportError: HAS_USB = False
+
+USB_VENDORS = {
+    0x04E8:"Samsung",    0x18D1:"Google",    0x2717:"Xiaomi",
+    0x05C6:"Qualcomm",   0x12D1:"Huawei",    0x0E8D:"MediaTek",
+    0x1004:"LG",         0x0BB4:"HTC",       0x2A45:"Motorola",
+    0x22D9:"OPPO",       0x19D2:"ZTE",       0x0FCE:"Sony",
+    0x2970:"Nothing",    0x0B05:"ASUS",      0x0421:"Nokia",
+    0x1782:"Spreadtrum", 0x05AC:"Apple",     0x2E04:"HMD/Nokia",
+    0x2A96:"Transsion",  0x0489:"Foxconn",   0x19F5:"Coolpad",
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+class Worker(QThread):
+    log  = pyqtSignal(str, str)
+    done = pyqtSignal(bool, str)
+
+---
+    ("iPhone","iPhone: checkra1n (A5–A11 / iOS 12–14.8)",
+     "Hardware exploit — iPhone 5s through X","warn",True),
+    ("iPhone","iPhone: palera1n (A9–A17 / iOS 15–17.0)",
+     "Semi-tethered for A9-A11; rootless A12-A17","warn",True),
+    ("iPhone","iPhone: unc0ver (A12–A14 / iOS 11–14.8)",
+     "Deploy via Sideloadly — sideload the IPA","warn",True),
+    ("iPhone","iPhone: Dopamine (A12–A15 / iOS 15–16.6)",
+     "Rootless jailbreak, deploy via Sideloadly","warn",True),
+    ("iPhone","iPhone: Serotonin (A12+ / iOS 16.0–16.6.1)",
+     "Rootless, install via TrollStore or Sideloadly","warn",True),
+    ("iPhone","iPhone: TrollStore (iOS 14–17.0)",
+     "Permanent app install without jailbreak","warn",False),
+    ("iPhone","iPhone: MacDirtyCow apps (iOS 15–16.1.2)",
+     "Exploits CVE-2022-46689 — install MDC apps","warn",False),
+    ("iPhone","iPhone: SSH (post-jailbreak)",
+     "SSH to localhost:2222 — needs OpenSSH/Sileo","ok",False),
+    ("iPhone","iPhone: Install IPA (Sideloadly)",
+     "Sideload any IPA with free Apple ID","ok",False),
+    ("iPhone","iPhone: Activation Lock — Deceased Owner",
+     "Apple official process — docs needed","info",False),
+
+pirate101@DEBIAN13:~$
