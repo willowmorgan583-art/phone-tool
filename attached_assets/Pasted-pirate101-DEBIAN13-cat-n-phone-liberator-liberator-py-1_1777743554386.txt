@@ -1,0 +1,400 @@
+pirate101@DEBIAN13:~$ cat -n ~/phone-liberator/liberator.py
+     1  #!/usr/bin/env python3
+     2  """Phone Liberator — Android · iPhone (all tools) · Mkopa · Feature Phone · Network Unlock · MTK · EDL"""
+     3  import sys, os, subprocess, glob
+     4  from pathlib import Path
+     5  from datetime import datetime
+     6
+     7  try: from PyQt5.QtWidgets import *
+     8  except ImportError: print("Missing: sudo apt install python3-pyqt5"); sys.exit(1)
+     9  try:
+    10      from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize
+    11      from PyQt5.QtGui import QColor, QTextCursor, QPalette, QBrush, QFont
+    12  except ImportError: pass
+    13  try: import usb.core; HAS_USB = True
+    14  except ImportError: HAS_USB = False
+    15
+    16  USB_VENDORS = {
+    17      0x04E8:"Samsung",    0x18D1:"Google",    0x2717:"Xiaomi",
+    18      0x05C6:"Qualcomm",   0x12D1:"Huawei",    0x0E8D:"MediaTek",
+    19      0x1004:"LG",         0x0BB4:"HTC",       0x2A45:"Motorola",
+    20      0x22D9:"OPPO",       0x19D2:"ZTE",       0x0FCE:"Sony",
+    21      0x2970:"Nothing",    0x0B05:"ASUS",      0x0421:"Nokia",
+    22      0x1782:"Spreadtrum", 0x05AC:"Apple",     0x2E04:"HMD/Nokia",
+    23      0x2A96:"Transsion",  0x0489:"Foxconn",   0x19F5:"Coolpad",
+    24  }
+    25
+    26  # ─────────────────────────────────────────────────────────────────────────────
+    27  class Worker(QThread):
+    28      log  = pyqtSignal(str, str)
+    29      done = pyqtSignal(bool, str)
+    30
+    31      def __init__(self, cmds, label):
+    32          super().__init__()
+    33          self.cmds  = cmds if isinstance(cmds,list) else [cmds]
+    34          self.label = label
+    35          self._stop = False
+    36
+    37      def abort(self): self._stop = True
+    38
+    39      def run(self):
+    40          for cmd in self.cmds:
+    41              if self._stop: break
+    42              self.log.emit(f"$ {cmd}", "#89b4fa")
+    43              try:
+    44                  p = subprocess.Popen(cmd, shell=True, executable="/bin/bash",
+    45                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+    46                      text=True, bufsize=1)
+    47                  for ln in p.stdout:
+    48                      ln = ln.rstrip()
+    49                      col = ("#f38ba8"
+    50                             if any(x in ln.lower() for x in
+    51                                    ("error","fail","fatal","cannot","denied","refused","not found"))
+    52                             else "#a6e3a1")
+    53                      self.log.emit(ln, col)
+    54                  p.wait()
+    55                  if p.returncode not in (0, 253):
+    56                      self.log.emit(f"[exit {p.returncode}]", "#fab387")
+    57              except Exception as e:
+    58                  self.log.emit(f"[exception] {e}", "#f38ba8")
+    59                  self.done.emit(False, self.label); return
+    60          self.done.emit(True, self.label)
+    61
+    62  # ─────────────────────────────────────────────────────────────────────────────
+    63  class Detector:
+    64      def detect_all(self):
+    65          devs = []
+    66
+    67          # ADB — any Android CPU (ARM32/64/x86/MIPS)
+    68          try:
+    69              raw = subprocess.check_output("adb devices -l", shell=True,
+    70                  timeout=6, stderr=subprocess.DEVNULL).decode()
+    71              for ln in raw.splitlines()[1:]:
+    72                  if "\tdevice" not in ln: continue
+    73                  sn = ln.split()[0]
+    74                  def p(k, s=sn):
+    75                      try: return subprocess.check_output(
+    76                          f"adb -s {s} shell getprop {k}", shell=True,
+    77                          timeout=4, stderr=subprocess.DEVNULL).decode().strip()
+    78                      except: return "?"
+    79                  devs.append({"type":"android","method":"adb","serial":sn,
+    80                      "brand":p("ro.product.brand"),"model":p("ro.product.model"),
+    81                      "android":p("ro.build.version.release"),
+    82                      "sdk":p("ro.build.version.sdk"),
+    83                      "abi":p("ro.product.cpu.abi"),
+    84                      "cpu":p("ro.board.platform"),
+    85                      "build":p("ro.build.display.id")})
+    86          except: pass
+    87
+    88          # Fastboot
+    89          try:
+    90              fb = subprocess.check_output("fastboot devices", shell=True,
+    91                  timeout=6, stderr=subprocess.DEVNULL).decode().strip()
+    92              for ln in fb.splitlines():
+    93                  if not ln.strip(): continue
+    94                  sn = ln.split()[0]
+    95                  def fv(v, s=sn):
+    96                      try:
+    97                          out = subprocess.check_output(
+    98                              f"fastboot -s {s} getvar {v} 2>&1", shell=True, timeout=4).decode()
+    99                          for l in out.splitlines():
+   100                              if v in l: return l.split(":",1)[-1].strip()
+   101                      except: pass
+   102                      return "?"
+   103                  devs.append({"type":"android","method":"fastboot","serial":sn,
+   104                      "brand":fv("product"),"model":fv("product"),
+   105                      "android":"?","sdk":"?","abi":fv("cpu-abi"),
+   106                      "cpu":fv("cpu-abi"),"build":"?"})
+   107          except: pass
+   108
+   109          # iPhone via libimobiledevice
+   110          try:
+   111              ids = subprocess.check_output("idevice_id -l 2>/dev/null",
+   112                  shell=True, timeout=5).decode().strip()
+   113              for udid in ids.splitlines():
+   114                  udid = udid.strip()
+   115                  if not udid: continue
+   116                  def ip(k, u=udid):
+   117                      try: return subprocess.check_output(
+   118                          f"ideviceinfo -u {u} -k {k} 2>/dev/null",
+   119                          shell=True, timeout=4).decode().strip()
+   120                      except: return "?"
+   121                  devs.append({"type":"iphone","method":"iphone","serial":udid,
+   122                      "brand":"Apple","model":ip("ProductType"),
+   123                      "android":ip("ProductVersion"),"sdk":"?",
+   124                      "abi":ip("CPUArchitecture"),"cpu":ip("CPUArchitecture"),
+   125                      "build":ip("BuildVersion"),"name":ip("DeviceName"),
+   126                      "activation":ip("ActivationState"),
+   127                      "imei":ip("InternationalMobileEquipmentIdentity")})
+   128          except: pass
+   129
+   130          # USB raw — Qualcomm EDL / MediaTek / Apple DFU
+   131          if HAS_USB:
+   132              try:
+   133                  seen = {d["serial"] for d in devs}
+   134                  for dev in usb.core.find(find_all=True):
+   135                      vid, pid = dev.idVendor, dev.idProduct
+   136                      if vid==0x05C6 and pid==0x9008:
+   137                          devs.append({"type":"edl","method":"edl","serial":"QC-EDL",
+   138                              "brand":"Qualcomm EDL","model":"Emergency Download",
+   139                              "android":"?","sdk":"?","abi":"?","cpu":"Qualcomm","build":"?"})
+   140                      elif vid==0x0E8D:
+   141                          devs.append({"type":"mtk","method":"mtk","serial":"MTK-USB",
+   142                              "brand":"MediaTek","model":"MTK raw USB",
+   143                              "android":"?","sdk":"?","abi":"?","cpu":"MTK","build":"?"})
+   144                      elif vid==0x05AC and not any(d.get("type")=="iphone" for d in devs):
+   145                          devs.append({"type":"iphone","method":"iphone-dfu",
+   146                              "serial":f"Apple-{pid:04x}","brand":"Apple",
+   147                              "model":"iPhone DFU/Recovery mode","android":"?",
+   148                              "sdk":"?","abi":"?","cpu":"?","build":"?",
+   149                              "activation":"Unknown","imei":"?"})
+   150              except: pass
+   151
+   152          # Serial feature phones
+   153          for s in glob.glob("/dev/ttyUSB*") + glob.glob("/dev/ttyACM*"):
+   154              devs.append({"type":"feature","method":"serial","serial":s,
+   155                  "brand":"Feature Phone","model":f"Serial {s}",
+   156                  "android":"N/A","sdk":"N/A","abi":"?","cpu":"?","build":"?"})
+   157
+   158          if not devs:
+   159              devs.append({"type":"none","method":"none","serial":"—",
+   160                  "brand":"No device","model":"Connect device + enable USB Debugging",
+   161                  "android":"—","sdk":"—","abi":"—","cpu":"—","build":"—"})
+   162          return devs
+   163
+   164  # ─── Stylesheet ───────────────────────────────────────────────────────────────
+   165  QSS = """
+   166  QMainWindow,QWidget{background:#1e1e2e;color:#cdd6f4;
+   167    font-family:'Segoe UI',sans-serif;font-size:13px}
+   168  QTabWidget::pane{border:1px solid #45475a;border-radius:6px}
+   169  QTabBar::tab{background:#313244;color:#cdd6f4;padding:6px 16px;
+   170    border-top-left-radius:5px;border-top-right-radius:5px;margin-right:2px}
+   171  QTabBar::tab:selected{background:#1e1e2e;color:#89b4fa;border-bottom:2px solid #89b4fa}
+   172  QGroupBox{border:1px solid #45475a;border-radius:7px;margin-top:10px;
+   173    font-weight:bold;color:#89b4fa;padding:8px}
+   174  QGroupBox::title{subcontrol-origin:margin;left:10px;padding:0 3px;color:#89b4fa}
+   175  QPushButton{background:#313244;color:#cdd6f4;border:1px solid #45475a;
+   176    border-radius:5px;padding:6px 14px;min-width:70px}
+   177  QPushButton:hover{background:#45475a}
+   178  QPushButton:disabled{background:#1e1e2e;color:#585b70;border-color:#313244}
+   179  QPushButton#ok{background:#1a3a1a;color:#a6e3a1;border-color:#a6e3a1}
+   180  QPushButton#ok:hover{background:#1e4a1e}
+   181  QPushButton#warn{background:#3a2a1a;color:#fab387;border-color:#fab387}
+   182  QPushButton#warn:hover{background:#4a3a2a}
+   183  QPushButton#danger{background:#3a1a1a;color:#f38ba8;border-color:#f38ba8}
+   184  QPushButton#danger:hover{background:#4a2a2a}
+   185  QPushButton#info{background:#1a2030;color:#89dceb;border-color:#89dceb}
+   186  QLineEdit{background:#313244;border:1px solid #45475a;border-radius:5px;
+   187    padding:4px 8px;color:#cdd6f4}
+   188  QComboBox{background:#313244;border:1px solid #45475a;border-radius:5px;
+   189    padding:4px 8px;color:#cdd6f4}
+   190  QComboBox QAbstractItemView{background:#313244;color:#cdd6f4;
+   191    selection-background-color:#45475a}
+   192  QTableWidget{background:#11111b;border:1px solid #45475a;border-radius:6px;
+   193    gridline-color:#1e1e2e;color:#cdd6f4;font-size:12px}
+   194  QTableWidget::item:selected{background:#313244;color:#89b4fa}
+   195  QTableWidget QHeaderView::section{background:#313244;color:#89b4fa;
+   196    border:none;padding:4px 6px;font-weight:bold;font-size:12px}
+   197  QTextEdit,QListWidget{background:#11111b;border:1px solid #45475a;
+   198    border-radius:6px;color:#a6e3a1;font-family:'Courier New',monospace;font-size:11px}
+   199  QLabel#head{font-size:15px;font-weight:bold;color:#89b4fa}
+   200  QLabel#sub{color:#6c7086;font-size:11px}
+   201  QProgressBar{border:1px solid #45475a;border-radius:4px;background:#11111b;height:7px}
+   202  QProgressBar::chunk{background:qlineargradient(x1:0,y1:0,x2:1,y2:0,
+   203    stop:0 #89b4fa,stop:1 #cba6f7);border-radius:3px}
+   204  QScrollBar:vertical{background:#1e1e2e;width:7px}
+   205  QScrollBar::handle:vertical{background:#45475a;border-radius:3px;min-height:14px}
+   206  QCheckBox::indicator{width:15px;height:15px;border-radius:3px;
+   207    border:1px solid #45475a;background:#313244}
+   208  QCheckBox::indicator:checked{background:#89b4fa;border-color:#89b4fa}
+   209  QToolTip{background:#313244;color:#cdd6f4;border:1px solid #45475a}
+   210  """
+   211
+   212  CAT_BG = {
+   213      "Android ADB":      "#1e2030",
+   214      "Android Fastboot": "#20201e",
+   215      "Mkopa/PAYG":       "#20180e",
+   216      "iPhone":           "#161e2e",
+   217      "Feature Phone":    "#161e16",
+   218      "Network Unlock":   "#1a1630",
+   219      "MTK / EDL":        "#201616",
+   220      "Maintenance":      "#161e1e",
+   221  }
+   222
+   223  # ─── Operations  (category, name, short_desc, style, needs_confirm) ───────────
+   224  OPS = [
+   225      # Android ADB
+   226      ("Android ADB","Screen Lock Remove",
+   227       "Delete lock DB/key files — needs root ROM","ok",True),
+   228      ("Android ADB","FRP Bypass",
+   229       "Mark device provisioned, skip FRP wizard","warn",True),
+   230      ("Android ADB","Backup /sdcard",
+   231       "Pull SD card to ~/phone-liberator/backup/","ok",False),
+   232      ("Android ADB","Install APK",
+   233       "Install a chosen .apk with all permissions","ok",False),
+   234      ("Android ADB","Sideload ZIP",
+   235       "ADB sideload a recovery/OTA ZIP in recovery","ok",False),
+   236      ("Android ADB","Reboot → Fastboot",
+   237       "adb reboot bootloader","ok",False),
+   238      ("Android ADB","Reboot → Recovery",
+   239       "adb reboot recovery","ok",False),
+   240      ("Android ADB","Screenshot",
+   241       "Capture screen and save to ~/Desktop","ok",False),
+   242      ("Android ADB","Shell",
+   243       "Open interactive ADB shell in a terminal","ok",False),
+   244      ("Android ADB","Logcat (live)",
+   245       "Stream system log to output pane","ok",False),
+   246      ("Android ADB","Dump Props",
+   247       "Print all ro.* system properties","ok",False),
+   248      ("Android ADB","Sysinfo",
+   249       "CPU/RAM/storage overview via shell","ok",False),
+   250
+   251      # Android Fastboot
+   252      ("Android Fastboot","OEM Unlock",
+   253       "Enable custom ROM/bootloader flashing","warn",True),
+   254      ("Android Fastboot","FRP Erase",
+   255       "Wipe the FRP/anti-theft partition","warn",True),
+   256      ("Android Fastboot","Factory Reset",
+   257       "Full wipe: userdata + cache — all data erased","danger",True),
+   258      ("Android Fastboot","Flash boot.img",
+   259       "Flash chosen boot image (e.g. Magisk-patched)","warn",True),
+   260      ("Android Fastboot","Flash firmware .zip",
+   261       "Flash all partitions from a stock OEM zip","warn",True),
+   262      ("Android Fastboot","Lock Bootloader",
+   263       "Re-lock bootloader for resale","warn",True),
+   264      ("Android Fastboot","Fastboot Reboot",
+   265       "Reboot device from bootloader mode","ok",False),
+   266
+   267      # Mkopa/PAYG
+   268      ("Mkopa/PAYG","Mkopa: Remove MDM (ADB)",
+   269       "Clear MDM packages + disable device-admin","warn",True),
+   270      ("Mkopa/PAYG","Mkopa: MTK Unlock",
+   271       "MTK payload → OEM unlock → erase FRP → reboot","danger",True),
+   272      ("Mkopa/PAYG","Mkopa: Qualcomm EDL Unlock",
+   273       "edl.py erase frp + protect_f → reset","danger",True),
+   274      ("Mkopa/PAYG","PAYG: Disable Kiosk App",
+   275       "Force-stop + disable MDM kiosk app via ADB","warn",True),
+   276
+   277      # iPhone — comprehensive jailbreak coverage
+   278      ("iPhone","iPhone: Info & UDID",
+   279       "Model, iOS, chip, activation, IMEI","ok",False),
+   280      ("iPhone","iPhone: Pair / Trust",
+   281       "idevicepair — establish USB trust pairing","ok",False),
+   282      ("iPhone","iPhone: Backup (idevicebackup2)",
+   283       "Full encrypted backup before any operation","ok",False),
+   284      ("iPhone","iPhone: Enter DFU Mode",
+   285       "Step-by-step DFU guide for your model","ok",False),
+   286      ("iPhone","iPhone: Passcode Reset (restore)",
+   287       "Recovery mode → iTunes/Finder restore — WIPES device","danger",True),
+   288      ("iPhone","iPhone: Jailbreak Matrix",
+   289       "Show which tool supports YOUR device + iOS","ok",False),
+   290      ("iPhone","iPhone: checkra1n (A5–A11 / iOS 12–14.8)",
+   291       "Hardware exploit — iPhone 5s through X","warn",True),
+   292      ("iPhone","iPhone: palera1n (A9–A17 / iOS 15–17.0)",
+   293       "Semi-tethered for A9-A11; rootless A12-A17","warn",True),
+   294      ("iPhone","iPhone: unc0ver (A12–A14 / iOS 11–14.8)",
+   295       "Deploy via Sideloadly — sideload the IPA","warn",True),
+   296      ("iPhone","iPhone: Dopamine (A12–A15 / iOS 15–16.6)",
+   297       "Rootless jailbreak, deploy via Sideloadly","warn",True),
+   298      ("iPhone","iPhone: Serotonin (A12+ / iOS 16.0–16.6.1)",
+   299       "Rootless, install via TrollStore or Sideloadly","warn",True),
+   300      ("iPhone","iPhone: TrollStore (iOS 14–17.0)",
+   301       "Permanent app install without jailbreak","warn",False),
+   302      ("iPhone","iPhone: MacDirtyCow apps (iOS 15–16.1.2)",
+   303       "Exploits CVE-2022-46689 — install MDC apps","warn",False),
+   304      ("iPhone","iPhone: SSH (post-jailbreak)",
+   305       "SSH to localhost:2222 — needs OpenSSH/Sileo","ok",False),
+   306      ("iPhone","iPhone: Install IPA (Sideloadly)",
+   307       "Sideload any IPA with free Apple ID","ok",False),
+   308      ("iPhone","iPhone: Activation Lock — Deceased Owner",
+   309       "Apple official process — docs needed","info",False),
+   310
+   311      # Android carrier unlock (Safaricom-locked handsets only)
+   312      ("Android","Android: Safaricom Carrier Unlock",
+   313       "For handsets sold SIM-locked to Safaricom","ok",False),
+   314
+   315      # Feature phones
+   316      ("Feature","Feature: AT Info",
+   317       "Read model/IMEI/signal via AT commands","ok",False),
+   318      ("Feature","Feature: Read IMEI (AT)",
+   319       "AT+CGSN via serial port","ok",False),
+   320      ("Feature","Feature: Factory Reset (AT)",
+   321       "Send AT*RSTDFLT / AT+CRST=1","warn",False),
+   322      ("Feature","Feature: AT Network Unlock",
+   323       "AT+CLCK NCK unlock via serial","warn",False),
+   324      ("Feature","Feature: Nokia Flash (JAF/Phoenix via Wine)",
+   325       "Launch JAF or Phoenix under Wine","warn",False),
+   326      ("Feature","Feature: MTK Flash (SP Flash Tool)",
+   327       "Launch SP Flash Tool (Linux)","warn",False),
+   328      ("Feature","Feature: DC-Unlocker (Wine)",
+   329       "dc-unlocker2client under Wine","warn",False),
+   330
+   331      # Network unlock
+   332      ("Network","Net: AT+CLCK Carrier Unlock",
+   333       "Send NCK via AT+CLCK command","warn",False),
+   334      ("Network","Net: Read Unlock Attempts (AT)",
+   335       "Query remaining unlock attempts","ok",False),
+   336      ("Network","Net: NCK Generator (IMEI-based)",
+   337       "Compute common IMEI-derived NCKs","ok",False),
+   338      ("Network","Net: Qualcomm NV SIM Unlock",
+   339       "Read NV item 10 via EDL","warn",False),
+   340      ("Network","Net: MTK Network Unlock",
+   341       "mtkclient fastboot network-unlock","warn",False),
+   342      ("Network","Net: Check IMEI (imei.info)",
+   343       "Open imei.info in browser","ok",False),
+   344
+   345      # MTK / EDL
+   346      ("MTK/EDL","MTK → Fastboot Mode",
+   347       "Push MTK device into fastboot via brom","warn",False),
+   348      ("MTK/EDL","MTK FRP Erase",
+   349       "Erase FRP via mtkclient + fastboot","danger",False),
+   350      ("MTK/EDL","MTK Read Flash",
+   351       "Dump preloader/boot/system/userdata","ok",False),
+   352      ("MTK/EDL","EDL: Read Partition Table",
+   353       "List partitions via edl.py","ok",False),
+   354      ("MTK/EDL","EDL: Erase FRP/Protect",
+   355       "Erase frp + protect_f via edl.py","danger",False),
+   356      ("MTK/EDL","EDL: Read Full Flash",
+   357       "Full flash dump via edl.py","ok",False),
+   358      ("MTK/EDL","EDL: Flash Single Partition",
+   359       "Write one .img to named partition","danger",False),
+   360      ("MTK/EDL","NUKE ALL (⚠ irreversible)",
+   361       "Wipe ALL partitions — no recovery","danger",False),
+   362
+   363      # Maintenance
+   364      ("Maintenance","Install USB rules (udev)",
+   365       "Install 51-phone-liberator.rules","ok",False),
+   366      ("Maintenance","Install ADB + Fastboot",
+   367       "apt install android-tools-*","ok",False),
+   368      ("Maintenance","Install mtkclient",
+   369       "Clone + pip-install bkerler/mtkclient","ok",False),
+   370      ("Maintenance","Install libimobiledevice",
+   371       "apt install libimobiledevice-utils + usbmuxd","ok",False),
+   372      ("Maintenance","Install checkra1n",
+   373       "Add checkra.in repo + apt install","ok",False),
+   374      ("Maintenance","Install palera1n",
+   375       "Download palera1n binary from GitHub","ok",False),
+   376      ("Maintenance","Install Sideloadly",
+   377       "Open sideloadly.io download page","ok",False),
+   378      ("Maintenance","Install edl.py",
+   379       "Clone + pip-install bkerler/edl","ok",False),
+   380      ("Maintenance","Install SP Flash Tool",
+   381       "Open spflashtools.com/linux download","ok",False),
+   382  ]
+   383
+   384  # ─── Entry point ──────────────────────────────────────────────────────────────
+   385  if __name__ == "__main__":
+   386      app = QApplication(sys.argv)
+   387      app.setStyle("Fusion")
+   388      pal = app.palette()
+   389      pal.setColor(QPalette.Window,     QColor("#1e1e2e"))
+   390      pal.setColor(QPalette.WindowText, QColor("#cdd6f4"))
+   391      pal.setColor(QPalette.Base,       QColor("#11111b"))
+   392      pal.setColor(QPalette.Text,       QColor("#cdd6f4"))
+   393      pal.setColor(QPalette.Button,     QColor("#313244"))
+   394      pal.setColor(QPalette.ButtonText, QColor("#cdd6f4"))
+   395      pal.setColor(QPalette.Highlight,  QColor("#89b4fa"))
+   396      app.setPalette(pal)
+   397      w = App(); w.show()
+   398      sys.exit(app.exec_())
+pirate101@DEBIAN13:~$
