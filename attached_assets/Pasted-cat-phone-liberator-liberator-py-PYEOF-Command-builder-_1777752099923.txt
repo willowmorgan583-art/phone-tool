@@ -1,0 +1,108 @@
+cat >> ~/phone-liberator/liberator.py << 'PYEOF'
+
+    # ── Command builder ────────────────────────────────────────────────────────
+    def _build(self, op, adb, meth, sn, dev, typ):
+        rb  = "&& fastboot reboot" if self.chk_rb.isChecked() else ""
+        arb = f"; {adb} reboot"   if self.chk_rb.isChecked() else ""
+        fs  = f"-s {sn}" if sn and sn not in ("—","?","") else ""
+        ser = sn if "/dev/tty" in sn else "/dev/ttyUSB0"
+        uf  = f"-u {sn}" if sn not in ("—","?","","QC-EDL","MTK-USB") else ""
+        brand = dev.get("brand","").lower()
+        model = dev.get("model","")
+        cpu   = dev.get("cpu","").lower()
+
+        # ── Android ADB ───────────────────────────────────────────────────────
+        if op=="Screen Lock Remove":
+            return [f"{adb} shell su -c 'rm -f "
+                    "/data/system/locksettings.db "
+                    "/data/system/locksettings.db-shm "
+                    "/data/system/locksettings.db-wal "
+                    "/data/system/gesture.key "
+                    f"/data/system/password.key /data/system/pin.key' {arb}"]
+        if op=="FRP Bypass":
+            return [
+                f"{adb} shell content insert --uri content://settings/secure "
+                "--bind name:s:user_setup_complete --bind value:s:1",
+                f"{adb} shell content insert --uri content://settings/global "
+                "--bind name:s:device_provisioned --bind value:s:1",
+                f"{adb} shell settings put global setup_wizard_has_run 1 2>/dev/null || true",
+                f"{adb} shell pm disable com.google.android.setupwizard 2>/dev/null || true",
+            ]
+        if op=="Backup /sdcard":
+            dst = os.path.expanduser(f"~/phone-liberator/backup/{sn or 'device'}")
+            os.makedirs(dst, exist_ok=True)
+            return [f"{adb} pull /sdcard '{dst}'",
+                    f"echo 'Backup saved to {dst}'"]
+        if op=="Install APK":
+            apk,_ = QFileDialog.getOpenFileName(self,"Select APK","","APK (*.apk)")
+            return None if not apk else [f"{adb} install -r -g '{apk}'"]
+        if op=="Sideload ZIP":
+            zf,_ = QFileDialog.getOpenFileName(self,"Select ZIP","","ZIP (*.zip)")
+            return None if not zf else [f"{adb} sideload '{zf}'"]
+        if op=="Reboot → Fastboot": return [f"{adb} reboot bootloader"]
+        if op=="Reboot → Recovery":  return [f"{adb} reboot recovery"]
+        if op=="Screenshot":
+            dst = os.path.expanduser(
+                f"~/Desktop/screen_{datetime.now():%Y%m%d_%H%M%S}.png")
+            return [f"{adb} shell screencap -p /sdcard/__sc.png",
+                    f"{adb} pull /sdcard/__sc.png '{dst}'",
+                    f"{adb} shell rm /sdcard/__sc.png",
+                    f"echo 'Saved: {dst}'"]
+        if op=="Shell":
+            subprocess.Popen(
+                f"x-terminal-emulator -e '{adb} shell' 2>/dev/null "
+                f"|| xterm -e '{adb} shell' 2>/dev/null "
+                f"|| gnome-terminal -- {adb} shell",
+                shell=True)
+            return []
+        if op=="Logcat (live)": return [f"{adb} logcat -v threadtime"]
+        if op=="Dump Props":    return [f"{adb} shell getprop"]
+        if op=="Sysinfo":
+            return [f"{adb} shell uname -a",
+                    f"{adb} shell cat /proc/cpuinfo | head -20",
+                    f"{adb} shell cat /proc/meminfo | head -6",
+                    f"{adb} shell df -h /data /sdcard"]
+
+        # ── Android Fastboot ─────────────────────────────────────────────────
+        if op=="OEM Unlock":      return [f"fastboot {fs} oem unlock {rb}"]
+        if op=="FRP Erase":       return [f"fastboot {fs} erase frp {rb}"]
+        if op=="Factory Reset":   return [f"fastboot {fs} -w {rb}"]
+        if op=="Fastboot Reboot": return [f"fastboot {fs} reboot"]
+        if op=="Lock Bootloader": return [f"fastboot {fs} oem lock {rb}"]
+        if op=="Flash boot.img":
+            img,_ = QFileDialog.getOpenFileName(self,"Select boot.img","","IMG (*.img)")
+            return None if not img else [f"fastboot {fs} flash boot '{img}' {rb}"]
+        if op=="Flash firmware .zip":
+            zf,_ = QFileDialog.getOpenFileName(self,"Select firmware","","ZIP (*.zip)")
+            if not zf: return None
+            return [
+                "rm -rf /tmp/_lfw && mkdir -p /tmp/_lfw",
+                f"unzip -o '{zf}' -d /tmp/_lfw",
+                f"cd /tmp/_lfw && for p in preloader lk boot recovery system "
+                f"system_ext vendor vendor_dlkm product dtbo vbmeta "
+                f"vbmeta_system vbmeta_vendor; do "
+                f"[ -f $p.img ] && fastboot {fs} flash $p $p.img "
+                f"&& echo '  flashed '$p || true; done",
+                f"fastboot {fs} reboot",
+            ]
+
+        # ── Mkopa / PAYG ─────────────────────────────────────────────────────
+        if op=="Mkopa: Remove MDM (ADB)":
+            return [
+                f"{adb} shell pm list packages | "
+                "grep -iE 'mkopa|mdm|devicepolicy|remote' || true",
+                f"{adb} shell pm clear com.mkopa.devicesecurity 2>/dev/null || true",
+                f"{adb} shell pm clear com.mkopa.devicemanager  2>/dev/null || true",
+                f"{adb} shell dpm remove-active-admin "
+                "$(adb shell dumpsys device_policy 2>/dev/null | "
+                "grep -oE '[a-z]+\\.mkopa\\.[a-z]+/[A-Za-z.]+' | head -1) "
+                "2>/dev/null || true",
+                "echo 'MDM removal attempted'",
+                f"{adb} reboot",
+            ]
+        if op=="Mkopa: MTK Unlock":
+            self._need("mtkclient")
+            return ["python3 /opt/mtkclient/mtk payload --metamode FASTBOOT",
+                    "sleep 4","fastboot oem unlock","fastboot erase frp",
+                    "fastboot erase userdata","fastboot reboot"]
+        if op=="Mkopa: Qual
