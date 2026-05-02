@@ -1723,13 +1723,21 @@ class App(QMainWindow):
             # Use the serial-qualified `{adb}` inside the command-substitution
             # too, otherwise on multi-device hosts the inner `adb` may target
             # a different device than the outer commands.
+            #
+            # The ADMIN capture and the dpm removal must live in the *same*
+            # bash invocation, otherwise the variable is lost between
+            # subprocesses (Worker.run() spawns a fresh /bin/bash per item).
+            admin_block = (
+                f"ADMIN=$({adb} shell dumpsys device_policy 2>/dev/null | "
+                "grep -oE '[a-z]+\\.mkopa\\.[a-z]+/[A-Za-z.]+' | head -1); "
+                f'[ -n "$ADMIN" ] && {adb} shell dpm remove-active-admin '
+                '"$ADMIN" 2>/dev/null || true'
+            )
             return [
                 f"{adb} shell pm list packages | grep -iE 'mkopa|mdm|devicepolicy' || true",
                 f"{adb} shell pm clear com.mkopa.devicesecurity 2>/dev/null || true",
                 f"{adb} shell pm clear com.mkopa.devicemanager  2>/dev/null || true",
-                f"ADMIN=$({adb} shell dumpsys device_policy 2>/dev/null | "
-                "grep -oE '[a-z]+\\.mkopa\\.[a-z]+/[A-Za-z.]+' | head -1)",
-                f'[ -n "$ADMIN" ] && {adb} shell dpm remove-active-admin "$ADMIN" 2>/dev/null || true',
+                admin_block,
                 "echo 'MDM removal attempted'",
                 f"{adb} reboot",
             ]
@@ -1818,29 +1826,32 @@ class App(QMainWindow):
             # version. Read the ProductType from libimobiledevice and pick
             # instructions from that; print all three combos as a fallback so
             # the user can always follow the correct one.
+            #
+            # The whole detect-and-switch must live in ONE bash invocation,
+            # otherwise $PT is lost and the case/esac fragments each become
+            # syntactically invalid (Worker.run() spawns a fresh /bin/bash
+            # per list item).
             udid = _udid()
-            return [
+            dfu_script = "\n".join([
                 "echo '=== iPhone DFU Guide ==='",
                 f"PT=$(ideviceinfo {udid} -k ProductType 2>/dev/null || true)",
                 'echo "Detected ProductType: ${PT:-unknown}"',
-                # Quote the regex to guard against odd values; we only use
-                # the model number to pick the combo.
                 'case "$PT" in',
                 '  iPhone1,*|iPhone2,*|iPhone3,*|iPhone4,*|iPhone5,*|iPhone6,*|iPhone7,*|iPhone8,*)',
-                "    echo 'iPhone 4S–6s/SE1: hold Home+Power 10s → release Power, keep Home 5s' ;;",
+                "    echo 'iPhone 4S-6s/SE1: hold Home+Power 10s -> release Power, keep Home 5s' ;;",
                 '  iPhone9,*)',
-                "    echo 'iPhone 7/7+: hold Side+Vol Down 10s → release Side, keep Vol Down 5s' ;;",
+                "    echo 'iPhone 7/7+: hold Side+Vol Down 10s -> release Side, keep Vol Down 5s' ;;",
                 '  iPhone10,*|iPhone11,*|iPhone12,*|iPhone13,*|iPhone14,*|iPhone15,*|iPhone16,*|iPhone17,*)',
                 "    echo 'iPhone 8 / X / 11 / 12 / 13 / 14 / 15 / 16: quick-press Vol Up, quick-press Vol Down, hold Side 10s, then hold Side+Vol Down 5s, release Side, keep Vol Down 5s' ;;",
                 '  *)',
                 "    echo 'Unknown / no device. All combos:'",
-                "    echo '  4S–6s/SE1: Home+Power 10s → release Power, keep Home 5s'",
-                "    echo '  7/7+   : Side+Vol Down 10s → release Side, keep Vol Down 5s'",
-                "    echo '  8+     : Vol Up tap, Vol Down tap, hold Side 10s, then Side+Vol Down 5s, release Side, keep Vol Down 5s'",
+                "    echo '  4S-6s/SE1: Home+Power 10s -> release Power, keep Home 5s'",
+                "    echo '  7/7+    : Side+Vol Down 10s -> release Side, keep Vol Down 5s'",
+                "    echo '  8+      : Vol Up tap, Vol Down tap, hold Side 10s, then Side+Vol Down 5s, release Side, keep Vol Down 5s'",
                 "    ;;",
                 'esac',
-                "idevice_id -l",
-            ]
+            ])
+            return [dfu_script, "idevice_id -l"]
         if op.op_id == "ios.passcode":
             return [
                 "echo 'WARNING: full device erase — all data lost'",
