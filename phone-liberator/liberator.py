@@ -1554,7 +1554,7 @@ class App(QMainWindow):
             if not ok2:
                 return None
             return [
-                f"echo 'Pairing with {ipport}…'",
+                f"echo 'Pairing with' {shq(ipport)}",
                 f"echo {shq(code)} | adb pair {shq(ipport)}",
             ]
         if op.op_id == "wadb.disconnect":
@@ -1597,11 +1597,12 @@ class App(QMainWindow):
                 return None
             dst_dir = f"{backup_dir}/apks"
             Path(dst_dir).mkdir(parents=True, exist_ok=True)
+            out_path = f"{dst_dir}/{pkg}.apk"
             return [
                 f"PATH_APK=$({adb} shell pm path {shq(pkg)} | head -1 | cut -d: -f2 | tr -d '\\r')",
-                f"echo \"$PATH_APK\"",
-                f"[ -n \"$PATH_APK\" ] && {adb} pull \"$PATH_APK\" {shq(dst_dir)}/{shq(pkg)}.apk || echo 'package not found'",
-                f"echo 'Saved to {dst_dir}/{pkg}.apk'",
+                'echo "$PATH_APK"',
+                f'[ -n "$PATH_APK" ] && {adb} pull "$PATH_APK" {shq(out_path)} || echo \'package not found\'',
+                f"echo 'Saved to' {shq(out_path)}",
             ]
         if op.op_id == "app.bloat":
             preset = [
@@ -1719,14 +1720,17 @@ class App(QMainWindow):
 
         # ── Mkopa / PAYG ──────────────────────────────────────────────
         if op.op_id == "mkp.remove_mdm":
+            # Use the serial-qualified `{adb}` inside the command-substitution
+            # too, otherwise on multi-device hosts the inner `adb` may target
+            # a different device than the outer commands.
             return [
                 f"{adb} shell pm list packages | grep -iE 'mkopa|mdm|devicepolicy' || true",
                 f"{adb} shell pm clear com.mkopa.devicesecurity 2>/dev/null || true",
                 f"{adb} shell pm clear com.mkopa.devicemanager  2>/dev/null || true",
-                f"{adb} shell dpm remove-active-admin "
-                "$(adb shell dumpsys device_policy 2>/dev/null | "
-                "grep -oE '[a-z]+\\.mkopa\\.[a-z]+/[A-Za-z.]+' | head -1) 2>/dev/null || true",
-                f"echo 'MDM removal attempted'",
+                f"ADMIN=$({adb} shell dumpsys device_policy 2>/dev/null | "
+                "grep -oE '[a-z]+\\.mkopa\\.[a-z]+/[A-Za-z.]+' | head -1)",
+                f'[ -n "$ADMIN" ] && {adb} shell dpm remove-active-admin "$ADMIN" 2>/dev/null || true',
+                "echo 'MDM removal attempted'",
                 f"{adb} reboot",
             ]
         if op.op_id == "mkp.mtk_unlock":
@@ -1810,18 +1814,33 @@ class App(QMainWindow):
             Path(dst).mkdir(parents=True, exist_ok=True)
             return [f"idevicebackup2 {_udid()} backup --full {shq(dst)}", f"echo 'Saved: {dst}'"]
         if op.op_id == "ios.dfu":
-            ios = dev.android or "?"
-            try:
-                v = float(ios.split(".")[0])
-            except Exception:
-                v = 11
-            if v >= 8:
-                g = "iPhone 8+: hold Side+Vol Down 10s → release Side, keep Vol Down 5s"
-            elif v >= 7:
-                g = "iPhone 7: hold Side+Vol Down 10s → release Side, keep Vol Down 5s"
-            else:
-                g = "Older (6-): hold Home+Power 10s → release Power → keep Home 5s"
-            return [f"echo 'DFU Guide: {g}'", "idevice_id -l"]
+            # The DFU button-combo depends on the iPhone *model*, not the iOS
+            # version. Read the ProductType from libimobiledevice and pick
+            # instructions from that; print all three combos as a fallback so
+            # the user can always follow the correct one.
+            udid = _udid()
+            return [
+                "echo '=== iPhone DFU Guide ==='",
+                f"PT=$(ideviceinfo {udid} -k ProductType 2>/dev/null || true)",
+                'echo "Detected ProductType: ${PT:-unknown}"',
+                # Quote the regex to guard against odd values; we only use
+                # the model number to pick the combo.
+                'case "$PT" in',
+                '  iPhone1,*|iPhone2,*|iPhone3,*|iPhone4,*|iPhone5,*|iPhone6,*|iPhone7,*|iPhone8,*)',
+                "    echo 'iPhone 4S–6s/SE1: hold Home+Power 10s → release Power, keep Home 5s' ;;",
+                '  iPhone9,*)',
+                "    echo 'iPhone 7/7+: hold Side+Vol Down 10s → release Side, keep Vol Down 5s' ;;",
+                '  iPhone10,*|iPhone11,*|iPhone12,*|iPhone13,*|iPhone14,*|iPhone15,*|iPhone16,*|iPhone17,*)',
+                "    echo 'iPhone 8 / X / 11 / 12 / 13 / 14 / 15 / 16: quick-press Vol Up, quick-press Vol Down, hold Side 10s, then hold Side+Vol Down 5s, release Side, keep Vol Down 5s' ;;",
+                '  *)',
+                "    echo 'Unknown / no device. All combos:'",
+                "    echo '  4S–6s/SE1: Home+Power 10s → release Power, keep Home 5s'",
+                "    echo '  7/7+   : Side+Vol Down 10s → release Side, keep Vol Down 5s'",
+                "    echo '  8+     : Vol Up tap, Vol Down tap, hold Side 10s, then Side+Vol Down 5s, release Side, keep Vol Down 5s'",
+                "    ;;",
+                'esac',
+                "idevice_id -l",
+            ]
         if op.op_id == "ios.passcode":
             return [
                 "echo 'WARNING: full device erase — all data lost'",
@@ -1917,7 +1936,13 @@ class App(QMainWindow):
             nck, ok = QInputDialog.getText(self, "AT Unlock", "NCK code:", QLineEdit.Normal, "")
             if not ok or not nck:
                 return None
-            return [f"(echo 'AT+CLCK=\"PN\",0,\"{nck}\"' && sleep 2) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"]
+            # Build the AT command in Python and feed it to the modem via a
+            # single shell argument that goes through `shq()` so the user's
+            # NCK value cannot escape into the surrounding shell context.
+            at = f'AT+CLCK="PN",0,"{nck}"'
+            return [
+                f"(printf '%s\\r\\n' {shq(at)}; sleep 2) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"
+            ]
         if op.op_id == "ftr.nokia":
             return [
                 f"which wine >/dev/null 2>&1 || {{ echo 'Install Wine: Maintenance → Wine'; exit 1; }}",
@@ -1939,17 +1964,34 @@ class App(QMainWindow):
             nck, ok = QInputDialog.getText(self, "AT+CLCK Unlock", "NCK code:", QLineEdit.Normal, "")
             if not ok or not nck:
                 return None
-            return [f"(echo 'AT+CLCK=\"PN\",0,\"{nck}\"' && sleep 2) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"]
+            at = f'AT+CLCK="PN",0,"{nck}"'
+            return [
+                f"(printf '%s\\r\\n' {shq(at)}; sleep 2) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"
+            ]
         if op.op_id == "net.attempts":
             return [f"(echo 'AT+CPIN?' && sleep 1) | timeout 5 socat - file:{shq(ser)},raw,echo=0,b115200"]
         if op.op_id == "net.nck_gen":
             imei, ok = QInputDialog.getText(self, "NCK Generator", "IMEI:", QLineEdit.Normal, "")
             if not ok or not imei:
                 return None
+            # Reject obviously bogus inputs up-front (defense in depth) and
+            # pass the value as `argv` to python3 so it cannot break out of
+            # the shell *or* python string contexts.
+            if not imei.isdigit() or not (8 <= len(imei) <= 17):
+                QMessageBox.warning(self, "NCK Generator",
+                                    "IMEI must be 8–17 digits.")
+                return None
+            py = (
+                "import sys; i=sys.argv[1]; "
+                "s=sum((2*int(d)-9 if 2*int(d)>9 else 2*int(d)) "
+                "if (len(i)-idx-1)%2 else int(d) for idx,d in enumerate(i)); "
+                "print('Luhn valid:', s%10==0)"
+            )
             return [
-                f"echo 'Calculating NCK hint for IMEI {imei}'",
-                f"echo 'Luhn check digit:' $(python3 -c \"i='{imei}'; s=sum((2*int(d) - 9 if 2*int(d) > 9 else 2*int(d)) if (len(i)-idx-1)%2 else int(d) for idx,d in enumerate(i)); print(s%10==0)\")",
-                f"echo 'Note: real NCK requires the carrier MCC+MNC + master keys; use a paid IMEI service if needed.'",
+                f"echo 'Calculating NCK hint for IMEI' {shq(imei)}",
+                f"python3 -c {shq(py)} {shq(imei)}",
+                "echo 'Note: real NCK requires the carrier MCC+MNC + master keys; "
+                "use a paid IMEI service if needed.'",
             ]
         if op.op_id == "net.qc_nv":
             return [
