@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Phone Liberator
+Comment=Android iPhone Mkopa Feature Network MTK EDL Unlock Tool
+Exec=bash -c "cd $HOME/phone-liberator && python3 liberator.py"
+Icon=phone
+Terminal=false
+Type=Application
+Categories=Utility;System;
+StartupNotify=true

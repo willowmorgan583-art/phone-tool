@@ -1,0 +1,12 @@
+backup/
+firmware/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+tools/*.zip
+tools/*.tar.gz
+tools/*.exe
+tools/SP_Flash_Tool*/
+*.ipsw
+*.bin
