@@ -507,8 +507,7 @@ def _sudo_token_spans(cmd: str) -> list[tuple[int, int]]:
             i += 1
             continue
         if ch in ";|&":
-            if ch in "|;" or cmd[i:i + 2] in ("&&", "||"):
-                command_expected = True
+            command_expected = True
             i += 2 if cmd[i:i + 2] in ("&&", "||") else 1
             continue
         start = i
