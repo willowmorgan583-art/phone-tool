@@ -6,8 +6,8 @@ description: Test the phone-liberator PyQt5 desktop app end-to-end. Use when ver
 # Testing phone-liberator
 
 Single-file PyQt5 GUI at `phone-liberator/liberator.py`. The org environment
-config already installs `python3-pyqt5`, `xvfb`, `adb`, `fastboot`, so you do
-not need to install anything for a typical session.
+config should install `python3-pyqt5`, `xvfb`, `adb`, `fastboot`, `wmctrl`, and
+`xdotool`, so you do not need to install anything for a typical session.
 
 ## How to run
 
@@ -30,6 +30,12 @@ To maximise the live window for a recording on Linux:
 DISPLAY=:0 wmctrl -ir $(DISPLAY=:0 xdotool search --name 'Phone Liberator' | tail -1) -b add,maximized_vert,maximized_horz
 ```
 
+If a browser or other launched app steals focus during a GUI test, reactivate
+Phone Liberator with:
+```bash
+DISPLAY=:0 wmctrl -a 'Phone Liberator v5.0'
+```
+
 ## Architecture quirks that bite
 
 - **`Worker.run()` runs each item in `self.cmds` in its own `/bin/bash`
@@ -45,6 +51,10 @@ DISPLAY=:0 wmctrl -ir $(DISPLAY=:0 xdotool search --name 'Phone Liberator' | tai
 - **Detector thread accesses raw C++ Qt objects.** A `RuntimeError: wrapped
   C/C++ object … has been deleted` from `_det.isRunning()` means the previous
   detector finished — catch it and start a fresh one.
+- **Search indexes labels, descriptions, keywords, and tool IDs.** Broad terms
+  can legitimately match more than one card (for example a description may
+  contain the same word). For deterministic GUI assertions, prefer exact tool
+  IDs such as `dev.reboot_menu`, `adb.permissions`, or `mnt.pyserial`.
 
 ## How to test ops without real hardware
 
@@ -84,6 +94,21 @@ For shell-injection tests, point the stub at `touch /tmp/PWN-<TAG>` and assert
 the marker file is **NOT** created when the op is fed a malicious payload
 (quote-breaking string for NCK / IMEI / package name / etc.).
 
+## Sudo parser checks
+
+When changing sudo handling, test both UI prompt behavior and parser edge cases.
+A lightweight parser guard can extract `_sudo_token_spans`/`sudo_wrap` and assert:
+
+- `echo 'sudo apt'` is not detected and is left unchanged.
+- `cd /tmp && sudo make install` wraps to `&& sudo -A -p '' make install`.
+- `cd /tmp & sudo make install` wraps to `& sudo -A -p '' make install`.
+
+For GUI testing, a quoted informational sudo op such as Maintenance →
+`Sideloadly` should not open the sudo dialog, while a real sudo op such as
+Maintenance → `pyserial` should open `Sudo password required`; cancel should log
+`[pyserial] sudo password entry cancelled` and should not start the install
+command.
+
 ## Device dataclass
 
 ```python
@@ -108,6 +133,8 @@ field stores the iOS *version* string for `method='ios'` (e.g. `'17.1'`).
   Unlock, MTK / EDL, Vendor, Maintenance.
 - `Ctrl+F` opens search (focus the search box first if shortcut doesn't fire);
   search counter reads `<filtered>/<total> match`.
+- Use exact tool-ID queries for one-result assertions: examples include
+  `dev.reboot_menu`, `adb.permissions`, `mnt.sideloadly`, and `mnt.pyserial`.
 - `Ctrl+T` toggles between Catppuccin Mocha (`#1e1e2e`) and Latte (`#eff1f5`).
   If the round-trip doesn't fire, the active widget likely doesn't propagate
   the QShortcut — click the search box or sidebar to give it focus, then retry.
