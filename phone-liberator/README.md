@@ -16,7 +16,11 @@ Runs on Debian / Ubuntu Linux.
 - **Settings dialog** — customise install / backup / firmware / tools / log paths,
   autorefresh interval, "reboot after operation" default.
 - **Toast notifications** & **confirmation dialogs** for every `DANGER` operation.
-- **70+ operations** across 13 categories (see below).
+- **130+ operations** across 13 categories (see below), each with an on-card
+  description, tooltip, severity badge and searchable tool ID.
+- **Sudo password dialog** — tools that need administrator access prompt for
+  the Linux sudo password in a masked dialog and pass it to `sudo -S` without
+  printing the real password in logs.
 - **Bug fixes vs v4**:
   - `Abort` button now kills the entire process group (`os.killpg`) instead of
     just the parent shell — child processes no longer survive an abort.
@@ -32,19 +36,19 @@ Runs on Debian / Ubuntu Linux.
 
 | Category | Highlights |
 |---|---|
-| **Device** | Scan, device-info, scrcpy mirror / screen record, battery + network info, ADB shell |
-| **Android ADB** | Lock removal, FRP bypass, backup, APK install, sideload, screenshot, logcat, install-from-url |
+| **Device** | Scan, device-info, scrcpy mirror / screen record, battery + network info, ADB shell, reboot target menu |
+| **Android ADB** | Lock removal, FRP bypass, backup, APK install, sideload, screenshot, logcat, install-from-url, app permissions, intent launcher |
 | **Wi-Fi ADB** | Pair + connect over TCP/IP, list connected devices, disconnect all |
 | **App Manager** | List / disable / enable / uninstall / clear data / extract APK |
-| **Fastboot** | OEM unlock, flashing-unlock, erase FRP, factory reset, flash boot/recovery/dtbo/vbmeta + boot.img boot, flash full ZIP, lock bootloader, disable verity |
+| **Fastboot** | OEM unlock, flashing-unlock, erase FRP, factory reset, flash boot/recovery/dtbo/vbmeta + boot.img boot, flash full ZIP, lock bootloader, disable verity, A/B slot manager |
 | **Root** | Magisk patched-boot flow, KernelSU, root-status check |
 | **Mkopa / PAYG** | MDM removal, stock firmware restore, lock bootloader, kiosk wipe, Safaricom unlock |
-| **iPhone** | DFU guide, pair/info/backup, jailbreak matrix (checkra1n, palera1n, unc0ver, Dopamine, Serotonin, TrollStore, MacDirtyCow), SSH, Sideloadly, Activation-Lock guidance |
-| **Feature Phone** | AT info, IMEI read, factory reset, AT+CLCK unlock, SP Flash Tool, JAF/Phoenix |
+| **iPhone** | DFU guide, pair/info/backup, IPSW restore, diagnostics, jailbreak matrix (checkra1n, palera1n, unc0ver, Dopamine, Serotonin, TrollStore, MacDirtyCow), SSH, Sideloadly, Activation-Lock guidance |
+| **Feature Phone** | AT info, IMEI read, factory reset, AT+CLCK unlock, custom AT command, SP Flash Tool, JAF/Phoenix |
 | **Network Unlock** | Unlock attempts, NCK gen, QC NV, MTK net-unlock, IMEI check |
-| **MTK / EDL** | mtkclient Fastboot/FRP/read, edl.py partitions/FRP/full-read/flash |
-| **Vendor** | Xiaomi unlock-wait, OPPO/Realme codes, Huawei testpoint guide, Samsung Download mode, LG bootloader |
-| **Maintenance** | One-click install of every dependency (ADB, scrcpy, mtkclient, edl.py, checkra1n, palera1n, Heimdall, samloader, Wine…) and `/etc/udev/rules.d/51-phone-liberator.rules` |
+| **MTK / EDL** | mtkclient Fastboot/FRP/read, edl.py partitions/FRP/full-read/flash, chipset detector |
+| **Vendor** | Xiaomi unlock-wait, OPPO/Realme codes, Huawei testpoint guide, Samsung Download mode, Samsung FRP checklist, LG bootloader, Motorola unlock, Pixel factory-image helpers |
+| **Maintenance** | One-click install of every dependency (ADB, scrcpy, mtkclient, edl.py, checkra1n, palera1n, Heimdall, samloader, Wine, Spreadtrum/Unisoc support…) and `/etc/udev/rules.d/51-phone-liberator.rules`, plus toolchain verification |
 
 ## Requirements
 

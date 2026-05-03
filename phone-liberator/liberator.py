@@ -21,6 +21,7 @@ Tested on Debian / Ubuntu with python3-pyqt5, adb, fastboot.
 from __future__ import annotations
 
 import os
+import re
 import shlex
 import signal
 import subprocess
@@ -65,6 +66,7 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QShortcut,
     QSizePolicy,
+    QStyle,
     QSplitter,
     QStatusBar,
     QTextEdit,
@@ -151,7 +153,10 @@ def stylesheet(t: dict[str, str]) -> str:
     return f"""
     QMainWindow, QWidget {{ background:{t['bg']}; color:{t['text']}; }}
     QToolTip {{ background:{t['surface3']}; color:{t['text']};
-                border:1px solid {t['border_hi']}; padding:4px; }}
+                border:1px solid {t['border_hi']}; padding:8px 10px; border-radius:6px; }}
+    QMessageBox, QInputDialog, QFileDialog {{
+        background:{t['surface']}; color:{t['text']};
+    }}
     QFrame#sidebar {{ background:{t['surface']}; border-right:1px solid {t['border']}; }}
     QListWidget#sidebarList {{
         background:transparent; border:none; outline:none;
@@ -169,8 +174,13 @@ def stylesheet(t: dict[str, str]) -> str:
         background:{t['surface']}; border:1px solid {t['border']}; border-radius:8px;
     }}
     QFrame#opcard:hover {{ border:1px solid {t['accent']}; }}
+    QFrame#heroCard {{
+        background:{t['surface2']}; border:1px solid {t['border']}; border-radius:10px;
+    }}
     QLabel#cardTitle    {{ font-weight:600; font-size:13px; color:{t['text']}; }}
-    QLabel#cardDesc     {{ color:{t['text_dim']}; font-size:11px; }}
+    QLabel#cardDesc     {{ color:{t['text_dim']}; font-size:11px; line-height:1.35; }}
+    QLabel#heroTitle    {{ color:{t['text']}; font-size:16px; font-weight:700; }}
+    QLabel#heroDesc     {{ color:{t['text_dim']}; font-size:12px; }}
     QLabel#sectionHdr   {{ color:{t['text_dim']}; font-weight:600;
                            font-size:11px; letter-spacing:1px; }}
     QLabel#bigTitle     {{ font-size:18px; font-weight:600; color:{t['text']}; }}
@@ -191,6 +201,9 @@ def stylesheet(t: dict[str, str]) -> str:
         background:{t['accent']}; color:{t['bg']}; font-weight:600;
     }}
     QPushButton#runBtn:hover {{ background:{t['accent_hi']}; }}
+    QPushButton#runBtn:focus {{
+        border:2px solid {t['accent_hi']}; padding:4px 12px;
+    }}
     QPushButton[severity="safe"]   {{ background:{t['ok_btn']};      color:#fff; font-weight:600; }}
     QPushButton[severity="warn"]   {{ background:{t['warn_btn']};    color:#fff; font-weight:600; }}
     QPushButton[severity="danger"] {{ background:{t['danger_btn']};  color:#fff; font-weight:600; }}
@@ -291,30 +304,49 @@ CATEGORIES: list[tuple[str, str]] = [
     ("MAINT", "Maintenance"),
 ]
 
+CATEGORY_DESCRIPTIONS: dict[str, str] = {
+    "DEV": "Identify connected devices, collect diagnostics, mirror screens, and reboot into service modes.",
+    "ADB": "Safe Android maintenance over ADB: backups, app installs, logs, screenshots, and guided repair tools.",
+    "WADB": "Pair, connect, list, and disconnect Android devices over Wi-Fi ADB.",
+    "APP": "Inspect, extract, enable, disable, uninstall, and clear Android app packages.",
+    "FB": "Bootloader and firmware repair workflows for Android devices in fastboot mode.",
+    "ROOT": "Root-oriented Magisk and KernelSU helpers for owned development or repair devices.",
+    "MKP": "PAYG and MDM repair flows for authorized technicians servicing owned Android handsets.",
+    "IOS": "iPhone pairing, backup, diagnostics, DFU, restore, and jailbreak-compatibility references.",
+    "FTR": "Feature-phone and modem tools using serial AT commands and legacy service utilities.",
+    "NET": "Carrier-lock diagnostics and legal unlock helpers for authorized device servicing.",
+    "MTK": "MediaTek, Qualcomm EDL, and chipset service utilities for low-level repair.",
+    "VND": "Brand-specific guides for Samsung, Xiaomi, OPPO, Huawei, LG, Pixel, Motorola, and more.",
+    "MAINT": "Install, verify, and repair host-side dependencies used by Phone Liberator.",
+}
+
 OPS: list[Op] = [
     # ── Device ─────────────────────────────────────────────────────────────
-    Op("DEV", "dev.scan",         "Scan Devices",     "Re-scan ADB / fastboot / serial / iOS", "safe"),
-    Op("DEV", "dev.info",         "Device Info",      "Detailed info: Android ver, fingerprint, battery, root"),
-    Op("DEV", "dev.scrcpy",       "Screen Mirror (scrcpy)", "Launch scrcpy mirror with audio if available", "safe", keywords=("mirror", "screen")),
-    Op("DEV", "dev.screenrec",    "Screen Record",    "Record screen via adb screenrecord (mp4)"),
-    Op("DEV", "dev.battery",      "Battery / Health", "dumpsys battery + health info"),
-    Op("DEV", "dev.network",      "Network Info",     "IP / MAC / SSID / DNS"),
-    Op("DEV", "dev.terminal",     "Open ADB Shell",   "Launch interactive ADB shell in a terminal"),
+    Op("DEV", "dev.scan",         "Scan Devices",     "Find connected Android, iPhone, fastboot, and serial devices.", "safe"),
+    Op("DEV", "dev.info",         "Device Info",      "Collect model, OS, build fingerprint, battery, CPU, and root status."),
+    Op("DEV", "dev.scrcpy",       "Screen Mirror (scrcpy)", "Mirror an Android screen on the desktop with scrcpy.", "safe", keywords=("mirror", "screen")),
+    Op("DEV", "dev.screenrec",    "Screen Record",    "Record the Android screen to an MP4 in the backup folder."),
+    Op("DEV", "dev.battery",      "Battery / Health", "Show battery level, temperature, charging, and health data."),
+    Op("DEV", "dev.network",      "Network Info",     "Show Wi-Fi, IP, MAC, DNS, and radio/network details."),
+    Op("DEV", "dev.terminal",     "Open ADB Shell",   "Open an interactive shell for the selected Android device."),
+    Op("DEV", "dev.reboot_menu",  "Reboot Menu",      "Choose Android reboot target: system, recovery, bootloader, or sideload.", "safe", keywords=("restart", "recovery")),
 
     # ── Android ADB ───────────────────────────────────────────────────────
-    Op("ADB", "adb.lock_remove",  "Remove Screen Lock", "Delete lock DB (root)", "warn", needs_root=True, keywords=("password", "pin", "pattern")),
-    Op("ADB", "adb.frp_bypass",   "FRP Bypass",         "Disable setup-wizard via content provider", "warn"),
-    Op("ADB", "adb.backup_sd",    "Backup /sdcard",     "Pull /sdcard to backup dir", "safe"),
-    Op("ADB", "adb.install_apk",  "Install APK",        "adb install -r -g <file.apk>"),
-    Op("ADB", "adb.sideload_zip", "Sideload ZIP",       "adb sideload OTA / custom zip"),
-    Op("ADB", "adb.reboot_fb",    "Reboot → Fastboot",  "Reboot into bootloader"),
-    Op("ADB", "adb.reboot_rec",   "Reboot → Recovery",  "Reboot into recovery"),
-    Op("ADB", "adb.screenshot",   "Screenshot",         "Capture screen → backup dir", "safe"),
-    Op("ADB", "adb.logcat",       "Logcat (live)",      "Stream device logs"),
-    Op("ADB", "adb.dump_props",   "Dump Props",         "All system properties"),
-    Op("ADB", "adb.sysinfo",      "Sysinfo",            "CPU / RAM / Storage snapshot"),
-    Op("ADB", "adb.dns_override", "Set Private DNS",    "Force settings put global private_dns_specifier"),
-    Op("ADB", "adb.demo_mode",    "Toggle Demo Mode",   "Clean status bar for screenshots"),
+    Op("ADB", "adb.lock_remove",  "Remove Screen Lock", "Delete Android lock database files on rooted devices you own.", "warn", needs_root=True, keywords=("password", "pin", "pattern")),
+    Op("ADB", "adb.frp_bypass",   "FRP Bypass",         "Open setup-wizard and FRP troubleshooting commands for owned devices.", "warn"),
+    Op("ADB", "adb.backup_sd",    "Backup /sdcard",     "Copy user-visible Android storage into the backup directory.", "safe"),
+    Op("ADB", "adb.install_apk",  "Install APK",        "Install a local APK with runtime permissions granted."),
+    Op("ADB", "adb.sideload_zip", "Sideload ZIP",       "Send an OTA or recovery ZIP to a device in sideload mode."),
+    Op("ADB", "adb.reboot_fb",    "Reboot → Fastboot",  "Restart Android into bootloader/fastboot mode."),
+    Op("ADB", "adb.reboot_rec",   "Reboot → Recovery",  "Restart Android into recovery mode."),
+    Op("ADB", "adb.screenshot",   "Screenshot",         "Capture a PNG screenshot into the backup folder.", "safe"),
+    Op("ADB", "adb.logcat",       "Logcat (live)",      "Stream Android logs until stopped or aborted."),
+    Op("ADB", "adb.dump_props",   "Dump Props",         "Export Android system properties for diagnostics."),
+    Op("ADB", "adb.sysinfo",      "Sysinfo",            "Snapshot CPU, RAM, storage, and package diagnostics."),
+    Op("ADB", "adb.dns_override", "Set Private DNS",    "Configure Android private DNS hostname via settings."),
+    Op("ADB", "adb.demo_mode",    "Toggle Demo Mode",   "Enable or disable clean status-bar demo mode for screenshots."),
+    Op("ADB", "adb.permissions",  "App Permissions",    "List requested and granted permissions for one Android app.", "safe", keywords=("package", "permission")),
+    Op("ADB", "adb.intent",       "Launch Intent",      "Start an Android activity/action safely from a guided form.", "safe", keywords=("activity", "am start")),
 
     # ── Wi-Fi ADB ─────────────────────────────────────────────────────────
     Op("WADB", "wadb.tcpip",      "Enable TCP/IP",      "adb tcpip 5555 (USB once, then wireless)", "safe"),
@@ -327,26 +359,27 @@ OPS: list[Op] = [
     Op("APP", "app.list",         "List Packages",      "Filter installed packages with regex"),
     Op("APP", "app.uninstall",    "Uninstall App",      "Uninstall by package name", "warn"),
     Op("APP", "app.disable",      "Disable App",        "pm disable-user --user 0", "warn"),
-    Op("APP", "app.enable",       "Enable App",         "pm enable", "safe"),
+    Op("APP", "app.enable",       "Enable App",         "Re-enable a disabled Android package for the current user.", "safe"),
     Op("APP", "app.clear",        "Clear App Data",     "pm clear <pkg>", "warn"),
     Op("APP", "app.extract",      "Extract APK",        "Pull installed APK to backup dir", "safe"),
     Op("APP", "app.bloat",        "Disable Bloatware",  "Disable common preset bloat list", "warn"),
 
     # ── Fastboot ──────────────────────────────────────────────────────────
-    Op("FB", "fb.oem_unlock",     "OEM Unlock",         "fastboot oem unlock (wipes data!)", "danger"),
-    Op("FB", "fb.flashing_unlock","Flashing Unlock",    "fastboot flashing unlock (newer devices)", "danger"),
-    Op("FB", "fb.frp_erase",      "Erase FRP",          "fastboot erase frp", "warn"),
-    Op("FB", "fb.factory_reset",  "Factory Reset",      "fastboot -w (wipe data + cache)", "danger"),
-    Op("FB", "fb.reboot",         "Fastboot Reboot",    "Reboot from fastboot"),
-    Op("FB", "fb.lock_bl",        "Lock Bootloader",    "fastboot oem lock", "warn"),
-    Op("FB", "fb.flash_boot",     "Flash boot.img",     "Flash custom / stock boot image", "warn"),
-    Op("FB", "fb.flash_recovery", "Flash recovery.img", "Flash recovery partition", "warn"),
-    Op("FB", "fb.flash_dtbo",     "Flash dtbo.img",     "Flash device-tree blob overlay", "warn"),
-    Op("FB", "fb.flash_vbmeta",   "Disable Verity",     "Flash vbmeta with --disable-verity --disable-verification", "warn"),
-    Op("FB", "fb.boot_temp",      "Boot temp boot.img", "Boot a one-shot image (no flash)", "safe"),
-    Op("FB", "fb.flash_zip",      "Flash firmware .zip","Flash all partitions from extracted zip", "warn"),
-    Op("FB", "fb.getvar",         "Bootloader Info",    "fastboot getvar all"),
-    Op("FB", "fb.nuke",           "NUKE ALL ⚠",         "Wipe every partition (irreversible)", "danger", needs_root=True),
+    Op("FB", "fb.oem_unlock",     "OEM Unlock",         "Unlock older Android bootloaders; this wipes user data.", "danger"),
+    Op("FB", "fb.flashing_unlock","Flashing Unlock",    "Unlock modern Android bootloaders; this wipes user data.", "danger"),
+    Op("FB", "fb.frp_erase",      "Erase FRP",          "Erase fastboot FRP partition when supported by the device.", "warn"),
+    Op("FB", "fb.factory_reset",  "Factory Reset",      "Run fastboot wipe for userdata and cache.", "danger"),
+    Op("FB", "fb.reboot",         "Fastboot Reboot",    "Restart a device out of fastboot mode."),
+    Op("FB", "fb.lock_bl",        "Lock Bootloader",    "Re-lock bootloader after restoring verified stock firmware.", "warn"),
+    Op("FB", "fb.flash_boot",     "Flash boot.img",     "Flash a selected boot image to the boot partition.", "warn"),
+    Op("FB", "fb.flash_recovery", "Flash recovery.img", "Flash a selected recovery image to recovery partition.", "warn"),
+    Op("FB", "fb.flash_dtbo",     "Flash dtbo.img",     "Flash a selected DTBO image to device-tree overlay.", "warn"),
+    Op("FB", "fb.flash_vbmeta",   "Disable Verity",     "Flash vbmeta with verification disabled for repair workflows.", "warn"),
+    Op("FB", "fb.boot_temp",      "Boot temp boot.img", "Boot an image once without flashing it.", "safe"),
+    Op("FB", "fb.flash_zip",      "Flash firmware .zip","Extract and flash matching partition images from a firmware ZIP.", "warn"),
+    Op("FB", "fb.getvar",         "Bootloader Info",    "Print all fastboot variables for identification and service logs."),
+    Op("FB", "fb.slot",           "A/B Slot Manager",   "Show or switch active fastboot slot on A/B devices.", "warn", keywords=("slot", "set_active")),
+    Op("FB", "fb.nuke",           "NUKE ALL ⚠",         "Erase key partitions irreversibly; last-resort lab use only.", "danger", needs_root=True),
 
     # ── Root ──────────────────────────────────────────────────────────────
     Op("ROOT", "root.magisk_pull",   "Pull Stock boot.img", "Read stock boot via mtkclient/edl/dd", "safe"),
@@ -369,6 +402,8 @@ OPS: list[Op] = [
     Op("IOS", "ios.info",         "Info / UDID",        "Device info via libimobiledevice"),
     Op("IOS", "ios.pair",         "Pair / Trust",       "Pair and trust iPhone", "safe"),
     Op("IOS", "ios.backup",       "Backup",             "idevicebackup2 → backup dir", "safe"),
+    Op("IOS", "ios.restore_ipsw",  "Restore IPSW",       "Restore a selected Apple IPSW with idevicerestore.", "danger", keywords=("firmware", "ipsw")),
+    Op("IOS", "ios.diagnostics",   "Diagnostics",        "Collect iPhone diagnostics, syslog hint, and lockdown status.", "safe"),
     Op("IOS", "ios.dfu",          "DFU Guide",          "Step-by-step DFU instructions"),
     Op("IOS", "ios.passcode",     "Passcode Reset",     "Recovery + restore via iTunes / idevicerestore", "danger"),
     Op("IOS", "ios.jb_matrix",    "Jailbreak Matrix",   "2025 jailbreak compatibility chart"),
@@ -385,12 +420,13 @@ OPS: list[Op] = [
 
     # ── Feature Phone ─────────────────────────────────────────────────────
     Op("FTR", "ftr.at_info",      "AT Info",            "Model / IMEI / signal via AT"),
-    Op("FTR", "ftr.imei",         "Read IMEI",          "AT+CGSN"),
+    Op("FTR", "ftr.imei",         "Read IMEI",          "Read handset IMEI from the selected serial modem."),
     Op("FTR", "ftr.factory",      "Factory Reset",      "AT reset (multi-brand)", "warn"),
-    Op("FTR", "ftr.at_unlock",    "AT Network Unlock",  "AT+CLCK NCK", "warn"),
+    Op("FTR", "ftr.at_unlock",    "AT Network Unlock",  "Send an AT+CLCK network unlock code to a feature phone.", "warn"),
     Op("FTR", "ftr.nokia",        "Nokia JAF/Phoenix",  "Launch via Wine"),
     Op("FTR", "ftr.spft",         "SP Flash Tool",      "Launch SP Flash Tool"),
     Op("FTR", "ftr.dcunlock",     "DC-Unlocker",        "Launch dc-unlocker via Wine"),
+    Op("FTR", "ftr.custom_at",     "Custom AT Command",  "Send one technician-entered AT command to the selected serial port.", "warn", keywords=("serial", "modem")),
 
     # ── Network Unlock ────────────────────────────────────────────────────
     Op("NET", "net.clck",         "AT+CLCK Carrier Unlock", "Send NCK via AT+CLCK=PN,0", "warn"),
@@ -408,13 +444,17 @@ OPS: list[Op] = [
     Op("MTK", "edl.frp",          "EDL Erase FRP",      "Erase frp + protect_f", "warn"),
     Op("MTK", "edl.full_read",    "EDL Read Full Flash","Full device flash dump", "safe"),
     Op("MTK", "edl.flash_part",   "EDL Flash Partition","Flash one partition", "warn"),
+    Op("MTK", "mtk.detect",       "Chipset Detector",   "Probe connected device with ADB, fastboot, MTK, and EDL tools.", "safe", keywords=("qualcomm", "mediatek", "spreadtrum")),
 
     # ── Vendor ────────────────────────────────────────────────────────────
     Op("VND", "vnd.xiaomi",       "Xiaomi Unlock Wait", "mi-flash-unlock auth-wait guide"),
     Op("VND", "vnd.oppo",         "OPPO/Realme Codes",  "Engineering & deep-test dialer codes"),
     Op("VND", "vnd.huawei",       "Huawei Testpoint",   "DC-Phoenix + testpoint guide"),
     Op("VND", "vnd.samsung_dl",   "Samsung Download",   "Download Mode entry guide"),
+    Op("VND", "vnd.samsung_frp",  "Samsung FRP Guide",  "Official-mode Samsung FRP and stock restore checklist.", "warn", keywords=("odin", "heimdall")),
     Op("VND", "vnd.lg",           "LG Bridge",          "LG Bridge / LGUP guide"),
+    Op("VND", "vnd.motorola",     "Motorola Unlock",    "Motorola bootloader unlock-data collection and portal guide.", "warn"),
+    Op("VND", "vnd.pixel",        "Google Pixel Tools", "Pixel fastboot flashing, slot, and factory-image helpers.", "warn"),
 
     # ── Maintenance ───────────────────────────────────────────────────────
     Op("MAINT", "mnt.udev",       "USB udev Rules",     "Install /etc/udev/rules.d/51-phone-liberator.rules", "safe"),
@@ -433,6 +473,8 @@ OPS: list[Op] = [
     Op("MAINT", "mnt.spflash",    "SP Flash Tool",      "Open spflashtools.com/linux", "safe"),
     Op("MAINT", "mnt.pyserial",   "pyserial",           "pip3 install pyserial", "safe"),
     Op("MAINT", "mnt.pyusb",      "pyusb",              "pip3 install pyusb", "safe"),
+    Op("MAINT", "mnt.spreadtrum", "Spreadtrum / SPD",   "Install research tooling and show SPD service-mode notes.", "safe", keywords=("unisoc", "spd")),
+    Op("MAINT", "mnt.verify",     "Verify Toolchain",   "Check installed phone service tools and show versions.", "safe"),
     Op("MAINT", "mnt.wine",       "Wine",               "apt install wine wine32 wine64", "safe"),
     Op("MAINT", "mnt.all",        "Install ALL ⚡",     "Install every dependency in one shot", "safe"),
 ]
@@ -451,6 +493,24 @@ def shq(s: str) -> str:
 def ensure_dirs() -> None:
     for p in DEFAULT_PATHS.values():
         Path(p).mkdir(parents=True, exist_ok=True)
+
+
+def sudo_wrap(cmd: str, password: str) -> str:
+    if not password:
+        return cmd
+    quoted_pw = shq(password)
+    pattern = re.compile(r"(?<![\w./-])sudo(?![\w-])")
+    return pattern.sub("sudo -A -p ''", cmd)
+
+
+def sudo_askpass_prefix() -> str:
+    script = (
+        "ASKPASS=$(mktemp /tmp/phone-liberator-askpass.XXXXXX); "
+        "printf '%s\\n' '#!/bin/sh' 'printf %s \"$PHONE_LIBERATOR_SUDO_PASSWORD\"' > \"$ASKPASS\"; "
+        "chmod 700 \"$ASKPASS\"; export SUDO_ASKPASS=\"$ASKPASS\"; "
+        "trap 'rm -f \"$ASKPASS\"' EXIT; "
+    )
+    return script
 
 
 def open_terminal_cmd(cmd: str) -> str:
@@ -476,10 +536,11 @@ class Worker(QThread):
     log = pyqtSignal(str, str)
     done = pyqtSignal(int)
 
-    def __init__(self, cmds: list[str], label: str = "") -> None:
+    def __init__(self, cmds: list[str], label: str = "", sudo_password: str = "") -> None:
         super().__init__()
         self.cmds = cmds
         self.label = label
+        self.sudo_password = sudo_password
         self._abort = False
         self._proc: subprocess.Popen | None = None
 
@@ -502,10 +563,14 @@ class Worker(QThread):
                 self.log.emit("[ABORTED]", "danger")
                 self.done.emit(-1)
                 return
-            self.log.emit(f"$ {cmd}", "info")
+            run_cmd = sudo_wrap(cmd, self.sudo_password)
+            if self.sudo_password:
+                run_cmd = sudo_askpass_prefix() + run_cmd
+            log_cmd = cmd if not self.sudo_password else sudo_wrap(cmd, "••••••••")
+            self.log.emit(f"$ {log_cmd}", "info")
             try:
                 self._proc = subprocess.Popen(
-                    cmd,
+                    run_cmd,
                     shell=True,
                     executable="/bin/bash",
                     stdout=subprocess.PIPE,
@@ -513,6 +578,10 @@ class Worker(QThread):
                     text=True,
                     bufsize=1,
                     start_new_session=True,
+                    env={
+                        **os.environ,
+                        "PHONE_LIBERATOR_SUDO_PASSWORD": self.sudo_password,
+                    } if self.sudo_password else None,
                 )
                 assert self._proc.stdout is not None
                 for line in self._proc.stdout:
@@ -689,11 +758,13 @@ class OpCard(QFrame):
         super().__init__()
         self.op = op
         self.setObjectName("opcard")
+        self.setToolTip(f"<b>{op.label}</b><br>{op.desc}<br><br>ID: {op.op_id}")
         self.setMinimumWidth(280)
+        self.setMinimumHeight(132)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(14, 10, 14, 12)
-        lay.setSpacing(6)
+        lay.setSpacing(8)
 
         hdr = QHBoxLayout()
         hdr.setSpacing(6)
@@ -725,11 +796,16 @@ class OpCard(QFrame):
         desc.setObjectName("cardDesc")
         desc.setWordWrap(True)
         lay.addWidget(desc, 1)
+        meta = QLabel(f"Tool ID: {op.op_id}")
+        meta.setObjectName("cardDesc")
+        meta.setToolTip("Use this ID when searching logs or reporting a tool issue.")
+        lay.addWidget(meta)
 
         run_row = QHBoxLayout()
         run_row.addStretch()
         btn = QPushButton("Run ▸")
         btn.setObjectName("runBtn")
+        btn.setToolTip(f"Run {op.label}: {op.desc}")
         if op.severity in ("safe", "warn", "danger"):
             btn.setProperty("severity", op.severity)
         btn.clicked.connect(lambda: self.triggered.emit(op.op_id))
@@ -747,6 +823,27 @@ class CategoryPage(QWidget):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(20, 14, 20, 14)
         outer.setSpacing(10)
+
+        title = next((name for key, name in CATEGORIES if key == cat), cat)
+        hero = QFrame()
+        hero.setObjectName("heroCard")
+        hero_lay = QHBoxLayout(hero)
+        hero_lay.setContentsMargins(16, 12, 16, 12)
+        hero_lay.setSpacing(10)
+        text_lay = QVBoxLayout()
+        text_lay.setSpacing(3)
+        hero_title = QLabel(title)
+        hero_title.setObjectName("heroTitle")
+        text_lay.addWidget(hero_title)
+        hero_desc = QLabel(CATEGORY_DESCRIPTIONS.get(cat, "Phone servicing tools."))
+        hero_desc.setObjectName("heroDesc")
+        hero_desc.setWordWrap(True)
+        text_lay.addWidget(hero_desc)
+        hero_lay.addLayout(text_lay, 1)
+        count = QLabel(f"{len(ops)} tools")
+        count.setObjectName("sectionHdr")
+        hero_lay.addWidget(count)
+        outer.addWidget(hero)
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -883,6 +980,7 @@ class App(QMainWindow):
         super().__init__()
         self.settings = QSettings(ORG_NAME, SETTINGS_NAME)
         ensure_dirs()
+        self.setWindowIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
         self._theme_name = self.settings.value("theme", "dark")
         if self._theme_name not in THEMES:
             self._theme_name = "dark"
@@ -937,7 +1035,9 @@ class App(QMainWindow):
         tl.addWidget(self.dev_combo, 1)
 
         self.btn_scan = QToolButton()
+        self.btn_scan.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
         self.btn_scan.setText("⟳ Scan")
+        self.btn_scan.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.btn_scan.setToolTip("Scan for devices  (Ctrl+R)")
         self.btn_scan.clicked.connect(self._scan)
         tl.addWidget(self.btn_scan)
@@ -959,7 +1059,9 @@ class App(QMainWindow):
         tl.addWidget(self.btn_theme)
 
         self.btn_settings = QToolButton()
+        self.btn_settings.setIcon(self.style().standardIcon(QStyle.SP_FileDialogDetailedView))
         self.btn_settings.setText("⚙")
+        self.btn_settings.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.btn_settings.setToolTip("Settings  (Ctrl+,)")
         self.btn_settings.clicked.connect(self._open_settings)
         tl.addWidget(self.btn_settings)
@@ -1310,17 +1412,39 @@ class App(QMainWindow):
         if not cmds:
             self._log(f"[{op.label}] — no commands generated", "warn")
             return
+        sudo_password = ""
+        if any(self._needs_sudo(c) for c in cmds):
+            sudo_password = self._sudo_password(op)
+            if sudo_password is None:
+                self._log(f"[{op.label}] sudo password entry cancelled", "warn")
+                return
         self._log("", "text")
         self._log(f"=== {op.label} ===", "purple")
         if self._worker and self._worker.isRunning():
             self._worker.abort()
             self._worker.wait(1500)
         self._history.append(op.op_id)
-        self._worker = Worker(cmds, op.label)
+        self._worker = Worker(cmds, op.label, sudo_password)
         self._worker.log.connect(self._log)
         self._worker.done.connect(self._done)
         self._worker.start()
         self._set_running(True, op.label)
+
+    @staticmethod
+    def _needs_sudo(cmd: str) -> bool:
+        return re.search(r"(?<![\w./-])sudo(?![\w-])", cmd) is not None
+
+    def _sudo_password(self, op: Op) -> str | None:
+        password, ok = QInputDialog.getText(
+            self,
+            "Sudo password required",
+            f"{op.label} needs administrator access.\nEnter your Linux sudo password:",
+            QLineEdit.Password,
+            "",
+        )
+        if not ok:
+            return None
+        return password
 
     def _set_running(self, running: bool, label: str = "") -> None:
         self.btn_abort.setEnabled(running)
@@ -1455,6 +1579,19 @@ class App(QMainWindow):
                 cmd = "screen /dev/ttyUSB0 115200"
             subprocess.Popen(open_terminal_cmd(cmd), shell=True, executable="/bin/bash")
             return []
+        if op.op_id == "dev.reboot_menu":
+            choices = {
+                "System": f"{adb} reboot",
+                "Recovery": f"{adb} reboot recovery",
+                "Bootloader / Fastboot": f"{adb} reboot bootloader",
+                "Sideload": f"{adb} reboot sideload",
+            }
+            choice, ok = QInputDialog.getItem(
+                self, "Reboot target", "Choose reboot target:", list(choices), 0, False
+            )
+            if not ok:
+                return None
+            return [choices[choice]]
 
         # ── ADB ────────────────────────────────────────────────────────
         if op.op_id == "adb.lock_remove":
@@ -1533,6 +1670,32 @@ class App(QMainWindow):
                 f"{adb} shell am broadcast -a com.android.systemui.demo -e command notifications -e visible false",
                 "echo 'Demo mode ON. Run again with: am broadcast -a com.android.systemui.demo -e command exit'",
             ]
+        if op.op_id == "adb.permissions":
+            pkg, ok = QInputDialog.getText(self, "App Permissions", "Package:", QLineEdit.Normal, "")
+            if not ok or not pkg:
+                return None
+            return [
+                f"{adb} shell dumpsys package {shq(pkg)} | "
+                "sed -n '/requested permissions:/,/install permissions:/p; /runtime permissions:/,/User 0:/p'"
+            ]
+        if op.op_id == "adb.intent":
+            action, ok = QInputDialog.getText(
+                self,
+                "Launch Intent",
+                "Action or component:",
+                QLineEdit.Normal,
+                "android.settings.SETTINGS",
+            )
+            if not ok or not action:
+                return None
+            data, ok2 = QInputDialog.getText(
+                self, "Launch Intent", "Optional data URI:", QLineEdit.Normal, ""
+            )
+            if not ok2:
+                return None
+            if "/" in action and not action.startswith("android."):
+                return [f"{adb} shell am start -n {shq(action)}" + (f" -d {shq(data)}" if data else "")]
+            return [f"{adb} shell am start -a {shq(action)}" + (f" -d {shq(data)}" if data else "")]
 
         # ── Wi-Fi ADB ──────────────────────────────────────────────────
         if op.op_id == "wadb.tcpip":
@@ -1653,6 +1816,22 @@ class App(QMainWindow):
             ]
         if op.op_id == "fb.getvar":
             return [f"fastboot {fs} getvar all 2>&1"]
+        if op.op_id == "fb.slot":
+            choice, ok = QInputDialog.getItem(
+                self,
+                "A/B Slot Manager",
+                "Choose action:",
+                ["Show current slot", "Set slot A", "Set slot B"],
+                0,
+                False,
+            )
+            if not ok:
+                return None
+            if choice == "Set slot A":
+                return [f"fastboot {fs} --set-active=a", f"fastboot {fs} getvar current-slot 2>&1"]
+            if choice == "Set slot B":
+                return [f"fastboot {fs} --set-active=b", f"fastboot {fs} getvar current-slot 2>&1"]
+            return [f"fastboot {fs} getvar current-slot 2>&1", f"fastboot {fs} getvar slot-count 2>&1"]
         if op.op_id == "fb.nuke":
             if meth == "fastboot":
                 return [
@@ -1821,6 +2000,32 @@ class App(QMainWindow):
             dst = f"{backup_dir}/iphone_{sn or 'device'}_{datetime.now():%Y%m%d_%H%M%S}"
             Path(dst).mkdir(parents=True, exist_ok=True)
             return [f"idevicebackup2 {_udid()} backup --full {shq(dst)}", f"echo 'Saved: {dst}'"]
+        if op.op_id == "ios.restore_ipsw":
+            ipsw, _ = QFileDialog.getOpenFileName(self, "Select IPSW", firmware_dir, "IPSW (*.ipsw)")
+            if not ipsw:
+                return None
+            mode, ok = QInputDialog.getItem(
+                self,
+                "Restore IPSW",
+                "Restore mode:",
+                ["Update/restore without erase where supported", "Erase restore"],
+                0,
+                False,
+            )
+            if not ok:
+                return None
+            erase_flag = "-e " if mode == "Erase restore" else ""
+            return [
+                "which idevicerestore >/dev/null 2>&1 || { echo 'Install idevicerestore: Maintenance'; exit 1; }",
+                f"idevicerestore {erase_flag}{_udid()} {shq(ipsw)}",
+            ]
+        if op.op_id == "ios.diagnostics":
+            return [
+                f"idevicepair {_udid()} validate 2>&1 || true",
+                f"ideviceinfo {_udid()} -k ProductType -k ProductVersion -k SerialNumber 2>&1 || ideviceinfo {_udid()}",
+                f"idevicediagnostics {_udid()} diagnostics 2>&1 || true",
+                "echo 'Live syslog: run idevicesyslog in a terminal if deeper logs are needed.'",
+            ]
         if op.op_id == "ios.dfu":
             # The DFU button-combo depends on the iPhone *model*, not the iOS
             # version. Read the ProductType from libimobiledevice and pick
@@ -1969,6 +2174,16 @@ class App(QMainWindow):
                 f"ls {shq(tools_dir)}/dc-unlocker2client.exe 2>/dev/null || echo 'Download from dc-unlocker.com → place in {tools_dir}'",
                 f"cd {shq(tools_dir)} && wine dc-unlocker2client.exe 2>/dev/null & disown; true",
             ]
+        if op.op_id == "ftr.custom_at":
+            at, ok = QInputDialog.getText(self, "Custom AT Command", "AT command:", QLineEdit.Normal, "AT")
+            if not ok or not at:
+                return None
+            if not at.upper().startswith("AT"):
+                QMessageBox.warning(self, "Custom AT Command", "Command must start with AT.")
+                return None
+            return [
+                f"(printf '%s\\r\\n' {shq(at)}; sleep 2) | timeout 8 socat - file:{shq(ser)},raw,echo=0,b115200"
+            ]
 
         # ── Network Unlock ─────────────────────────────────────────────
         if op.op_id == "net.clck":
@@ -2074,6 +2289,17 @@ class App(QMainWindow):
                 f"python3 /opt/edl/edl.py w {shq(part)} {shq(img)}",
                 "python3 /opt/edl/edl.py reset",
             ]
+        if op.op_id == "mtk.detect":
+            return [
+                "echo '=== Android / bootloader probes ==='",
+                "adb devices -l 2>/dev/null || true",
+                "fastboot devices 2>/dev/null || true",
+                "echo '=== USB IDs ==='",
+                "lsusb | grep -Ei 'google|android|samsung|qualcomm|qcom|mediatek|mtk|unisoc|spreadtrum|apple|motorola|xiaomi|oppo|realme|huawei|lg|nokia' || lsusb",
+                "echo '=== MTK / EDL tooling ==='",
+                "[ -d /opt/mtkclient ] && python3 /opt/mtkclient/mtk printgpt 2>/dev/null || echo 'mtkclient not installed or no BROM device'",
+                "[ -d /opt/edl ] && python3 /opt/edl/edl.py printgpt 2>/dev/null || echo 'edl.py not installed or no EDL device'",
+            ]
 
         # ── Vendor ────────────────────────────────────────────────────
         if op.op_id == "vnd.xiaomi":
@@ -2110,12 +2336,37 @@ class App(QMainWindow):
                 "echo 'Use Heimdall or Odin (Wine) to flash .tar.md5.'",
                 "which heimdall >/dev/null 2>&1 && heimdall detect || echo 'Install Heimdall: Maintenance tab'",
             ]
+        if op.op_id == "vnd.samsung_frp":
+            return [
+                "echo '=== Samsung FRP / stock restore checklist ==='",
+                "echo '1. Confirm ownership and Google account recovery eligibility.'",
+                "echo '2. Enter Download Mode and flash matching stock firmware with Heimdall/Odin.'",
+                "echo '3. Use Smart Switch emergency recovery if firmware is unknown.'",
+                "echo '4. After setup, remove old Google account from Settings before resale.'",
+                "which heimdall >/dev/null 2>&1 && heimdall detect || echo 'Install Heimdall: Maintenance tab'",
+            ]
         if op.op_id == "vnd.lg":
             return [
                 "echo '=== LG flashing guide ==='",
                 "echo 'LG Bridge / LGUP run on Windows under Wine.'",
                 "echo 'For LG bootloader unlock (where supported): developer.lge.com → request bootloader code.'",
                 f"fastboot {fs} oem device-id 2>&1 || true",
+            ]
+        if op.op_id == "vnd.motorola":
+            return [
+                "echo '=== Motorola bootloader unlock ==='",
+                "echo '1. Enable OEM unlocking, reboot to fastboot.'",
+                f"fastboot {fs} oem get_unlock_data 2>&1 || true",
+                "echo '2. Remove spaces/newlines and submit at motorola-global-portal.custhelp.com/app/standalone/bootloader/unlock-your-device-b'",
+                "echo '3. If approved, run: fastboot oem unlock UNIQUE_KEY (wipes data).'",
+            ]
+        if op.op_id == "vnd.pixel":
+            return [
+                "echo '=== Google Pixel factory-image helper ==='",
+                f"fastboot {fs} getvar product 2>&1 || true",
+                f"fastboot {fs} getvar current-slot 2>&1 || true",
+                "echo 'Download matching factory image from developers.google.com/android/images.'",
+                "echo 'Extract it, review flash-all.sh, then run from the extracted folder.'",
             ]
 
         # ── Maintenance ───────────────────────────────────────────────
@@ -2191,6 +2442,29 @@ class App(QMainWindow):
             return ["sudo pip3 install pyserial --break-system-packages 2>/dev/null || sudo pip3 install pyserial"]
         if op.op_id == "mnt.pyusb":
             return ["sudo pip3 install pyusb --break-system-packages 2>/dev/null || sudo pip3 install pyusb"]
+        if op.op_id == "mnt.spreadtrum":
+            return [
+                "sudo apt-get install -y git python3-pip libusb-1.0-0",
+                "sudo pip3 install pyusb pyserial pycryptodome --break-system-packages 2>/dev/null || sudo pip3 install pyusb pyserial pycryptodome",
+                "echo 'Spreadtrum/Unisoc devices usually need boot-key service mode plus vendor-specific loaders.'",
+                "echo 'Place trusted SPD tools/loaders in the tools directory; avoid random unsigned binaries.'",
+            ]
+        if op.op_id == "mnt.verify":
+            return [
+                "echo '=== Core Android ==='",
+                "adb version 2>&1 || true",
+                "fastboot --version 2>&1 || true",
+                "scrcpy --version 2>&1 | head -3 || true",
+                "echo '=== iPhone ==='",
+                "idevice_id --version 2>&1 || true",
+                "idevicerestore --version 2>&1 || true",
+                "echo '=== Flashing / service ==='",
+                "heimdall version 2>&1 || true",
+                "python3 -c 'import serial, usb; print(\"pyserial/pyusb OK\")' 2>&1 || true",
+                "[ -d /opt/mtkclient ] && echo 'mtkclient installed' || echo 'mtkclient missing'",
+                "[ -d /opt/edl ] && echo 'edl.py installed' || echo 'edl.py missing'",
+                "wine --version 2>&1 || true",
+            ]
         if op.op_id == "mnt.wine":
             return ["sudo dpkg --add-architecture i386", "sudo apt-get update -qq", "sudo apt-get install -y wine wine32 wine64 winetricks"]
         if op.op_id == "mnt.all":
