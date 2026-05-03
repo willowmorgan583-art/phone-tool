@@ -19,7 +19,7 @@ Runs on Debian / Ubuntu Linux.
 - **130+ operations** across 13 categories (see below), each with an on-card
   description, tooltip, severity badge and searchable tool ID.
 - **Sudo password dialog** — tools that need administrator access prompt for
-  the Linux sudo password in a masked dialog and pass it to `sudo -S` without
+  the Linux sudo password in a masked dialog and pass it through askpass without
   printing the real password in logs.
 - **Bug fixes vs v4**:
   - `Abort` button now kills the entire process group (`os.killpg`) instead of

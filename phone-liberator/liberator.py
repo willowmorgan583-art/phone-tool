@@ -495,12 +495,82 @@ def ensure_dirs() -> None:
         Path(p).mkdir(parents=True, exist_ok=True)
 
 
+def _sudo_token_spans(cmd: str) -> list[tuple[int, int]]:
+    spans: list[tuple[int, int]] = []
+    command_expected = True
+    i = 0
+    while i < len(cmd):
+        ch = cmd[i]
+        if ch.isspace():
+            if ch == "\n":
+                command_expected = True
+            i += 1
+            continue
+        if ch in ";|&":
+            if ch in "|;" or cmd[i:i + 2] in ("&&", "||"):
+                command_expected = True
+            i += 2 if cmd[i:i + 2] in ("&&", "||") else 1
+            continue
+        start = i
+        text: list[str] = []
+        quoted = False
+        quote = ""
+        while i < len(cmd):
+            ch = cmd[i]
+            if quote:
+                quoted = True
+                if ch == quote:
+                    quote = ""
+                elif ch == "\\" and quote == '"' and i + 1 < len(cmd):
+                    i += 1
+                    text.append(cmd[i])
+                else:
+                    text.append(ch)
+                i += 1
+                continue
+            if ch in ("'", '"'):
+                quote = ch
+                quoted = True
+                i += 1
+                continue
+            if ch.isspace() or ch in ";|&":
+                break
+            if ch == "\\" and i + 1 < len(cmd):
+                i += 1
+                text.append(cmd[i])
+            else:
+                text.append(ch)
+            i += 1
+        word = "".join(text)
+        if command_expected:
+            if word == "sudo" and not quoted:
+                spans.append((start, i))
+                command_expected = False
+            elif re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", word):
+                command_expected = True
+            else:
+                command_expected = False
+    return spans
+
+
+def has_sudo_command(cmd: str) -> bool:
+    return bool(_sudo_token_spans(cmd))
+
+
 def sudo_wrap(cmd: str, password: str) -> str:
     if not password:
         return cmd
-    quoted_pw = shq(password)
-    pattern = re.compile(r"(?<![\w./-])sudo(?![\w-])")
-    return pattern.sub("sudo -A -p ''", cmd)
+    spans = _sudo_token_spans(cmd)
+    if not spans:
+        return cmd
+    out: list[str] = []
+    last = 0
+    for start, end in spans:
+        out.append(cmd[last:start])
+        out.append("sudo -A -p ''")
+        last = end
+    out.append(cmd[last:])
+    return "".join(out)
 
 
 def sudo_askpass_prefix() -> str:
@@ -1432,7 +1502,7 @@ class App(QMainWindow):
 
     @staticmethod
     def _needs_sudo(cmd: str) -> bool:
-        return re.search(r"(?<![\w./-])sudo(?![\w-])", cmd) is not None
+        return has_sudo_command(cmd)
 
     def _sudo_password(self, op: Op) -> str | None:
         password, ok = QInputDialog.getText(
@@ -1443,6 +1513,13 @@ class App(QMainWindow):
             "",
         )
         if not ok:
+            return None
+        if not password:
+            QMessageBox.warning(
+                self,
+                "Sudo password required",
+                "Enter a sudo password or press Cancel to skip this operation.",
+            )
             return None
         return password
 
